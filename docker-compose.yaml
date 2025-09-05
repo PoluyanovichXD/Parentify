@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  database:
+    container_name: database
+    image: postgres:16
+    environment:
+      POSTGRES_DB: parentify_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  application:
+    container_name: application
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+
+volumes:
+  postgres_data:

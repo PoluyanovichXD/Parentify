@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parentify - Платформа для родителей</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Базовые стили и сброс */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #FFFFFF;
+            color: #333333;
+            line-height: 1.6;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        ul {
+            list-style: none;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #f59fa8;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #e88d96;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: #B5EAD7;
+            color: #333333;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #a1d8c5;
+        }
+        
+        /* Header */
+        header {
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            background-color: #FFFFFF;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #f59fa8;
+        }
+        
+        .logo span {
+            color: #B5EAD7;
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 25px;
+        }
+        
+        nav ul li a {
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        nav ul li a:hover {
+            color: #f59fa8;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 80px 0;
+            text-align: center;
+            background-color: #F5F5F5;
+            border-radius: 0 0 20px 20px;
+        }
+        
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            color: #333333;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: #888888;
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+            font-size: 2.2rem;
+            color: #333333;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            background-color: #F5F5F5;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #f59fa8;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+        
+        .feature-card p {
+            color: #888888;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #F5F5F5;
+            padding: 60px 0 30px;
+            margin-top: 80px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #333333;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-column ul li a:hover {
+            color: #f59fa8;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: #B5EAD7;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            background-color: #f59fa8;
+            color: white;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+            color: #888888;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <a href="#" class="logo" style="display: flex; align-items: center;">
+                <img src="/static/images/mishka.png" style="width: 25px; margin-right: 3px;" alt="">
+                Parentify</a>
+            
+            <nav>
+                <ul>
+                    <li><a href="#">Главная</a></li>
+                    <li><a href="#">Информация</a></li>
+                    <li><a href="#">Календарь</a></li>
+                    <li><a href="#">Трекеры</a></li>
+                    <li><a href="#">Форум</a></li>
+                    <li><a href="#">Товары</a></li>
+                    <li><a href="#">Карта</a></li>
+                </ul>
+            </nav>
+            
+            <div class="auth-buttons">
+                <a href="#" class="btn btn-secondary">Вход</a>
+                <a href="#" class="btn btn-primary">Регистрация</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Забота о ребенке стала проще</h1>
+            <p>Ежедневное сопровождение для современных родителей: отслеживание развития, полезные советы и сообщество единомышленников</p>
+            <a href="#" class="btn btn-primary">Начать пользоваться</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Наши возможности</h2>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3>Информационный раздел</h3>
+                    <p>Статьи, рекомендации и справочные материалы от экспертов по детскому развитию</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3>Календарь развития</h3>
+                    <p>Отслеживайте этапы развития вашего ребенка и получайте персональные рекомендации</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Трекеры и планировщик</h3>
+                    <p>Контролируйте сон, питание и здоровье вашего ребенка с помощью удобных инструментов</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>Родительский форум</h3>
+                    <p>Общайтесь, делитесь опытом и получайте поддержку от других родителей</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <h3>Рекомендованные товары</h3>
+                    <p>Проверенные детские товары и аксессуары, отобранные экспертами</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3>Карта мест для детей</h3>
+                    <p>Найдите лучшие детские площадки, поликлиники и кафе с детскими комнатами</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>CareChild</h3>
+                    <p>Платформа для современных родителей, заботящихся о гармоничном развитии своих детей.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Разделы</h3>
+                    <ul>
+                        <li><a href="#">Главная</a></li>
+                        <li><a href="#">Информационный раздел</a></li>
+                        <li><a href="#">Календарь развития</a></li>
+                        <li><a href="#">Трекеры</a></li>
+                        <li><a href="#">Форум</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Полезное</h3>
+                    <ul>
+                        <li><a href="#">Рекомендованные товары</a></li>
+                        <li><a href="#">Карта мест</a></li>
+                        <li><a href="#">Чек-листы</a></li>
+                        <li><a href="#">Справочные материалы</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Контакты</h3>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> info@carechild.ru</li>
+                        <li><i class="fas fa-phone"></i> +7 (800) 123-45-67</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Москва, ул. Примерная, 15</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>© 2023 CareChild. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
