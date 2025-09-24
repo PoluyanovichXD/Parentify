@@ -1,0 +1,6 @@
+{% for subcontrol in control.controls %}
+       {% include subcontrol.template with control=subcontrol %}
+{% endfor %}
+{% for subcontrol in control.btn_controls %}
+       {% include subcontrol.template with control=subcontrol %}
+{% endfor %}
