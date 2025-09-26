@@ -82,7 +82,13 @@ class Base(Configuration):
             'BACKEND': 'django.template.backends.django.DjangoTemplates',
             'DIRS': [
                 str(BASE_DIR.joinpath('templates')),
+                str(BASE_DIR.joinpath('ui','templates')),
                 str(BASE_DIR.joinpath('emails','templates')),
+                str(BASE_DIR.joinpath('web','templates')),
+                str(BASE_DIR.joinpath('web','admin','templates')),
+                str(BASE_DIR.joinpath('web','article','templates')),
+                str(BASE_DIR.joinpath('web','forum','templates')),
+                str(BASE_DIR.joinpath('web','notification','templates')),
             ],
             'APP_DIRS': True,
             'OPTIONS': {
@@ -160,7 +166,7 @@ class Base(Configuration):
 class Web(Base):
     CONFIG_NAME = 'Web'
     DEBUG = False
-    DATABASE_CONNECTION_STRING = property(lambda self: os.getenv('DATABASE_CONNECTION_STRING', 'postgresql+psycopg2://postgres:postgres@localhost/mishutka_web'))
+    DATABASE_CONNECTION_STRING = property(lambda self: os.getenv('DATABASE_CONNECTION_STRING', 'postgresql+psycopg2://postgres:postgres@localhost/parentify_db'))
 
 class Test(Base):
     CONFIG_NAME = 'Test'

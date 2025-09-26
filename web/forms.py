@@ -8,24 +8,12 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from django.core.exceptions import ValidationError
 import re
+from ui import *
 
 class FormLogin(forms.Form):
-    email = forms.EmailField(
-        label=_('Почта'),
-        widget=forms.EmailInput(attrs={
-            'class': 'form-control',
-            'placeholder': _('Введите ваш email'),
-            'autofocus': True
-        })
-    )
+    email = TextInputField(label=_("Почта"))
     
-    password = forms.CharField(
-        label=_('Пароль'),
-        widget=forms.PasswordInput(attrs={
-            'class': 'form-control',
-            'placeholder': _('Введите ваш пароль')
-        })
-    )
+    password = PasswordInputField(label=_("Пароль"))
 
     def clean(self):
         cleaned_data = super().clean()
@@ -46,6 +34,7 @@ class FormLogin(forms.Form):
                 raise forms.ValidationError(
                     _('Аккаунт деактивирован')
                 )
+
         return cleaned_data
 
     def get_user(self):
@@ -55,43 +44,13 @@ class FormLogin(forms.Form):
 
 
 class FormRegister(forms.Form):
-    lastName = forms.CharField(
-        label=_('Фамилия'),
-        max_length=150,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': _('Введите вашу фамилию'),
-            'autofocus': True
-        })
-    )
+    lastName = TextInputField(label=_("Фамилия"))
     
-    firstName = forms.CharField(
-        label=_('Имя'),
-        max_length=150,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': _('Введите ваше имя')
-        })
-    )
+    firstName = TextInputField(label=_("Имя"))
     
-    middleName = forms.CharField(
-        label=_('Отчество'),
-        max_length=150,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': _('Введите ваше отчество (необязательно)')
-        })
-    )
+    middleName = TextInputField(label=_("Отчество"))
     
-    birth_date = forms.DateField(
-        label=_('Дата рождения'),
-        widget=forms.DateInput(attrs={
-            'class': 'form-control',
-            'type': 'date'
-        }),
-        help_text=_('Укажите вашу дату рождения')
-    )
+    birth_date = DateInputField(label=_("Дата рождения"))
     
     GENDER_CHOICES = [
         ('', _('Выберите пол')),
@@ -187,9 +146,7 @@ class FormRegister(forms.Form):
         email = self.cleaned_data['email']
         password = self.cleaned_data['password']
         
-        # Создаем username на основе email
         username = email.split('@')[0]
-        # Убедимся что username уникален
         base_username = username
         counter = 1
         while User.objects.filter(username=username).exists():
@@ -204,14 +161,12 @@ class FormRegister(forms.Form):
             last_name=self.cleaned_data['lastName']
         )
         
-        # Сохраняем дополнительные данные в профиль
         profile = user.profile
         profile.middle_name = self.cleaned_data['middleName']
         profile.birth_date = self.cleaned_data['birth_date']
         profile.gender = self.cleaned_data['gender']
         profile.save()
         
-        # Автоматический вход если передан request
         if request:
             user = authenticate(
                 username=username,
