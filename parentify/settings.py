@@ -103,6 +103,7 @@ class Base(Configuration):
     
     PASSWORD_HASHERS = [
         'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+        'parentify.web.hashers.SHA256PasswordHasher',
     ]
 
     # WSGI_APPLICATION = 'wsgi.application'

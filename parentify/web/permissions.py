@@ -31,6 +31,6 @@ class UserPermisions(object):
     def no_access_links(self):
         if self.type_user!='admin':
             links = self.NO_ACCESS_USER_LINKS[self.type_user]
-            links = links + ACCESS_ONLY_ADMIN
+            links = links + self.ACCESS_ONLY_ADMIN
             return links
         return []

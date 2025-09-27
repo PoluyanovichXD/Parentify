@@ -1,3 +1,4 @@
+import bcrypt
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, ForeignKey, Enum, func, LargeBinary
 from sqlalchemy.orm import relationship
 from django.contrib.auth.hashers    import *
@@ -67,6 +68,7 @@ class User(Base):
         else:
             return None
         
+    @staticmethod
     def create(
             orm,
             email,
@@ -81,11 +83,11 @@ class User(Base):
         user.email = email
         user.first_name = first_name
         user.last_name = last_name
-        user.password = make_password(password)
         user.is_active = is_active
         user.is_admin = is_admin
         user.birth_date = birth_date
         user.gender = gender
+        user.set_password(password)
         orm.add(user)
         orm.commit()
         return user
@@ -93,9 +95,32 @@ class User(Base):
         if not self.password:
             return False
         return check_password(raw_password, self.password)
-        
-    def set_password(self, password):
-        self.password = make_password(password)
+
+    def set_password(self, password,salt=None):
+        self.password = make_password(password,salt=User.get_salt(self.email if not salt else salt))
+
+    def get_salt(string, rounds:int = 12, prefix: bytes = b"2b") -> bytes:
+        #(b'2a'  b'2b')
+        if prefix not in (b"2a", b"2b"):
+            raise ValueError("Supported prefixes are b'2a' or b'2b'")
+        str_res = ''
+        for i in range(16):
+            if len(str_res)>=16:
+                string = str_res[0:16]
+                break
+            else:
+                str_res += string
+        salt = bytes(string,'ascii')
+        output = bcrypt._bcrypt.encode_base64(salt)
+        result = (  
+            b"$"
+            + prefix
+            + b"$"
+            + str(rounds).encode("ascii")
+            + b"$"
+            + output
+        )
+        return result
     
 class UserChild(Base):
     __tablename__ = 'user_child'

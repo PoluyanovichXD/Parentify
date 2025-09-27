@@ -8,5 +8,5 @@ class Command(BaseCommand):
         Base.metadata.create_all(engine)
         self.stdout.write(self.style.SUCCESS("DataBase is initialized"))
         orm = Orm()
-        add_super_admin(orm,"admin@gmail.com", "adminadmin", 'Admin', 'Admin')
+        add_super_admin(orm,"admin@gmail.com", 'Admin', 'Admin', "adminadmin")
         orm.close()
