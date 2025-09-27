@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parentify - Платформа для родителей</title>
+    <link rel="stylesheet" href="/static/css/font-awesome.css">
+    <script src="/static/js/tailwind.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#f59fa8',
+                        secondary: '#B5EAD7',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    {% block app %}
+        {% block wrapper %}{% endblock %}
+    {% endblock %}
+    {% block messages %}{% endblock %}
+</body>
+</html>
