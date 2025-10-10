@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from isodate import parse_date
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-from parentify.ui.inputs.widgets import *
+from parentify.ui.widgets import *
 
 def kwargs_init(**kwargs):
     attrs_init = ['max_length','min_length','strip','empty_value','required','widget','label','initial','help_text','error_messages','show_hidden_initial','validators','localize','disabled','label_suffix']

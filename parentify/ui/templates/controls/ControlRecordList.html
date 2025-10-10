@@ -1,0 +1,108 @@
+{% load filter %}
+<div class="{% if control.classname %}{{control.classname}}{% endif %}" {% if not control.inside %}style="overflow-y: auto;"{% endif %}>
+    <table id="{{control.name}}" class="recordslist sections" style="width:100%" {% if control.api %}api{% endif %} {% if control.inside %}inside{% else %}not_inside{% endif %}>
+        <thead>
+          <tr>
+            {% if 'checkbox' in control.fields_event %}
+            <th class="checkbox">
+                <label>
+                    <input type="checkbox" value="{{row.0}}" />
+                    <em></em>
+                </label>
+            </th>
+            {% endif %}
+            {% for val,key in control.headers %}
+                {% with field_sort=control.fields_sort|find_in_arr:key %}
+                    {% if field_sort and field_sort|is_list %}
+                    <th {% if control.api_get %}onclick="LinkRedirect(currentUrl.set('column','{{key}}').set('sort','{% if request.GET.sort == 'desc' and request.GET.column == key %}asc{% else %}desc{% endif %}').url)" style="cursor: pointer;"{% endif %} {% if key and field_sort.0 %} class="{% if control.api_get != None %}sorted{% elif field_sort %}sorted{% endif %} {% if control.api_get and request.GET.sort == 'desc' and request.GET.column == key %}asc{% elif control.api_get and request.GET.sort == 'asc' and request.GET.column == key %}desc{% endif %} text" sort_key="{% if control.api_get != None and control.api_get.column == key %}{{key}}{% else %}{{field_sort.1}}{% endif %}" {% if control.api_get != None and control.api_get.sort and control.api_get.column == key %}sort="{{control.api_get.sort}}"{% endif %} key="{{key}}" {% endif %} {% if control.api_get %}api_get{% endif %}>{{val}}</th>
+                    {% else %}
+                    <th {% if control.api_get %}onclick="LinkRedirect(currentUrl.set('column','{{key}}').set('sort','{% if request.GET.sort == 'desc' and request.GET.column == key %}asc{% else %}desc{% endif %}').url)" style="cursor: pointer;"{% endif %} {% if key %} class="{% if control.api_get != None %}sorted{% elif field_sort %}sorted{% endif %} {% if control.api_get and request.GET.sort == 'desc' and request.GET.column == key %}asc{% elif control.api_get and request.GET.sort == 'asc' and request.GET.column == key %}desc{% endif %} text" sort_key="{% if control.api_get != None and control.api_get.column == key %}{{key}}{% else %}{{field_sort}}{% endif %}" {% if control.api_get != None and control.api_get.sort and control.api_get.column == key %}sort="{{control.api_get.sort}}"{% endif %} key="{{key}}" {% endif %} {% if control.api_get %}api_get{% endif %}>{{val}}</th>
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
+            {% if not 'iframe_input' in request.GET %}
+                {% if 'preview' in control.fields_event or 'view_iframe' in control.fields_event or 'edit_iframe' in control.fields_event or 'view' in control.fields_event or 'edit' in control.fields_event or 'approved' in control.fields_event or 'disapproved' in control.fields_event or 'active' in control.fields_event or 'edit_iframe' in control.fields_event or 'delete' in control.fields_event %} 
+                    <th class="events"
+                    {% for item in control.fields_event %}{% if item in 'view,edit,approved,disapproved,active,delete' %}
+                        {{item}}
+                    {% endif %}{% endfor %}
+                    >Действия</th>
+                {% endif %}
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+            {% for row in control.content %}
+                <tr>
+                    {% if 'checkbox' in control.fields_event %} 
+                    <td>
+                        <label>
+                            <input type="checkbox" name="{{control.name}}" value="{{row.0}}" />
+                            <em></em>
+                        </label>
+                    </td>
+                    {% endif %}
+                    {% for v,k in row.2 %}
+                    <td>
+                        {% if not control.fields_url and forloop.counter0 == 0 and row.1 != '' %}
+                        <a onclick="{% if not 'iframe_input' in request.GET %}LinkRedirect(`{{row.1}}`){% else %}currentIframe.send([`{{row.1}}`,`{{v|safe}}`]){% endif %}" target="{{row.3}}">
+                            {% if v != 'None' %}{{v|safe}}{% else %}-{% endif %}
+                        </a>
+                        {% elif k in control.fields_url and row.1 != '' %}
+                        <a onclick="{% if not 'iframe_input' in request.GET %}LinkRedirect(`{{row.1}}`){% else %}currentIframe.send([`{{row.1}}`,`{{v|safe}}`]){% endif %}" target="{{row.3}}">
+                            {% if v != 'None' %}{{v|safe}}{% else %}-{% endif %}
+                        </a>
+                        {% else %}
+                            {% if v != 'None' %}{{v|safe}}{% else %}-{% endif %}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    {% if not 'iframe_input' in request.GET %}
+                        {% if 'preview' in control.fields_event or 'view_iframe' in control.fields_event or 'edit_iframe' in control.fields_event or 'view' in control.fields_event or 'edit' in control.fields_event or 'approved' in control.fields_event or 'disapproved' in control.fields_event or 'active' in control.fields_event or 'delete' in control.fields_event %} 
+                        <td class="events">
+                            {% for item in control.fields_event %}
+                            {% if item == 'view' %}
+                                <button aria-label="Просмотреть" {% if not control.inside %}data-microtip-position="top-left"{% else %}data-microtip-position="top"{% endif %} role="tooltip" class=" button_main no_btn btn_icon" onclick="ClickBtn('{{row.1}}')">
+                                    <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 216.416 216.416" style="enable-background:new 0 0 216.416 216.416;" xml:space="preserve"><g><path style="fill: rgb(255, 255, 255);" d="M215.912,105.503c-0.073-0.188-0.153-0.373-0.24-0.555c-9.597-19.932-24.533-36.792-43.191-48.758 c-19.171-12.295-41.396-18.793-64.271-18.793c-22.875,0-45.101,6.499-64.272,18.795c-18.59,11.922-33.484,28.704-43.085,48.54 c-1.076,2.061-1.156,4.553-0.11,6.726c9.596,19.935,24.532,36.798,43.192,48.766c19.172,12.297,41.398,18.796,64.275,18.796 c22.876,0,45.102-6.499,64.273-18.795c18.66-11.967,33.595-28.829,43.192-48.762C216.573,109.596,216.657,107.435,215.912,105.503z M108.21,164.019c-38.583,0-74.42-21.789-92.312-55.812C33.79,74.184,69.627,52.396,108.21,52.396 c38.582,0,74.42,21.79,92.312,55.812C182.629,142.228,146.791,164.019,108.21,164.019z" fill="#1D1D1B"></path><path style="fill: rgb(255, 255, 255);" d="M108.209,75.291c-18.15,0-32.917,14.767-32.917,32.917s14.767,32.917,32.917,32.917 s32.917-14.767,32.917-32.917S126.359,75.291,108.209,75.291z M108.209,126.125c-9.879,0-17.917-8.038-17.917-17.917 s8.038-17.917,17.917-17.917s17.917,8.038,17.917,17.917S118.088,126.125,108.209,126.125z" fill="#1D1D1B"></path></g></svg>
+                                </button>
+                            {% elif item == 'preview' or item == 'view_iframe' %}
+                                <button aria-label="Предпросмотр" {% if not control.inside %}data-microtip-position="top-left"{% else %}data-microtip-position="top"{% endif %} role="tooltip" class=" button_main no_btn btn_icon" onclick="CreateIframeModal('{{row.1}}?clear_page')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 13.6V21H3.6C3.26863 21 3 20.7314 3 20.4V13H10.4C10.7314 13 11 13.2686 11 13.6Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 21H14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 13V10" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 3H3.6C3.26863 3 3 3.26863 3 3.6V6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 3H10" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 10V14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 3H20.4C20.7314 3 21 3.26863 21 3.6V6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 21H20.4C20.7314 21 21 20.7314 21 20.4V18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 10H14V13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                            {% elif item == 'edit_iframe' %}
+                                <button aria-label="Редактировать" {% if not control.inside %}data-microtip-position="top-left"{% else %}data-microtip-position="top"{% endif %} role="tooltip" class=" button_main no_btn btn_icon" onclick="CreateIframeModal(`{{row.1}}/edit/?iframe_form`)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="mdi-monitor-edit" viewBox="0 0 24 24"><path d="M21 2H3C1.9 2 1 2.9 1 4V16C1 17.11 1.9 18 3 18H10V20H8V22H16V20H14V18H21C22.11 18 23 17.11 23 16V4C23 2.9 22.11 2 21 2M21 16H3V4H21V16M15.84 8.2L14.83 9.21L12.76 7.18L13.77 6.16C13.97 5.95 14.31 5.94 14.55 6.16L15.84 7.41C16.05 7.62 16.06 7.96 15.84 8.2M8 11.91L12.17 7.72L14.24 9.8L10.08 14H8V11.91Z"/></svg>
+                                </button>
+                            {% elif item == 'edit' %}
+                                <button aria-label="Редактировать" {% if not control.inside %}data-microtip-position="top-left"{% else %}data-microtip-position="top"{% endif %} role="tooltip" class=" button_main no_btn btn_icon" onclick="ClickBtn('{{row.1}}/edit/')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" data-name="Layer 1" id="Layer_1" viewBox="0 0 32 32"><path d="M25.384,11.987a.993.993,0,0,1-.707-.293L20.434,7.452a1,1,0,0,1,0-1.414l2.122-2.121a3.07,3.07,0,0,1,4.242,0l1.414,1.414a3,3,0,0,1,0,4.242l-2.122,2.121A.993.993,0,0,1,25.384,11.987ZM22.555,6.745l2.829,2.828L26.8,8.159a1,1,0,0,0,0-1.414L25.384,5.331a1.023,1.023,0,0,0-1.414,0Z"></path><path d="M11.9,22.221a2,2,0,0,1-1.933-2.487l.875-3.5a3.02,3.02,0,0,1,.788-1.393l8.8-8.8a1,1,0,0,1,1.414,0l4.243,4.242a1,1,0,0,1,0,1.414l-8.8,8.8a3,3,0,0,1-1.393.79h0l-3.5.875A2.027,2.027,0,0,1,11.9,22.221Zm3.752-1.907h0ZM21.141,8.159l-8.094,8.093a1,1,0,0,0-.262.465l-.876,3.5,3.5-.876a1,1,0,0,0,.464-.263l8.094-8.094Z"></path><path d="M22,29H8a5.006,5.006,0,0,1-5-5V10A5.006,5.006,0,0,1,8,5h9.64a1,1,0,0,1,0,2H8a3,3,0,0,0-3,3V24a3,3,0,0,0,3,3H22a3,3,0,0,0,3-3V14.61a1,1,0,0,1,2,0V24A5.006,5.006,0,0,1,22,29Z"></path></svg>
+                                </button>
+                            {% elif item == 'approved' %}
+                                <button aria-label="Активировать" {% if not control.inside %}data-microtip-position="top-left"{% else %}data-microtip-position="top"{% endif %} role="tooltip" class=" button_main no_btn btn_icon" onclick="ClickBtn('?approved={{row.1}}')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path  d="M9.86,18a1,1,0,0,1-.73-.32L4.27,12.51a1,1,0,1,1,1.46-1.37l4.12,4.39,8.41-9.2a1,1,0,1,1,1.48,1.34l-9.14,10a1,1,0,0,1-.73.33Z"></path></svg>
+                                </button>
+                            {% elif item == 'disapproved' %}
+                                <button aria-label="Деактивировать" {% if not control.inside %}data-microtip-position="top-left"{% else %}data-microtip-position="top"{% endif %} role="tooltip" class=" button_main no_btn btn_icon" onclick="ClickBtn('?disapproved={{row.1}}')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path  d="M13.41,12l4.3-4.29a1,1,0,1,0-1.42-1.42L12,10.59,7.71,6.29A1,1,0,0,0,6.29,7.71L10.59,12l-4.3,4.29a1,1,0,0,0,0,1.42,1,1,0,0,0,1.42,0L12,13.41l4.29,4.3a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42Z"></path></svg>
+                                </button>
+                            {% elif item == 'active' %}
+                                <button aria-label="Активировать" {% if not control.inside %}data-microtip-position="top-left"{% else %}data-microtip-position="top"{% endif %} role="tooltip" class=" button_main no_btn btn_icon" onclick="ClickBtn('?active={{row.1}}')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path  d="M9.86,18a1,1,0,0,1-.73-.32L4.27,12.51a1,1,0,1,1,1.46-1.37l4.12,4.39,8.41-9.2a1,1,0,1,1,1.48,1.34l-9.14,10a1,1,0,0,1-.73.33Z"></path></svg>
+                                </button>
+                            {% elif item == 'delete' %}
+                                <button aria-label="Удалить" {% if not control.inside %}data-microtip-position="top-left"{% else %}data-microtip-position="top"{% endif %} role="tooltip" class=" button_main no_btn btn_icon" onclick="ClickBtn('?delete={{row.1}}')">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path  d="M13.41,12l4.3-4.29a1,1,0,1,0-1.42-1.42L12,10.59,7.71,6.29A1,1,0,0,0,6.29,7.71L10.59,12l-4.3,4.29a1,1,0,0,0,0,1.42,1,1,0,0,0,1.42,0L12,13.41l4.29,4.3a1,1,0,0,0,1.42,0,1,1,0,0,0,0-1.42Z"></path></svg>
+                                </button>
+                            {% endif %}
+                            {% endfor %}
+                        </td>
+                        {% endif %}
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% for subcontrol in control.controls %}
+    {% include subcontrol.template with control=subcontrol %}
+{% endfor %}

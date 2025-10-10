@@ -1,0 +1,60 @@
+<div class="" id="{{control.name}}" pager>
+    <div class="">
+        Отобрано: 
+        <span class="after_filter">{{control.content.after_filter}}</span>
+        {{control.content.text}} из 
+        <span class="total">{{control.content.total}}</span>
+    </div>
+    {% if control.content.pages or control.content.first_item or control.content.last_item %}
+    <div class="">
+        <div class="pagination_arr prev"></div>
+        <div class="box_pagination">
+            {% if control.content.first_item %}
+            <a p="{{control.content.first_item.p}}" url="{{control.content.first_item.url}}" onclick="SetPage(event)" {% if control.content.first_item.active %}active{% endif %} class="box_pagination_item {% if control.content.first_item.active %}active{% endif %}">
+                {{control.content.first_item.title}}
+            </a>
+            <div class="box_pagination_item hide_items" dropdown-hover>...
+                <div class="dropdown_hover top">
+                    <div class="dropdown_hover_main">
+                        <div class="dropdown_hover_header">
+                            <b>
+                                <span></span>
+                            </b>
+                        </div>
+                        <div class="dropdown_hover_content">
+                            <div class="grid_pager"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% for p in control.content.pages %}
+                <a p="{{p.p}}" url="{{p.url}}" onclick="SetPage(event)" {% if p.active %}active{% endif %} class="box_pagination_item {% if p.active %}active{% endif %}">
+                    {{p.title}}
+                </a>
+            {% endfor %}
+            {% if control.content.last_item %}
+                <div class="box_pagination_item hide_items" dropdown-hover>...
+                    <div class="dropdown_hover top">
+                        <div class="dropdown_hover_main">
+                            <div class="dropdown_hover_header">
+                                <b>
+                                    <span></span>
+                                </b>
+                            </div>
+                            <div class="dropdown_hover_content">
+                                <div class="grid_pager"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <a p="{{control.content.last_item.p}}" onclick="SetPage(event)" url="{{control.content.last_item.url}}" {% if control.content.last_item.active %}active{% endif %} class="box_pagination_item {% if control.content.last_item.active %}active{% endif %}">
+                    {{control.content.last_item.title}}
+                </a>
+            {% endif %}
+            <div class="overlay_bg"></div>
+        </div>
+        <div class="pagination_arr next"></div>
+    </div>
+    {% endif %}
+</div>

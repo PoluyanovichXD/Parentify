@@ -1,0 +1,23 @@
+
+{% if control.type == "submit" %}
+    <button class="{% if control.is_admin %} admin_btn {% endif %}" type="submit" id="id_{{control.action}}" name="{{control.action}}" value="{{control.title}}" value="{{control.value}}" {%if control.disabled%}disabled{%endif%}>
+        {% if control.icon %}
+            {% include "icons/"|add:control.icon|add:".html" %}
+        {% endif %}
+        {{control.title}}
+    </button>
+{% elif control.type == "redirect" %}
+    <button class="{% if control.is_admin %} admin_btn {% endif %}" type="button" id="id_{{control.action}}" name="{{control.action}}" value="{{control.title}}" onclick="location = '{{control.action}}'" {%if control.disabled%}disabled{%endif%}>
+        {% if control.icon %}
+            {% include "icons/"|add:control.icon|add:".html" %}
+        {% endif %}
+        {{control.title}}
+    </button>
+{% elif control.type == "js" %}
+    <button class="{% if control.is_admin %} admin_btn {% endif %}" type="button" id="id_{{control.title}}" name="{{control.title}}" value="{{control.title}}" onclick="{{control.action}}" {%if control.disabled%}disabled{%endif%}>
+        {% if control.icon %}
+            {% include "icons/"|add:control.icon|add:".html" %}
+        {% endif %}
+        {{control.title}}
+    </button>
+{% endif %}

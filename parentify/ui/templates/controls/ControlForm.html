@@ -1,0 +1,7 @@
+
+<form enctype="multipart/form-data" method="post" action="{{control.action}}" id="{{control.name}}">
+    {% csrf_token %}
+        {% for subcontrol in control.controls %}
+            {% include subcontrol.template with control=subcontrol %}
+        {% endfor %}
+    </form>

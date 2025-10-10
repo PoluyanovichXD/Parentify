@@ -1,0 +1,3 @@
+<label style="width:100%;">
+    <textarea html_editor name="{{name}}" label="{{w.attrs.label}}"  {% for k, v in w.attrs.items %} {% if v %} {{k}}="{{v}}" {% endif %} {% endfor %}  >{{value}}</textarea>
+</label>

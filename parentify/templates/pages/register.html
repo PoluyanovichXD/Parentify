@@ -10,12 +10,14 @@
                 <p class="text-gray-600">Заполните данные для регистрации</p>
             </div>
             
-            <form class="text-left">
+            <form method="post" class="text-left">
+                {% csrf_token %}
                 <!-- Имя и Фамилия в ряд -->
                 <div class="flex flex-col md:flex-row gap-4 mb-5">
                     <div class="flex-1">
                         <label for="lastName" class="block font-medium mb-2">Фамилия</label>
                         <input 
+                            name="last_name"
                             type="text" 
                             id="lastName" 
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors" 
@@ -27,6 +29,7 @@
                     <div class="flex-1">
                         <label for="firstName" class="block font-medium mb-2">Имя</label>
                         <input 
+                            name="first_name"
                             type="text" 
                             id="firstName" 
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors" 
@@ -40,6 +43,7 @@
                 <div class="mb-5">
                     <label for="middleName" class="block font-medium mb-2">Отчество</label>
                     <input 
+                        name="middle_name"
                         type="text" 
                         id="middleName" 
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors" 
@@ -78,6 +82,7 @@
                 <div class="mb-5">
                     <label for="email" class="block font-medium mb-2">Email</label>
                     <input 
+                        name="email"
                         type="email" 
                         id="email" 
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors" 
@@ -90,6 +95,7 @@
                 <div class="mb-5 relative">
                     <label for="password" class="block font-medium mb-2">Пароль</label>
                     <input 
+                        name="password"
                         type="password" 
                         id="password" 
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors pr-12" 
@@ -105,6 +111,7 @@
                 <div class="mb-5 relative">
                     <label for="confirmPassword" class="block font-medium mb-2">Подтверждение пароля</label>
                     <input 
+                        name="confirm_password"
                         type="password" 
                         id="confirmPassword" 
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors pr-12" 
@@ -197,31 +204,31 @@
             }
         });
         
-        // Обработка формы
-        document.querySelector('form').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // // Обработка формы
+        // document.querySelector('form').addEventListener('submit', function(e) {
+        //     e.preventDefault();
             
-            // Проверка совпадения паролей
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
+        //     // Проверка совпадения паролей
+        //     const password = document.getElementById('password').value;
+        //     const confirmPassword = document.getElementById('confirmPassword').value;
             
-            if (password !== confirmPassword) {
-                alert('Пароли не совпадают!');
-                return;
-            }
+        //     if (password !== confirmPassword) {
+        //         alert('Пароли не совпадают!');
+        //         return;
+        //     }
             
-            // Сбор данных формы
-            const formData = {
-                lastName: document.getElementById('lastName').value,
-                firstName: document.getElementById('firstName').value,
-                middleName: document.getElementById('middleName').value,
-                gender: document.querySelector('input[name="gender"]:checked')?.value,
-                email: document.getElementById('email').value,
-                password: password
-            };
+        //     // Сбор данных формы
+        //     const formData = {
+        //         lastName: document.getElementById('lastName').value,
+        //         firstName: document.getElementById('firstName').value,
+        //         middleName: document.getElementById('middleName').value,
+        //         gender: document.querySelector('input[name="gender"]:checked')?.value,
+        //         email: document.getElementById('email').value,
+        //         password: password
+        //     };
             
-            console.log('Регистрация:', formData);
-            alert('Регистрация успешна! В реальном приложении здесь будет выполняться создание аккаунта.');
-        });
+        //     console.log('Регистрация:', formData);
+        //     alert('Регистрация успешна! В реальном приложении здесь будет выполняться создание аккаунта.');
+        // });
     </script>
 {% endblock %}

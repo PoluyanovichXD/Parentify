@@ -1,0 +1,5 @@
+{% if control.btn_type %}
+{% include "widgets/buttons/"|add:control.btn_type|add:".html" with control=control%}
+{% else %}
+{% include "widgets/buttons/ButtonSimple.html" with control=control%}
+{% endif %}

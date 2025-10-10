@@ -31,6 +31,9 @@
                     <div
                         class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                         <a href="/profile" class="block px-4 py-3 hover:bg-gray-100 rounded-t-lg">Профиль</a>
+                        {% if request.current_user.is_admin %}
+                        <a href="/admin" class="block px-4 py-3 hover:bg-gray-100">Администрирование</a>
+                        {% endif %}
                         <a href="/settings" class="block px-4 py-3 hover:bg-gray-100">Настройки</a>
                         <div class="border-t">
                             <button onclick="window.location.href = '/logout'"
@@ -81,11 +84,11 @@
             <div class="footer-column">
                 <h3 class="text-xl font-semibold mb-5">Разделы</h3>
                 <ul class="space-y-2">
-                    <li><a href="#" class="hover:text-primary transition-colors">Главная</a></li>
+                    <li><a href="/article" class="hover:text-primary transition-colors">Главная</a></li>
                     <li><a href="#" class="hover:text-primary transition-colors">Информационный раздел</a></li>
                     <li><a href="#" class="hover:text-primary transition-colors">Календарь развития</a></li>
                     <li><a href="#" class="hover:text-primary transition-colors">Трекеры</a></li>
-                    <li><a href="#" class="hover:text-primary transition-colors">Форум</a></li>
+                    <li><a href="/forum" class="hover:text-primary transition-colors">Форум</a></li>
                 </ul>
             </div>
 

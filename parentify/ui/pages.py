@@ -1,3 +1,10 @@
+import json
+from django.http import HttpResponse
+from django.template import RequestContext
+from django.template.loader import get_template
+
+
+
 class PageSimple(object):
 
     def __init__(self, page_title = '', page_template='pages/PageSimple.html'):

@@ -184,7 +184,7 @@ class DatetimeInputWidget(WidgetBase):
                     value[index] = val
         return super().render(name, value, attrs)
 class SelectWidget(WidgetBase):
-    template_name = 'widgets/Select.html'
+    template_name = 'widgets/SelectInput.html'
     def value_from_datadict(self, data, files, name):
         data = toQueryDict(data)
         if data.getlist(name):
@@ -211,7 +211,7 @@ class SelectWidget(WidgetBase):
         attrs['choices'] = self.choices if hasattr(self,'choices') else []
         return super().render(name, value, attrs)
 class CheckboxWidget(WidgetBase):
-    template_name = 'widgets/Checkbox.html'
+    template_name = 'widgets/CheckboxInput.html'
 
     def format_value(self, value):
         if value is True or value is False or value is None or value == "":
@@ -242,7 +242,7 @@ class CheckboxWidget(WidgetBase):
         return super().get_context(name, value, attrs)
 
 class SwitchWidget(WidgetBase):
-    template_name = 'widgets/Switch.html'
+    template_name = 'widgets/SwitchInput.html'
 
     def format_value(self, value):
         if value is True or value is False or value is None or value == "":
@@ -272,7 +272,7 @@ class SwitchWidget(WidgetBase):
             attrs = {**(attrs or {}), "checked": True}
         return super().get_context(name, value, attrs)
 class DateRangeWidget(WidgetBase):
-    template_name = 'widgets/DateRange.html'
+    template_name = 'widgets/DateRangeInput.html'
     
     def value_from_datadict(self, data, files, name):
         return (data.get(name + '_start'), data.get(name + '_finish'))
@@ -300,7 +300,7 @@ class DateRangeWidget(WidgetBase):
             )
         return super().render(name, value, attrs,self)
 class DatetimeRangeWidget(WidgetBase):
-    template_name = 'widgets/DatetimeRange.html'
+    template_name = 'widgets/DatetimeRangeInput.html'
     
     def value_from_datadict(self, data, files, name):
         return (data.get(name + '_start'), data.get(name + '_finish'))
@@ -321,7 +321,7 @@ class DatetimeRangeWidget(WidgetBase):
             )
         return super().render(name, value, attrs,self)
 class NumberRangeWidget(WidgetBase):
-    template_name = 'widgets/NumberRange.html'
+    template_name = 'widgets/NumberRangeInput.html'
     def value_from_datadict(self, data, files, name):
         return (data.get(name + '_min'), data.get(name + '_max'))
     def render(self, name, value, attrs=None, renderer=None):

@@ -1,0 +1,283 @@
+{% extends "wrappers/simple.html" %}
+{% load static %}
+
+{% block wrapper %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-4 max-w-6xl">
+        <!-- Заголовок страницы -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Профиль пользователя</h1>
+            <p class="text-gray-600 mt-2">Управление вашей учетной записью и настройками</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Левая колонка - Информация о пользователе -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-lg p-6 sticky top-6">
+                    <!-- Аватар и основная информация -->
+                    <div class="text-center mb-6">
+                        <div class="relative inline-block">
+                            <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto mb-4">
+                                {{ user.first_name|first }}{{ user.last_name|first }}
+                            </div>
+                            <button class="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-md hover:shadow-lg transition-shadow">
+                                <i class="fas fa-camera text-gray-600 text-sm"></i>
+                            </button>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800">{{ user.first_name }} {{ user.last_name }}</h2>
+                        <p class="text-gray-600 text-sm">{{ user.email }}</p>
+                        {% if user.is_admin %}
+                        <span class="inline-block bg-primary text-white px-3 py-1 rounded-full text-xs font-semibold mt-2">
+                            Администратор
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Статистика -->
+                    <!-- <div class="border-t border-gray-200 pt-4">
+                        <h3 class="font-semibold text-gray-700 mb-3">Активность</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 text-sm">Статьи прочитано</span>
+                                <span class="font-semibold text-primary">24</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 text-sm">На форуме</span>
+                                <span class="font-semibold text-primary">3 дня</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 text-sm">В системе</span>
+                                <span class="font-semibold text-primary">2 мес</span>
+                            </div>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+
+            <!-- Правая колонка - Формы и настройки -->
+            <div class="lg:col-span-2">
+                <!-- Основная информация -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">Основная информация</h3>
+                        <button class="text-primary hover:text-primary-dark transition-colors">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+
+                    <form method="POST" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="profile">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Имя</label>
+                                <input type="text" name="first_name" value="{{ user.first_name }}" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Фамилия</label>
+                                <input type="text" name="last_name" value="{{ user.last_name }}" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" name="email" value="{{ user.email }}" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Дата рождения</label>
+                                <input type="date" name="birth_date" value="{{ user.birth_date|date:'Y-m-d' }}" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Пол</label>
+                                <select name="gender" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
+                                    <option value="">Не указан</option>
+                                    <option value="MALE" {% if user.gender == 'MALE' %}selected{% endif %}>Мужской</option>
+                                    <option value="FEMALE" {% if user.gender == 'FEMALE' %}selected{% endif %}>Женский</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end pt-4">
+                            <button type="submit" 
+                                    class="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors">
+                                Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Смена пароля -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6">Смена пароля</h3>
+
+                    <form method="POST" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="password">
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Текущий пароль</label>
+                            <div class="relative">
+                                <input type="password" name="current_password" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors pr-12">
+                                <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                    <i class="far fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Новый пароль</label>
+                            <div class="relative">
+                                <input type="password" name="new_password" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors pr-12">
+                                <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                    <i class="far fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Подтвердите новый пароль</label>
+                            <div class="relative">
+                                <input type="password" name="confirm_password" 
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors pr-12">
+                                <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                                    <i class="far fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end pt-4">
+                            <button type="submit" 
+                                    class="bg-secondary text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-secondary-dark transition-colors">
+                                Сменить пароль
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Дети пользователя -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">Мои дети</h3>
+                        <button class="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-dark transition-colors flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Добавить ребенка
+                        </button>
+                    </div>
+
+                    {% if user.childs %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% for child in user.childs %}
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-colors">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white font-semibold">
+                                    {{ child.name|first }}
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-800">{{ child.name }}</h4>
+                                    <p class="text-sm text-gray-600">{{ child.get_age_display }}</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="flex-1 bg-gray-100 text-gray-700 py-2 rounded text-sm hover:bg-gray-200 transition-colors">
+                                    <i class="fas fa-edit mr-1"></i> Изменить
+                                </button>
+                                <button class="flex-1 bg-gray-100 text-gray-700 py-2 rounded text-sm hover:bg-gray-200 transition-colors">
+                                    <i class="fas fa-chart-line mr-1"></i> Статистика
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-child text-4xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-600">У вас пока нет добавленных детей</p>
+                        <p class="text-sm text-gray-500 mt-1">Добавьте ребенка для отслеживания его развития</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для добавления ребенка -->
+<div id="addChildModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+        <h3 class="text-xl font-semibold mb-4">Добавить ребенка</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="add_child">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Имя ребенка</label>
+                    <input type="text" name="child_name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Дата рождения</label>
+                    <input type="date" name="child_birth_date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Пол</label>
+                    <select name="child_gender" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
+                        <option value="MALE">Мужской</option>
+                        <option value="FEMALE">Женский</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 justify-end mt-6">
+                <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">Отмена</button>
+                <button type="submit" class="bg-primary text-white px-6 py-2 rounded-lg font-semibold hover:bg-primary-dark transition-colors">Добавить</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Функции для показа/скрытия пароля
+    document.querySelectorAll('button[type="button"]').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('input');
+            const icon = this.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // Функции для модального окна
+    function openModal() {
+        document.getElementById('addChildModal').classList.remove('hidden');
+        document.getElementById('addChildModal').classList.add('flex');
+    }
+
+    function closeModal() {
+        document.getElementById('addChildModal').classList.add('hidden');
+        document.getElementById('addChildModal').classList.remove('flex');
+    }
+
+    // Обработка клика по кнопке добавления ребенка
+    document.querySelector('button:contains("Добавить ребенка")').addEventListener('click', openModal);
+</script>
+{% endblock %}

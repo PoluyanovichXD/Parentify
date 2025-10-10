@@ -1,0 +1,8 @@
+<div id="record">
+    {% for f in control.content.order %}
+        <div class="fieldWrapper {% if forloop.counter|divisibleby:2 %}{% else %}{% endif %}">
+            <label for="id_second_name"><b>{{f.title}}</b></label>
+            {{f.value}}
+        </div>
+    {% endfor %}
+</div>
