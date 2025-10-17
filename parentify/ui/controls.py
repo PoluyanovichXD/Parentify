@@ -79,9 +79,54 @@ class ControlHtml(ControlBase):
         super().publish(context_branch, js, css)
         context_branch['content'] = self.__html_content
 
+class ControlRecord(ControlBase):
+    """"""
+
+    def __init__(self, queryrec, control_fields=None, control_template='controls/ControlRecord.html'):
+        self.__queryrec = queryrec
+        self.__control_fields = control_fields
+        if type(queryrec) != dict:
+            assert self.__queryrec.count() <= 1, 'multiple records queried'
+        super().__init__(control_template)
+
+    def add_control(self, name, control):
+        assert "unexpected call"
+
+    def publish(self, context_branch, js, css):
+        super().publish(context_branch, js, css)
+        if self.__control_fields:
+            context_branch['content'] = {'order': [], 'fields': {}}
+            for field_title, field_name in self.__control_fields:
+                if type(self.__queryrec) == dict:
+                    value = self.__queryrec.get(field_name)
+                else:
+                    try:
+                        value = getattr(self.__queryrec[0], field_name)
+                    except AttributeError as ex:
+                        value = None
+                context_branch['content']['order'].append({'name': field_name,
+                                                           'title': field_title,
+                                                           'value': value})
+                context_branch['content']['fields'][field_name] = {'title': field_title,
+                                                                   'value': value}
+        else:
+            if type(self.__queryrec) == dict:
+                context_branch['content'] = {'order': [], 'fields': {}}
+                for k in sorted(self.__queryrec.keys()):
+                    context_branch['content']['order'].append({'name': k,
+                                                               'title': k,
+                                                               'value': self.__queryrec.get(k)})
+                    context_branch['content']['fields'][k] = {'title': k,
+                                                               'value': self.__queryrec.get(k)}
+
+            else:
+                context_branch['content'] = self.__queryrec[0] if self.__queryrec.count() else {}
+
+
+
 class ControlInputs(ControlBase):
 
-    def __init__(self, form=None, control_template='controls/ControlInputs.html',classname="grid_2",**kwargs):
+    def __init__(self, form=None, control_template='controls/ControlInputs.html',classname="",**kwargs):
         self.__form = form
         self.__controls = []
         self.__btn_controls = []
@@ -141,6 +186,7 @@ class ControlRecordlist(ControlBase):
         self._fields_sort = [self._fields_sort] if type(self._fields_sort) == str else self._fields_sort
         self._fields_event = [self._fields_event] if type(self._fields_event) == str else self._fields_event
         self._kwargs = kwargs
+        self._kwargs['no_zip'] = True
         super().__init__(control_template)
 
     def add_control(self, name, control,classname=None):
@@ -456,5 +502,4 @@ class ControlExeption(ControlBase):
         self.add_control(self.classname,self.control)
         
     def TemplateToString(self,template=None):
-        print(self.control_template,self.content)
         return render_to_string(template if template else self.control_template, context={'control':{'content':self.content}} if type(self.content)==dict else {'control':{'content':{}}})

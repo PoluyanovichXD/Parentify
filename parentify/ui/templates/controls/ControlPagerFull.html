@@ -1,60 +1,98 @@
-<div class="" id="{{control.name}}" pager>
-    <div class="">
+<div id="{{control.name}}" class="flex flex-col md:flex-row items-center justify-between gap-4 px-4 py-6 bg-white rounded-2xl" pager>
+    <!-- Информация о записях -->
+    <div class="text-sm text-gray-600 font-medium">
         Отобрано: 
-        <span class="after_filter">{{control.content.after_filter}}</span>
+        <span class="after_filter text-primary font-semibold">{{control.content.after_filter}}</span>
         {{control.content.text}} из 
-        <span class="total">{{control.content.total}}</span>
+        <span class="total text-gray-900 font-semibold">{{control.content.total}}</span>
     </div>
+
     {% if control.content.pages or control.content.first_item or control.content.last_item %}
-    <div class="">
-        <div class="pagination_arr prev"></div>
-        <div class="box_pagination">
+    <!-- Навигация по страницам -->
+    <div class="flex items-center space-x-2">
+        <!-- Кнопка "Назад" -->
+        <button onclick="ClickBtn('{{control.content.first_item.url}}')" class="pagination_arr cursor-pointer prev w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-primary hover:text-white rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </button>
+
+        <!-- Контейнер пагинации -->
+        <div class="flex items-center space-x-1">
             {% if control.content.first_item %}
-            <a p="{{control.content.first_item.p}}" url="{{control.content.first_item.url}}" onclick="SetPage(event)" {% if control.content.first_item.active %}active{% endif %} class="box_pagination_item {% if control.content.first_item.active %}active{% endif %}">
+            <!-- Первая страница -->
+            <a onclick="ClickBtn('{{control.content.first_item.url}}')" 
+               class="box_pagination_item cursor-pointer w-10 h-10 flex items-center justify-center rounded-xl font-semibold transition-all duration-300 transform hover:-translate-y-0.5 {% if control.content.first_item.active %}bg-primary text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-primary hover:text-white{% endif %}">
                 {{control.content.first_item.title}}
             </a>
-            <div class="box_pagination_item hide_items" dropdown-hover>...
-                <div class="dropdown_hover top">
-                    <div class="dropdown_hover_main">
-                        <div class="dropdown_hover_header">
-                            <b>
-                                <span></span>
-                            </b>
+
+            <!-- Многоточие с выпадающим списком -->
+            <div class="box_pagination_item hide_items relative group" dropdown-hover>
+                <button class="w-10 h-10 flex items-center justify-center bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-primary hover:text-white transition-all duration-300">
+                    ...
+                </button>
+                
+                <!-- Выпадающий список -->
+                <div class="dropdown_hover absolute top-full left-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 transform translate-y-2 group-hover:translate-y-0">
+                    <div class="dropdown_hover_main p-4">
+                        <div class="dropdown_hover_header mb-3 pb-2 border-b border-gray-200">
+                            <b class="text-sm font-semibold text-gray-700">Быстрый переход</b>
                         </div>
                         <div class="dropdown_hover_content">
-                            <div class="grid_pager"></div>
+                            <div class="grid_pager grid grid-cols-5 gap-2">
+                                <!-- Динамически генерируемые страницы будут здесь -->
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             {% endif %}
+
+            <!-- Основные страницы -->
             {% for p in control.content.pages %}
-                <a p="{{p.p}}" url="{{p.url}}" onclick="SetPage(event)" {% if p.active %}active{% endif %} class="box_pagination_item {% if p.active %}active{% endif %}">
-                    {{p.title}}
-                </a>
+            <a onclick="ClickBtn('{{p.url}}')" 
+               class="box_pagination_item cursor-pointer w-10 h-10 flex items-center justify-center rounded-xl font-semibold transition-all duration-300 transform hover:-translate-y-0.5 {% if p.active %}bg-primary text-white shadow-lg scale-110{% else %}bg-gray-100 text-gray-700 hover:bg-primary hover:text-white{% endif %}">
+                {{p.title}}
+            </a>
             {% endfor %}
+
             {% if control.content.last_item %}
-                <div class="box_pagination_item hide_items" dropdown-hover>...
-                    <div class="dropdown_hover top">
-                        <div class="dropdown_hover_main">
-                            <div class="dropdown_hover_header">
-                                <b>
-                                    <span></span>
-                                </b>
-                            </div>
-                            <div class="dropdown_hover_content">
-                                <div class="grid_pager"></div>
+            <!-- Многоточие перед последней страницей -->
+            <div class="box_pagination_item hide_items relative group" dropdown-hover>
+                <button class="w-10 h-10 flex items-center justify-center bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-primary hover:text-white transition-all duration-300">
+                    ...
+                </button>
+                
+                <!-- Выпадающий список -->
+                <div class="dropdown_hover absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 transform translate-y-2 group-hover:translate-y-0">
+                    <div class="dropdown_hover_main p-4">
+                        <div class="dropdown_hover_header mb-3 pb-2 border-b border-gray-200">
+                            <b class="text-sm font-semibold text-gray-700">Быстрый переход</b>
+                        </div>
+                        <div class="dropdown_hover_content">
+                            <div class="grid_pager grid grid-cols-5 gap-2">
+                                <!-- Динамически генерируемые страницы будут здесь -->
                             </div>
                         </div>
                     </div>
                 </div>
-                <a p="{{control.content.last_item.p}}" onclick="SetPage(event)" url="{{control.content.last_item.url}}" {% if control.content.last_item.active %}active{% endif %} class="box_pagination_item {% if control.content.last_item.active %}active{% endif %}">
-                    {{control.content.last_item.title}}
-                </a>
+            </div>
+
+            <!-- Последняя страница -->
+            <a onclick="ClickBtn('{{control.content.last_item.url}}')" 
+               class="box_pagination_item cursor-pointer w-10 h-10 flex items-center justify-center rounded-xl font-semibold transition-all duration-300 transform hover:-translate-y-0.5 {% if control.content.last_item.active %}bg-primary text-white shadow-lg{% else %}bg-gray-100 text-gray-700 hover:bg-primary hover:text-white{% endif %}">
+                {{control.content.last_item.title}}
+            </a>
             {% endif %}
-            <div class="overlay_bg"></div>
         </div>
-        <div class="pagination_arr next"></div>
+
+        <!-- Кнопка "Вперед" -->
+        <button onclick="ClickBtn('{{control.content.last_item.url}}')" class="pagination_arr cursor-pointer next w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-primary hover:text-white rounded-xl transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </button>
     </div>
     {% endif %}
 </div>
+

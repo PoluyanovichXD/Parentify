@@ -22,7 +22,6 @@ async function GenerateHTMLEditor(element,label=''){
         }
         var editor = SUNEDITOR.create((element),{
             placeholder: label,
-            katex: katex,
             lang: SUNEDITOR_LANG['ru'],
             height: 550,
             width:'100%',
@@ -35,7 +34,7 @@ async function GenerateHTMLEditor(element,label=''){
                 ['removeFormat'],
                 ['outdent', 'indent'],
                 ['align', 'horizontalRule', 'list', 'lineHeight'],
-                ['table', 'link', 'image', 'video', 'audio' ,'math' ],
+                ['table', 'link', 'image', 'video', 'audio' ],
                 ['fullScreen', 'showBlocks', 'codeView'],
                 ['preview', 'print'],
                 ['template'],
@@ -57,15 +56,7 @@ async function GenerateHTMLEditor(element,label=''){
         return editor
     }
     
-    if(hasScript('/static/katex/katex.min.js')&&hasScript('/static/suneditor/suneditor.min.js')&&hasScript('/static/suneditor/lang_ru.js')){
-        setTimeout(async ()=>{
-            editor = await func()
-        }, 2000)
-    } else{
-        setTimeout(async ()=>{
-            editor = await func()
-        }, 2000)
-    }
+    editor = await func()
     return editor
 }
 
@@ -95,17 +86,6 @@ async function GenerateHTMLReadOnly(element){
         //     contenteditable: true
         // });
     }
-    if(hasScript('/static/katex/katex.min.js')&&hasScript('/static/suneditor/suneditor.min.js')&&hasScript('/static/suneditor/lang_ru.js')){
-        setTimeout(async ()=>{
-            editor = await func()
-        }, 2000)
-    } else{
-        loadScript('/static/katex/katex.min.js')
-        loadScript('/static/suneditor/suneditor.min.js')
-        loadScript('/static/suneditor/lang_ru.js')
-        setTimeout(async ()=>{
-            editor = await func()
-        }, 2000)
-    }
+    editor = await func()
     return editor
 }

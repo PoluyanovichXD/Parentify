@@ -1,0 +1,18 @@
+
+<div id="{{control.name}}" class="c_pane" style="width: 100%;">
+    <div class="c_h" style="display:{%if control.expanded %}none{%else%}flex{% endif %}" >
+      <div class="checkbox_hide">
+        <input type="checkbox"/>
+        <label></label>
+      </div>
+      <div class="c_h_title">{{control.title}}</div>
+    </div>
+    <div class="frame_expandable_search_form">
+      <div>
+      {% for subcontrol in control.controls %}
+          {% include subcontrol.template with control=subcontrol %}
+      {% endfor %}
+      </div>
+    </div>
+  </div>
+  

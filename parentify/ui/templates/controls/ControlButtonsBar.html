@@ -1,3 +1,9 @@
+<div id="{{control.name}}" class="flex gap-4">
+    {% for subcontrol in control.controls %}
+    {% include subcontrol.template with control=subcontrol%}
+    {% endfor %}
+</div>
+
 {% if control.btn_type %}
 {% include "widgets/buttons/"|add:control.btn_type|add:".html" with control=control%}
 {% else %}

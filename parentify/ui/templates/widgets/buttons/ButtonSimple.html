@@ -1,23 +1,65 @@
-
 {% if control.type == "submit" %}
-    <button class="{% if control.is_admin %} admin_btn {% endif %}" type="submit" id="id_{{control.action}}" name="{{control.action}}" value="{{control.title}}" value="{{control.value}}" {%if control.disabled%}disabled{%endif%}>
+    <button class="{% if not control.title and control.icon %}btn_icon{% endif %} 
+                  {% if control.is_admin %}bg-purple-600 hover:bg-purple-700{% else %}bg-primary hover:bg-[#e88d96]{% endif %}
+                  text-white px-6 py-3.5 rounded-full font-semibold transition-all duration-300 
+                  transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0
+                  flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            type="submit" 
+            id="id_{{control.action}}" 
+            name="{{control.action}}" 
+            value="{{control.title}}" 
+            onclick="ClickBtn('{{control.action}}')" 
+            value="{{control.value}}" 
+            {% if control.disabled %}disabled{% endif %}>
         {% if control.icon %}
-            {% include "icons/"|add:control.icon|add:".html" %}
+            <span class="flex-shrink-0">
+                {% include "icons/"|add:control.icon|add:".html" %}
+            </span>
         {% endif %}
-        {{control.title}}
+        {% if control.title %}
+            <span class="{% if control.icon %}ml-2{% endif %}">{{ control.title }}</span>
+        {% endif %}
     </button>
 {% elif control.type == "redirect" %}
-    <button class="{% if control.is_admin %} admin_btn {% endif %}" type="button" id="id_{{control.action}}" name="{{control.action}}" value="{{control.title}}" onclick="location = '{{control.action}}'" {%if control.disabled%}disabled{%endif%}>
+    <button class="{% if not control.title and control.icon %}btn_icon{% endif %}
+                  {% if control.is_admin %}bg-purple-600 hover:bg-purple-700{% else %}bg-secondary text-gray-800 hover:bg-[#a1d8c5]{% endif %}
+                  px-6 py-3.5 rounded-full font-semibold transition-all duration-300 
+                  transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0
+                  flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            type="button" 
+            id="id_{{control.action}}" 
+            name="{{control.action}}" 
+            value="{{control.title}}" 
+            onclick="ClickBtn('{{control.action}}')" 
+            {% if control.disabled %}disabled{% endif %}>
         {% if control.icon %}
-            {% include "icons/"|add:control.icon|add:".html" %}
+            <span class="flex-shrink-0">
+                {% include "icons/"|add:control.icon|add:".html" %}
+            </span>
         {% endif %}
-        {{control.title}}
+        {% if control.title %}
+            <span class="{% if control.icon %}ml-2{% endif %}">{{ control.title }}</span>
+        {% endif %}
     </button>
 {% elif control.type == "js" %}
-    <button class="{% if control.is_admin %} admin_btn {% endif %}" type="button" id="id_{{control.title}}" name="{{control.title}}" value="{{control.title}}" onclick="{{control.action}}" {%if control.disabled%}disabled{%endif%}>
+    <button class="{% if not control.title and control.icon %}btn_icon{% endif %}
+                  {% if control.is_admin %}bg-purple-600 hover:bg-purple-700{% else %}bg-primary hover:bg-[#e88d96]{% endif %}
+                  text-white px-6 py-3.5 rounded-full font-semibold transition-all duration-300 
+                  transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0
+                  flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            type="button" 
+            id="id_{{control.title}}" 
+            name="{{control.title}}" 
+            value="{{control.title}}" 
+            onclick="ClickBtn({{control.action}})" 
+            {% if control.disabled %}disabled{% endif %}>
         {% if control.icon %}
-            {% include "icons/"|add:control.icon|add:".html" %}
+            <span class="flex-shrink-0">
+                {% include "icons/"|add:control.icon|add:".html" %}
+            </span>
         {% endif %}
-        {{control.title}}
+        {% if control.title %}
+            <span class="{% if control.icon %}ml-2{% endif %}">{{ control.title }}</span>
+        {% endif %}
     </button>
 {% endif %}

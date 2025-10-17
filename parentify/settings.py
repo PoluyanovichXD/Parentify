@@ -1,3 +1,4 @@
+import locale
 from configurations import Configuration
 from pathlib import Path
 from os import path
@@ -5,7 +6,7 @@ import os
 import django.core.mail.backends.smtp
 import django.contrib.sessions.backends.signed_cookies
 import django.contrib.sessions.backends.db
-
+locale.setlocale(locale.LC_ALL, "ru_RU.utf8")
 class Base(Configuration):
 
     SECRET_KEY = '_2(b2c_j$xb0ft4w&rp!bs=om7x5$9cnr8yd#!(d+rha$g%en*'

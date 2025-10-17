@@ -8,9 +8,11 @@
     <!-- <link rel="stylesheet" href="/static/css/font-awesome.css"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/suneditor/suneditor.min.css">
+    <link rel="stylesheet" href="/static/jquery-ui/jquery-ui.min.css">
+    <link rel="stylesheet" href="/static/filepond/filepond.css">
+    <link rel="stylesheet" href="/static/filepond/filepond-plugin-image-edit.css">
+    <link rel="stylesheet" href="/static/filepond/filepond-plugin-image-preview.css">
     <script src="/static/js/tailwind.js"></script>
-    <script src="/static/suneditor/suneditor.min.js"></script>
-    <script src="/static/suneditor/lang_ru.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -23,6 +25,21 @@
             }
         }
     </script>
+    <script src="/static/jquery/jquery-3.6.1.min.js"></script>
+    <script src="/static/jquery-ui/jquery-ui.min.js"></script>
+    <script src="/static/inputmask/jquery.inputmask.min.js"></script>
+
+    <script src="/static/suneditor/suneditor.min.js"></script>
+    <script src="/static/suneditor/lang_ru.js"></script>
+    <script src="/static/js/widgets/html_editor.js"></script>
+
+    <script src="/static/filepond/filepond.min.js"></script>
+    <script src="/static/filepond/filepond-plugin-file-validate-type.min.js"></script>
+    <script src="/static/filepond/filepond-image-preview.min.js"></script>
+    <script src="/static/filepond/filepond.jquery.js"></script>
+    <script src="/static/filepond/filepond-plugin-image-edit.js"></script>
+    
+    <script src="/static/js/widgets.js"></script>
 </head>
 <body>
     {% block app %}

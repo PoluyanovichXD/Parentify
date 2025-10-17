@@ -1,0 +1,19 @@
+{% load filter %}
+<input type="file" name="{{name}}" value="{{value}}" filepond="{{w.attrs.filepond_id}}"
+{% if w.attrs.accept %}accepted-file-types="{% for accep in w.attrs.accept %}{{accep}},{% endfor %}"{% endif %}
+{% if w.attrs.required %}required{% endif %}
+{% if w.attrs.multiple or w.attrs.multiply %}multiple{% endif %}
+{% if w.attrs.max_files %}data-max-files="{{w.attrs.max_files}}"{% endif %}
+{% if w.attrs.max_file_size %}data-max-file-size="{{w.attrs.max_file_size}}"{% endif %}
+{% if w.attrs.upload_url %}
+server-url="{{w.attrs.upload_url}}"
+{% endif %}
+{% if value and w.attrs.upload_url%}
+files="{% for val in value %}{% if val %}{% if val.0 != '/' %}{% if val|is_str_dict == True %}{{val|str_to_dict_and_get:'url'}}{% else %}/upload/{{val}}{% endif %}{% else %}{{val}}{% endif %},{% endif %}{% endfor %}"
+{% elif value %}
+files="{% for val in value %}{{val}},{% endfor %}"
+{% endif %}
+{% if w.attrs.label %}
+label-idle="{{w.attrs.label}}"
+{% endif %}
+>

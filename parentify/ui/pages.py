@@ -7,7 +7,7 @@ from django.template.loader import get_template
 
 class PageSimple(object):
 
-    def __init__(self, page_title = '', page_template='pages/PageSimple.html'):
+    def __init__(self, page_title = '', page_template='wrappers/simple.html'):
         self.__page_title = page_title
         self.__page_template = page_template
         self.__subcontrols=[]
@@ -92,7 +92,8 @@ class PageSimple(object):
 
         for c in self.__subcontrols:
             subcontrol = {'name':c[0]}
-            c[1].publish(subcontrol, context['js'], context['css'])
+            if c[1]:
+                c[1].publish(subcontrol, context['js'], context['css'])
             context['controls'].append(subcontrol)
 
         template = get_template(self.__page_template)

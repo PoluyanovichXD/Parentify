@@ -5,22 +5,20 @@ from django.utils.translation   import gettext as _
 
 
 
-class PageNewsEditor(PageModelEditor):
+class PageArticleEditor(PageModelEditor):
 
-    _page_title = _('Новости')
+    _page_title = _('Статьи')
 
-    _record_template = 'records/RecordNews.html'
+    _record_template = 'records/RecordArticle.html'
+    _record_list_template = 'recordlists/RecordListArticle.html'
 
-    _new_item_title = "Новая публикация"
+    _new_item_title = "Новая статья"
 
     _default_page_size = 30
-    _fields = (   (_('id'), 'news_id'),
-                  (_('Дата'), 'news_date'),
+    _fields = (   
                   (_('Заголовок'), 'title'),
-                  (_('Тело'), 'body'),
-                  (_('Предпросмотр'), 'preview_text'),
-                  (_('Важность'), 'important'),
+                  (_('Категория'), 'category'),
+                  (_('Шаблон'), 'html'),
+                  (_('Изображение'), 'image_url'),
+                  (_('Дата создания'), 'created_at'),
                )
-    _fields_sort = ('news_date','title','body','preview_text','important')
-    _fields_url = ()
-    _fields_event = ('checkbox')

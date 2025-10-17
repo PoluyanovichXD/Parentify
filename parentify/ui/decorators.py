@@ -30,20 +30,15 @@ class form_process_locker:
         return False
 
 
-def common_page(page_template='pages/PageAutorizedSimple.html'):
+def common_page(page_template='wrappers/simple.html'):
     def page_decorator(func):
         def func_wrapper(request, *args, **kwargs):
-            worker = getattr(request, 'current_worker', None)
+            user = getattr(request, 'current_user', None)
             try:
                 page = func(request, *args, **kwargs)
-                # closed_not_user_url = []
-                # if not worker:
-                #     for url in closed_not_user_url:
-                #         if request.path.startswith(url):
-                #             return login(request)
-                if type(page) == HttpResponse or type(page) == HttpResponseRedirect  or type(page) == JsonResponse or type(page) == Response:
+                if type(page) == HttpResponse or type(page) == HttpResponseRedirect  or type(page) == JsonResponse:
                     return page
-                page.change_template(page_template)
+                # page.change_template(page_template)
                 return page.render(request)
             except HttpRedirectException as e:
                 return HttpResponseRedirect(e.redirect_url)
@@ -103,13 +98,13 @@ def page_has_user(has_admin=False):
     def page_decorator(func):
         def func_wrapper(request,*args,**kwargs):
             try:
-                worker = request.current_worker
+                user = request.current_user
                 page = func(request, *args, **kwargs)
                 is_response = type(page) == HttpResponse or type(page) == HttpResponseRedirect  or type(page) == JsonResponse
-                if not worker:
+                if not user:
                     raise Http404()
                 else:
-                    if has_admin and not worker.is_admin:
+                    if has_admin and not user.is_admin:
                         raise Http404()
                     else:
                         return page

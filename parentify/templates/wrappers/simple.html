@@ -10,7 +10,7 @@
 
             <nav class="hidden md:block">
                 <ul class="flex space-x-6">
-                    <li><a href="#" class="font-medium hover:text-primary transition-colors">Главная</a></li>
+                    <li><a href="/" class="font-medium hover:text-primary transition-colors">Главная</a></li>
                     <li><a href="#" class="font-medium hover:text-primary transition-colors">Информация</a></li>
                     <li><a href="#" class="font-medium hover:text-primary transition-colors">Календарь</a></li>
                     <li><a href="#" class="font-medium hover:text-primary transition-colors">Трекеры</a></li>
@@ -54,6 +54,12 @@
     </div>
 </header>
 {% block page %}
+{% for subcontrol in controls %}
+       {% include subcontrol.template with control=subcontrol %}
+{% endfor %}
+{% for subcontrol in btn_controls %}
+       {% include subcontrol.template with control=subcontrol %}
+{% endfor %}
 {% endblock %}
 <footer class="bg-gray-100 pt-16 pb-8 mt-20">
     <div class="container mx-auto px-5 max-w-6xl">
@@ -84,7 +90,7 @@
             <div class="footer-column">
                 <h3 class="text-xl font-semibold mb-5">Разделы</h3>
                 <ul class="space-y-2">
-                    <li><a href="/article" class="hover:text-primary transition-colors">Главная</a></li>
+                    <li><a href="/" class="hover:text-primary transition-colors">Главная</a></li>
                     <li><a href="#" class="hover:text-primary transition-colors">Информационный раздел</a></li>
                     <li><a href="#" class="hover:text-primary transition-colors">Календарь развития</a></li>
                     <li><a href="#" class="hover:text-primary transition-colors">Трекеры</a></li>

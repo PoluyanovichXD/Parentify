@@ -1,9 +1,21 @@
 from django.http import HttpResponseRedirect
 from django.template.loader import render_to_string
 from django.utils.translation           import gettext as _
-from parentify.ui.controls import ControlBase, ControlButtonsBar, ControlExeption, ControlForm, ControlHtml, ControlInputs, ControlPagerFull, ControlRecordlist
+from parentify.ui.controls import ControlBase, ControlButtonsBar, ControlExeption, ControlForm, ControlHtml, ControlInputs, ControlPagerFull, ControlRecord, ControlRecordlist
 from parentify.ui.decorators import HttpRedirectException
 from parentify.ui.pages import *
+
+
+class PageModelInfo:
+    def __init__(self, session, base_url, query, primary_key, format_url=None):
+        #TODO: use user instead session to save tabs
+        self.primary_key = primary_key
+        self.base_url = base_url
+        self.format_url = format_url if format_url else self.base_url
+        self.keyname = base_url.lstrip('/').replace('/', '_')
+        self.query = query
+        session.modified = True
+        self.session = session
 
 
 class PageModelEditor(PageSimple):
@@ -15,18 +27,20 @@ class PageModelEditor(PageSimple):
     def __init__(self, model_info):
         self._model_info = model_info
         r = super().__init__(self._page_title)
-        static_tabs = []
-        static_tabs.extend(self._default_tabs)
-        static_tabs.extend(self._model_info.static_tabs)
         return r
+
+    def default_view_control(self, itemId):
+        primary_key = self._model_info.primary_key if type(self._model_info.primary_key) == str else self._model_info.primary_key
+        if not hasattr(self._model_info.query, 'filter') and hasattr(self._model_info.query, 'filter_by'):
+            return ControlRecord(self._model_info.query.filter_by(**{primary_key: itemId}), self._record_fields, self._record_template)
+        return ControlRecord(self._model_info.query.filter(primary_key == itemId), self._record_fields,
+                             self._record_template)
 
     def items(self, request, page_number, filter_form=None, toobar_buttons=None, list_name=None, get = None, controls=None,recordlist_template='controls/ControlRecordlist.html',*args,**kwargs):
         if 'closeall' in request.GET:
             self._model_info.model_editor_close_alltabs()
             raise HttpRedirectException(request.path)
             
-        if list_name:
-            self.control_tabs.change_active(self._model_info.base_url + list_name + '/')
 
         page_size = request.session.get(self._model_info.keyname + '_page_size', self._default_page_size)
 
@@ -35,7 +49,7 @@ class PageModelEditor(PageSimple):
             # recordsForm.add_control('default_button', ControlEnterCommand(submit_name='cmd_filter'))
         if filter_form:
             controlsFilter = ControlBase()
-            inputs = ControlInputs(filter_form)
+            inputs = ControlInputs(filter_form, 'forms/FilterForm.html')
             if toobar_buttons:
                 inputs.add_control('users_toolbar', toobar_buttons)
             
@@ -44,7 +58,7 @@ class PageModelEditor(PageSimple):
             bt_bar.add_button(_('Очистить фильтр'),'Default', submit_name='cmd_discard')
             inputs.add_botton_control('bt_bar', bt_bar)
             controlsFilter.add_control("filter_inputs", inputs)
-            # recordsForm.add_control('formFilter', FrameExpandable(_("Фильтр"), 'filter', controlsFilter, True,'controls/ControlFilter.html'))
+            recordsForm.add_control('formFilter', controlsFilter)
         else:
             if toobar_buttons:
                 recordsForm.add_control('users_toolbar', toobar_buttons)
@@ -54,7 +68,7 @@ class PageModelEditor(PageSimple):
             return self
         try:
             all_count = self._model_info.query.count()
-        except:
+        except Exception as ex:
             all_count = len(self._model_info.query)
         if filter_form:
             try:
@@ -148,7 +162,7 @@ class PageModelEditor(PageSimple):
                                                 self._fields, primary_key,
                                                 primary_key,
                                                 url_primary, self._target,
-                                                control_template=recordlist_template,
+                                                control_template=getattr(self, '_record_list_template',recordlist_template),
                                                 fields_url=getattr(self,'_fields_url',[]),
                                                 fields_sort=getattr(self,'_fields_sort',[]),
                                                 fields_event=getattr(self,'_fields_event',[]),*args, **kwargs)
@@ -163,16 +177,11 @@ class PageModelEditor(PageSimple):
         if 'closeall' in request.GET:
             self._model_info.model_editor_close_alltabs()
             raise HttpRedirectException(request.path)
-        if not self._model_info.base_url.startswith('/dict_data/'):
-            items = self._model_info.append_view_tabs([itemId, ])
-        else:
-            items = [self._model_info.query.get(itemId)]
+        items = [self._model_info.query.get(itemId)]
         if len(items) == 0:
             self.clear_controls()
             return self.add_control('NotFound',ControlExeption(control_template="controls/catch/NotFound.html"))
             raise Http404()
-        if not self._model_info.base_url.startswith('/dict_data/'):
-            self.control_tabs.change_active(items[0]['url'], True, items[0]['title'] if len(items) else None)
         if not control:
             control = self.default_view_control(itemId)
         self.add_control('record', control)
@@ -192,13 +201,10 @@ class PageModelEditor(PageSimple):
             raise HttpRedirectException(request.path)
         if 'iframe_form' in request.GET and 'iframe_close' in request.GET:
             self.add_control('iframe_close',ControlHtml(render_to_string('iframes/FormIframeEditClose.html')))
-            self.change_template('pages/PageSimpleClear.html')
+            self.change_template('wrappers/clear.html')
             return self.render(request)
         if not 'iframe_form' in request.GET and not 'iframe_close' in request.GET:
-            if not self._model_info.base_url.startswith('/dict_data/'):
-                items = self._model_info.append_edit_tabs([itemId, ])
-            else:
-                items = [self._model_info.query.get(itemId)]
+            items = [self._model_info.query.get(itemId)]
             if len(items) == 0:
                 self.clear_controls()
                 return self.add_control('NotFound',ControlExeption(control_template="controls/catch/NotFound.html"))
@@ -212,8 +218,10 @@ class PageModelEditor(PageSimple):
             else:
                 getattr(bt_bar,'add_button')(bt[0],'Default',redirect_url=bt[1])
         if 'iframe_form' in request.GET:
+            bt_bar.add_button(_('Отмена'),'Default', js_action='CloseIframeModal,null,element=event.target')
             bt_bar.add_button(_('Сохранить'),'Default', js_action='"cmd_model_update","submit_iframe"')
         else:
+            bt_bar.add_button(_('Отмена'),'Default', redirect_url=cancel_url)
             bt_bar.add_button(_('Сохранить'),'Default', submit_name='cmd_model_update')
         control_editor.add_botton_control('bt_bar', bt_bar)
         formControl.add_control('editor', control_editor)
@@ -227,7 +235,7 @@ class PageModelEditor(PageSimple):
         except Exception as ex:
             pass
         if 'iframe_form' in request.GET:
-            self.change_template('pages/PageSimpleClear.html')
+            self.change_template('wrappers/clear.html')
             return self.render(request)
         return self
 
@@ -235,14 +243,8 @@ class PageModelEditor(PageSimple):
     def new(self, request, control_editor, url=None, wizard=False,cancel_url='../../'):
         if 'iframe_form' in request.GET and 'iframe_close' in request.GET:
             self.add_control('iframe_close',ControlHtml(render_to_string('iframes/FormIframeNewClose.html')))
-            self.change_template('pages/PageSimpleClear.html')
+            self.change_template('wrappers/clear.html')
             return self.render(request)
-        if not 'iframe_form' in request.GET and not 'iframe_close' in request.GET:
-            if url:
-                item = self._model_info.append_new_tab(self._new_item_title, url)
-            else:
-                item = self._model_info.append_new_tab(self._new_item_title)
-            self.control_tabs.change_active(item['url'], True, item['title'] if item else None)
 
         formControl = ControlForm()
         bt_bar = ControlButtonsBar()
@@ -255,25 +257,16 @@ class PageModelEditor(PageSimple):
             bt_bar.add_button(_('Далее'),'Default', submit_name='cmd_model_next')
         else:
             if 'iframe_form' in request.GET:
-                # bt_bar.add_button(_('Отмена'),'Default', js_action='CloseIframeModal,null,element=event.target')
+                bt_bar.add_button(_('Отмена'),'Default', js_action='CloseIframeModal,null,element=event.target')
                 bt_bar.add_button(_('Сохранить'),'Default', js_action='"cmd_model_create","submit_iframe"')
             else:
-                # bt_bar.add_button(_('Отмена'),'Default', redirect_url='?close='+cancel_url)
+                bt_bar.add_button(_('Отмена'),'Default', redirect_url=cancel_url)
                 bt_bar.add_button(_('Сохранить'),'Default', submit_name='cmd_model_create')
         control_editor.add_botton_control('bt_bar', bt_bar)
         formControl.add_control('editor', control_editor)
         self.add_control('form_new_model', formControl)
         if 'iframe_form' in request.GET:
-            self.change_template('pages/PageSimpleClear.html')
+            self.change_template('wrappers/clear.html')
             return self.render(request)
+            
         return self
-
-# class ModelEditorController:
-#     def list():
-#         pass
-#     def view():
-#         pass
-#     def create():
-#         pass
-#     def edit():
-#         pass

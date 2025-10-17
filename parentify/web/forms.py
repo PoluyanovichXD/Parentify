@@ -4,10 +4,10 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
 from django import forms
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from django.core.exceptions import ValidationError
 import re
+from parentify.models.models import User
 from parentify.ui import *
 
 class FormLogin(forms.Form):

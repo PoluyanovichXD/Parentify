@@ -1,7 +1,9 @@
 from datetime import timedelta
 from io import BytesIO
 import json
+import re
 import sys
+import phonenumbers
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -15,10 +17,18 @@ def kwargs_init(**kwargs):
     return {key:value for key, value in kwargs.items() if key in attrs_init}
 
 class TextInputField(forms.CharField):
-    def __init__(self, *args, **kwargs):
+    def __init__(self,multiply=False,validator=False,visible_text=True,*args, **kwargs):
         super().__init__(*args,**kwargs_init(**kwargs))
-        self.widget = TextInputWidget(attrs={'type': 'text','label':self.label})
-
+        self._multiply = multiply
+        self.widget = TextInputWidget(attrs={'type': 'text','label':self.label,'visible_text':visible_text,'validator':validator,'multiply':multiply}|kwargs)
+        
+    @property
+    def multiply(self):
+        return self._multiply
+    @multiply.setter
+    def multiply(self, value):
+        self.widget.attrs['multiply']= value
+        self._multiply = value
     def to_python(self, value):
         try:
             if not value or str(value).isspace(): return None
@@ -33,54 +43,154 @@ class TextInputField(forms.CharField):
             raise ValidationError(_('Некорректный ввод'))
         return None
 class EmailInputField:
-    def __init__(self, *args, **kwargs):
+    def __init__(self,multiply=False,validator=False,visible_text=True,validation=True,*args, **kwargs):
         super().__init__(*args,**kwargs_init(**kwargs))
+        self._multiply = multiply
+        self.validation = validation
         self.widget = TextInputWidget(attrs={'type': 'text','label':self.label})
+        self.widget.template_name='widgets/EmailInput.html'
 
+    @property
+    def multiply(self):
+        return self._multiply
+    @multiply.setter
+    def multiply(self, value):
+        self.widget.attrs['multiply']= value
+        self._multiply = value
     def to_python(self, value):
         try:
             if not value or str(value).isspace(): return None
             if not self.multiply:
                 value = value[0]
-                value = value if value and not str(value).isspace() else None
+                value = self.email_validation(value) if value and not str(value).isspace() else None
             else:
-                value = [item for item in list(filter(lambda x:x and not str(x).isspace(),value))]
+                value = [self.email_validation(item) for item in list(filter(lambda x:x and not str(x).isspace(),value))]
                 value = value if value else None
             return value
         except ValueError:
             raise ValidationError(_('Некорректный ввод'))
         return None
+    def email_validation(self, value):
+        if not self.validation:
+            return value
+        if not value:
+            return value
+        regex = re.compile(r"^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$")
+        if re.fullmatch(regex,value):
+            return value
+        else:
+            raise ValidationError(_('Не верно указан Email'))
 class PhoneInputField:
-    def __init__(self, *args, **kwargs):
+    def __init__(self,multiply=False,validator=False,visible_text=True,*args, **kwargs):
         super().__init__(*args,**kwargs_init(**kwargs))
-        self.widget = TextInputWidget(attrs={'type': 'text','label':self.label})
-
+        self._multiply = multiply
+        self.widget = PhoneInputWidget(attrs={'type': 'phone','label':self.label,'visible_text':visible_text,'validator':validator,'multiply':multiply}|kwargs)
+    @property
+    def multiply(self):
+        return self._multiply
+    @multiply.setter
+    def multiply(self, value):
+        self.widget.attrs['multiply']= value
+        self._multiply = value
     def to_python(self, value):
         try:
             if not value or str(value).isspace(): return None
             if not self.multiply:
                 value = value[0]
-                value = value if value and not str(value).isspace() else None
+                value = self.phone_validation(value) if value and not str(value).isspace() else None
             else:
-                value = [item for item in list(filter(lambda x:x and not str(x).isspace(),value))]
+                value = [self.phone_validation(item) for item in list(filter(lambda x:x and not str(x).isspace(),value))]
                 value = value if value else None
             return value
         except ValueError:
             raise ValidationError(_('Некорректный ввод'))
         return None
+    def phone_validation(self, value):
+        if not value or value == '':
+            return value
+        number = value
+        try:
+            number = phonenumbers.parse(value)
+        except phonenumbers.NumberParseException as ex:
+            if ex.error_type == ex.INVALID_COUNTRY_CODE:
+                raise ValidationError(_('Не верно указан код страны'))
+            elif ex.error_type == ex.NOT_A_NUMBER:
+                raise ValidationError(_('В поле "Номер телефона" введены некорректные символы'))
+            elif ex.error_type == ex.TOO_LONG:
+                raise ValidationError(_('Данный номер превышает значимую длину'))
+            elif ex.error_type == ex.TOO_SHORT_AFTER_IDD:
+                raise ValidationError(_('Данный номер некорректный для IDD'))
+        try:
+            if phonenumbers.is_valid_number(number):
+                return value
+            else:
+                raise ValidationError(_('Не верно указан номер телефона'))
+        except:
+            raise ValidationError(_('Не верно указан номер телефона'))
 class PasswordInputField:
-    def __init__(self, *args, **kwargs):
+    def __init__(self,multiply=False,validator=False,visible_text=True,password_len=None,*args, **kwargs):
         super().__init__(*args,**kwargs_init(**kwargs))
+        self._multiply = multiply
+        self.password_len = password_len
         self.widget = TextInputWidget(attrs={'type': 'text','label':self.label})
+        self.widget.template_name='widgets/PasswordInput.html'
 
+
+    @property
+    def multiply(self):
+        return self._multiply
+    @multiply.setter
+    def multiply(self, value):
+        self.widget.attrs['multiply']= value
+        self._multiply = value
     def to_python(self, value):
         try:
             if not value or str(value).isspace(): return None
             if not self.multiply:
                 value = value[0]
-                value = value if value and not str(value).isspace() else None
+                value = self.password_validation(value) if value and not str(value).isspace() else None
             else:
-                value = [item for item in list(filter(lambda x:x and not str(x).isspace(),value))]
+                value = [self.password_validation(item) for item in list(filter(lambda x:x and not str(x).isspace(),value))]
+                value = value if value else None
+            return value
+        except ValueError:
+            raise ValidationError(_('Некорректный ввод'))
+        return None
+    def password_validation(self, value):
+        if not value or value == '':
+            return value
+        if self.password_len==None or len(value)>=self.password_len:
+            return value
+        else:
+            raise ValidationError(_(f'Количество символов в поле {self.label} должно быть не меньше {self.password_len}'))
+class CoordinatesInputField(forms.CharField):
+    def __init__(self,multiply=False,validator=False,visible_text=True,*args, **kwargs):
+        super().__init__(*args,**kwargs_init(**kwargs))
+        self._multiply = multiply
+        self.widget = TextInputWidget(attrs={'type': 'text','label':self.label,'visible_text':visible_text,'validator':validator,'multiply':multiply}|kwargs)
+        self.widget.template_name='widgets/CoordinatesInput.html'
+    @property
+    def multiply(self):
+        return self._multiply
+    @multiply.setter
+    def multiply(self, value):
+        self.widget.attrs['multiply']= value
+        self._multiply = value
+    def coord_validation(self,value):
+        has_validate = re.match('^(\-?\d+\.\d+),(\-?\d+\.\d+)$', value)
+        if has_validate:
+            return value
+        else:
+            raise ValidationError(_('Не верно указаны координаты!'))
+    
+    def to_python(self, value):
+        try:
+            if not value or str(value).isspace(): return None
+            if not self.multiply:
+                value = value[0]
+                value = self.coord_validation(value) if value and not str(value).isspace() else None
+            else:
+                value = [self.coord_validation(item) for item in list(filter(lambda x:x and not str(x).isspace(),value))]
                 value = value if value else None
             return value
         except ValueError:
@@ -91,7 +201,7 @@ class TextAreaInputField(forms.CharField):
         super().__init__(*args,**kwargs_init(**kwargs))
         self._multiply = multiply
         self.widget = TextInputWidget(attrs={'type': 'text','label':self.label,'visible_text':visible_text,'validator':validator,'multiply':multiply}|kwargs)
-        self.widget.template_name='widgets/Textarea.html'
+        self.widget.template_name='widgets/TextareaInput.html'
     @property
     def multiply(self):
         return self._multiply
