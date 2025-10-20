@@ -1,17 +1,12 @@
 import bcrypt
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, ForeignKey, Enum, func, LargeBinary, Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, ForeignKey, Enum, LargeBinary, Text
 from sqlalchemy.orm import relationship
-from django.contrib.auth.hashers import *  # Ошибка: лишние пробелы
+from django.contrib.auth.hashers import make_password, check_password
 from datetime import datetime
 from enum import Enum as PyEnum
 from typing import Optional
 from parentify.models import Base, Orm
-from parentify.models.models import *
 
-
-class GenderEnum(PyEnum):
-    MALE = "male"
-    FEMALE = "female"
 
 class User(Base):
     __tablename__ = 'user'
@@ -19,25 +14,46 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(100), unique=True, nullable=False)
-    first_name = Column(String(255), unique=False, nullable=False)
-    last_name = Column(String(255), unique=False, nullable=False)
+    first_name = Column(String(255), nullable=False)
+    last_name = Column(String(255), nullable=False)
     password = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
     birth_date = Column(Date, nullable=True)
-    gender = Column(Enum(GenderEnum), nullable=True)
+    gender = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    childs = relationship("UserChild", uselist=True, back_populates="parent")
-    site_events = relationship("SiteEvent", back_populates="user", cascade="all, delete-orphan")
     
+    # Relationships
+    children = relationship("UserChild", back_populates="user", cascade="all, delete-orphan")
+    site_events = relationship("SiteEvent", back_populates="user", cascade="all, delete-orphan")
+    forum_topics = relationship('ForumTopic', back_populates='user')
+    forum_comments = relationship('ForumComment', back_populates='user')
+    forum_liked_comments = relationship('ForumLikedComment', back_populates='user')
+    notifications = relationship('Notification', back_populates='user')
+    notification_reads = relationship('NotificationRead', back_populates='user')
 
     def __str__(self):
         return self.full_name
     
+    def to_dict(self):
+        return {
+            "id":self.id,
+            "email":self.email,
+            "first_name":self.first_name,
+            "last_name":self.last_name,
+            "password":self.password,
+            "is_active":self.is_active,
+            "is_admin":self.is_admin,
+            "birth_date":self.birth_date,
+            "gender":self.gender,
+            "created_at":self.created_at,
+            "updated_at":self.updated_at
+        }
+
     @property
     def full_name(self):
-        return f"{self.last_name} {self.first_name}"
+        return f"{self.first_name} {self.last_name}"
     
     @property
     def zodiac_sign(self) -> Optional[str]:
@@ -45,6 +61,7 @@ class User(Base):
             return None
         day = self.birth_date.day
         month = self.birth_date.month
+        
         if (month == 3 and day >= 21) or (month == 4 and day <= 19):
             return "Овен"
         elif (month == 4 and day >= 20) or (month == 5 and day <= 20):
@@ -73,28 +90,24 @@ class User(Base):
             return None
         
     @staticmethod
-    def create(
-            orm,
-            email,
-            first_name,
-            last_name,
-            password,
-            is_active=True,
-            is_admin=False,
-            birth_date=None,
-            gender=None):
-        user = User()
-        user.email = email
-        user.first_name = first_name
-        user.last_name = last_name
-        user.is_active = is_active
-        user.is_admin = is_admin
-        user.birth_date = birth_date
-        user.gender = gender
+    def create(orm, email, first_name, last_name, password, is_active=True, 
+               is_admin=False, birth_date=None, gender=None):
+        user = User(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            is_active=is_active,
+            is_admin=is_admin,
+            birth_date=birth_date,
+            gender=gender
+        )
         user.set_password(password)
         orm.add(user)
         orm.commit()
         return user
+    @staticmethod
+    def create_password(password, salt=None):
+        return make_password(password, salt=self.get_salt(self.email if not salt else salt))
     
     def check_password(self, raw_password):
         if not self.password:
@@ -102,20 +115,26 @@ class User(Base):
         return check_password(raw_password, self.password)
 
     def set_password(self, password, salt=None):
-        self.password = make_password(password, salt=User.get_salt(self.email if not salt else salt))
+        self.password = make_password(password, salt=self.get_salt(self.email if not salt else salt))
+    
 
-    @staticmethod  # Ошибка: добавлен декоратор staticmethod
+    @staticmethod
     def get_salt(string, rounds: int = 12, prefix: bytes = b"2b") -> bytes:
         if prefix not in (b"2a", b"2b"):
             raise ValueError("Supported prefixes are b'2a' or b'2b'")
+        
+        # Создаем соль фиксированной длины
         str_res = ''
         for i in range(16):
             if len(str_res) >= 16:
-                string = str_res[0:16]
+                salt_str = str_res[0:16]
                 break
             else:
                 str_res += string
-        salt = bytes(string, 'ascii')
+        else:
+            salt_str = str_res.ljust(16, '0')  # Дополняем до 16 символов
+        
+        salt = salt_str.encode('ascii')
         output = bcrypt._bcrypt.encode_base64(salt)
         result = (  
             b"$"
@@ -126,28 +145,30 @@ class User(Base):
             + output
         )
         return result
-    
+
+
 class UserChild(Base):
     __tablename__ = 'user_child'
     url_key_name = 'id'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    parent_id = Column(Integer, ForeignKey('user.id'))  # Ошибка: исправлено parrent_id -> parent_id
-    first_name = Column(String(255), unique=False, nullable=False)
-    last_name = Column(String(255), unique=False, nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    first_name = Column(String(255), nullable=False)
+    last_name = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
     birth_date = Column(Date, nullable=False)
-    gender = Column(Enum(GenderEnum), nullable=True)
+    gender = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    parent = relationship("User", back_populates="childs")  # Ошибка: исправлено parrent -> parent
+    
+    user = relationship("User", back_populates="children")
 
     def __str__(self):
         return self.full_name
     
     @property
     def full_name(self):
-        return f"{self.last_name} {self.first_name}"
+        return f"{self.first_name} {self.last_name}"
     
     @property
     def zodiac_sign(self) -> Optional[str]:
@@ -189,7 +210,7 @@ class ArticleCategory(Base):
     __tablename__ = 'article_category'
     url_key_name = 'id'
     
-    id = Column(Integer, primary_key=True, autoincrement=True)  # Ошибка: добавлен autoincrement
+    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False, unique=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
@@ -206,14 +227,14 @@ class Article(Base):
     __tablename__ = 'article'
     url_key_name = 'id'
     
-    id = Column(Integer, primary_key=True, autoincrement=True)  # Ошибка: добавлен autoincrement
+    id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String(200), nullable=False)
     html = Column(Text, nullable=False)
     image = Column(LargeBinary) 
     views_count = Column(Integer, default=0)
     useful_count = Column(Integer, default=0)
     not_useful_count = Column(Integer, default=0)
-    category_id = Column(Integer, ForeignKey('article_category.id'), nullable=False)  # Ошибка: исправлено 'category.id' -> 'article_category.id'
+    category_id = Column(Integer, ForeignKey('article_category.id'), nullable=False)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -228,26 +249,27 @@ class Article(Base):
             'id': self.id,
             'title': self.title,
             'html': self.html,
-            'image': self.image_url,
+            'image_url': self.image_url,
             'views_count': self.views_count,
             'useful_count': self.useful_count,
             'not_useful_count': self.not_useful_count,
             'category_id': self.category_id,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
     
     @property
     def image_url(self):
-        return f'/article/preview/image_{self.id}.png'  # Ошибка: убрана лишняя запятая
+        return f'/article/preview/image_{self.id}.png'
     
     def total_votes(self):
         return self.useful_count + self.not_useful_count
     
     def usefulness_percentage(self):
-        if self.total_votes() == 0:
+        total = self.total_votes()
+        if total == 0:
             return 0
-        return (self.useful_count / self.total_votes()) * 100
+        return (self.useful_count / total) * 100
     
     def increment_views(self):
         self.views_count += 1
@@ -265,18 +287,14 @@ class ForumTopic(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String(200), nullable=False, index=True)
     content = Column(Text, nullable=False)
-    author_id = Column(Integer, nullable=False) 
-    author_name = Column(String(100), nullable=False)  # Ошибка: добавлено отсутствующее поле
-    view_count = Column(Integer, default=0)
-    like_count = Column(Integer, default=0)
-    comment_count = Column(Integer, default=0)
-    is_pinned = Column(Boolean, default=False)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     is_closed = Column(Boolean, default=False)
     category = Column(String(50), default='general')
     tags = Column(String(200))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    user = relationship('User', back_populates='forum_topics')
     comments = relationship("ForumComment", back_populates="topic", cascade="all, delete-orphan")
     
     def __repr__(self):
@@ -287,17 +305,12 @@ class ForumTopic(Base):
             'id': self.id,
             'title': self.title,
             'content': self.content,
-            'author_id': self.author_id,
-            'author_name': self.author_name,  # Ошибка: добавлено отсутствующее поле
-            'view_count': self.view_count,
-            'like_count': self.like_count,
-            'comment_count': self.comment_count,
-            'is_pinned': self.is_pinned,
+            'user_id': self.user_id,
             'is_closed': self.is_closed,
             'category': self.category,
             'tags': self.tags.split(',') if self.tags else [],
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat()
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
 
@@ -306,15 +319,13 @@ class ForumComment(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     content = Column(Text, nullable=False)
-    author_id = Column(Integer, nullable=False)
-    author_name = Column(String(100), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     topic_id = Column(Integer, ForeignKey('forum_topic.id'), nullable=False)
-    parent_comment_id = Column(Integer, ForeignKey('forum_comment.id'))
-    like_count = Column(Integer, default=0)  # Ошибка: добавлено отсутствующее поле
-    is_edited = Column(Boolean, default=False)
+    parent_comment_id = Column(Integer, ForeignKey('forum_comment.id'), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    user = relationship('User', back_populates='forum_comments')
     topic = relationship("ForumTopic", back_populates="comments")
     parent = relationship("ForumComment", remote_side=[id], back_populates="replies")
     replies = relationship("ForumComment", back_populates="parent", cascade="all, delete-orphan")
@@ -323,18 +334,20 @@ class ForumComment(Base):
     def __repr__(self):
         return f"<ForumComment(id={self.id}, topic_id={self.topic_id})>"
     
+    @property
+    def like_count(self):
+        return len(self.likes) if self.likes else 0
+    
     def to_dict(self):
         return {
             'id': self.id,
             'content': self.content,
-            'author_id': self.author_id,
-            'author_name': self.author_name,
+            'user_id': self.user_id,
             'topic_id': self.topic_id,
             'parent_comment_id': self.parent_comment_id,
             'like_count': self.like_count,
-            'is_edited': self.is_edited,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'replies_count': len(self.replies) if self.replies else 0
         }
 
@@ -343,11 +356,12 @@ class ForumLikedComment(Base):
     __tablename__ = 'forum_liked_comment'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False, index=True)
     comment_id = Column(Integer, ForeignKey('forum_comment.id'), nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     comment = relationship("ForumComment", back_populates="likes")
+    user = relationship('User', back_populates='forum_liked_comments')
     
     def __repr__(self):
         return f"<ForumLikedComment(user_id={self.user_id}, comment_id={self.comment_id})>"
@@ -358,16 +372,15 @@ class Notification(Base):
     __tablename__ = 'notification'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    type = Column(String(50), nullable=False, default='info')  # Ошибка: дублирование поля type
+    type = Column(String(50), nullable=False, default='info')
     title = Column(String(200), nullable=False)
     html = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True, index=True)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=True)
     
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=True)  # Ошибка: исправлено 'users.id' -> 'user.id'
-    
-    user = relationship("User", foreign_keys=[user_id])
-    read_records = relationship("NotificationRead", back_populates="notification", cascade="all, delete-orphan")  # Ошибка: добавлена связь
+    user = relationship("User", back_populates="notifications")
+    read_records = relationship("NotificationRead", back_populates="notification", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Notification(id={self.id}, type='{self.type}', user_id={self.user_id})>"
@@ -378,13 +391,12 @@ class NotificationRead(Base):
     __tablename__ = 'notification_read'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    
-    notification_id = Column(Integer, ForeignKey('notification.id'), nullable=False, index=True)  # Ошибка: исправлено 'notifications.id' -> 'notification.id'
-    user_id = Column(Integer, nullable=False, index=True)
-    
+    notification_id = Column(Integer, ForeignKey('notification.id'), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     
     notification = relationship("Notification", back_populates="read_records")
+    user = relationship("User", back_populates="notification_reads")
     
     def __repr__(self):
         return f"<NotificationRead(user_id={self.user_id}, notification_id={self.notification_id})>"
@@ -394,7 +406,7 @@ class NotificationRead(Base):
             'id': self.id,
             'notification_id': self.notification_id,
             'user_id': self.user_id,
-            'read_at': self.created_at.isoformat()
+            'read_at': self.created_at.isoformat() if self.created_at else None
         }
 
 
@@ -402,15 +414,15 @@ class SiteEvent(Base):
     __tablename__ = "site_event"
     url_key_name = "id"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)  # Ошибка: добавлен autoincrement
+    id = Column(Integer, primary_key=True, autoincrement=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    text = Column(Text)  # Ошибка: исправлено text вместо event
+    text = Column(Text)
     type = Column(String(255))
-
     user_id = Column(Integer, ForeignKey('user.id'), nullable=True)
-    user = relationship("User", back_populates="site_events")  # Ошибка: исправлено "WorkerBase" -> "User"
+    
+    user = relationship("User", back_populates="site_events")
 
-    def __init__(self, text, type, user=None, created_at=None):  # Ошибка: исправлено event -> text
+    def __init__(self, text, type, user=None, created_at=None):
         self.text = text
         self.type = type
         if user:
@@ -419,11 +431,8 @@ class SiteEvent(Base):
             self.created_at = created_at
 
     def __str__(self):
-        return self.text  # Ошибка: исправлено self.event -> self.text
+        return self.text
 
     @property
     def s_time(self):
-        return self.created_at.strftime('%d.%m.%Y %H:%M') if self.created_at else ''  # Ошибка: исправлено self.time -> self.created_at
-
-
-    
+        return self.created_at.strftime('%d.%m.%Y %H:%M') if self.created_at else ''

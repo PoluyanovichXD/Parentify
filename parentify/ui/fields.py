@@ -7,9 +7,9 @@ import phonenumbers
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
-from isodate import parse_date
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
+from parentify.methods import parse_date
 from parentify.ui.widgets import *
 
 def kwargs_init(**kwargs):
@@ -42,7 +42,7 @@ class TextInputField(forms.CharField):
         except ValueError:
             raise ValidationError(_('Некорректный ввод'))
         return None
-class EmailInputField:
+class EmailInputField(forms.CharField):
     def __init__(self,multiply=False,validator=False,visible_text=True,validation=True,*args, **kwargs):
         super().__init__(*args,**kwargs_init(**kwargs))
         self._multiply = multiply
@@ -80,7 +80,7 @@ class EmailInputField:
             return value
         else:
             raise ValidationError(_('Не верно указан Email'))
-class PhoneInputField:
+class PhoneInputField(forms.CharField):
     def __init__(self,multiply=False,validator=False,visible_text=True,*args, **kwargs):
         super().__init__(*args,**kwargs_init(**kwargs))
         self._multiply = multiply
@@ -127,7 +127,7 @@ class PhoneInputField:
                 raise ValidationError(_('Не верно указан номер телефона'))
         except:
             raise ValidationError(_('Не верно указан номер телефона'))
-class PasswordInputField:
+class PasswordInputField(forms.CharField):
     def __init__(self,multiply=False,validator=False,visible_text=True,password_len=None,*args, **kwargs):
         super().__init__(*args,**kwargs_init(**kwargs))
         self._multiply = multiply

@@ -1,16 +1,16 @@
 from datetime import date
-from django import forms
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
-from django import forms
+from django.forms import Form
 from django.contrib.auth import authenticate, login
 from django.core.exceptions import ValidationError
 import re
 from parentify.models.models import User
 from parentify.ui import *
+from parentify.ui.forms import FormBase
 
-class FormLogin(forms.Form):
+class FormLogin(FormBase):
     email = TextInputField(label=_("Почта"))
     
     password = PasswordInputField(label=_("Пароль"))
@@ -43,7 +43,7 @@ class FormLogin(forms.Form):
 
 
 
-class FormRegister(forms.Form):
+class FormRegister(FormBase):
     lastName = TextInputField(label=_("Фамилия"))
     
     firstName = TextInputField(label=_("Имя"))
@@ -53,10 +53,9 @@ class FormRegister(forms.Form):
     birth_date = DateInputField(label=_("Дата рождения"))
     
     GENDER_CHOICES = [
-        ('', _('Выберите пол')),
-        ('M', _('Мужской')),
-        ('F', _('Женский')),
-        ('O', _('Другой')),
+        (None, _('Выберите пол')),
+        ('male', _('Мужской')),
+        ('female', _('Женский')),
     ]
     
     gender = forms.ChoiceField(
@@ -177,3 +176,54 @@ class FormRegister(forms.Form):
         
         return user
     
+
+
+class FormProfile(FormBase):
+    last_name = TextInputField(label=_("Фамилия"))
+    first_name = TextInputField(label=_("Имя"))
+    birth_date = DateInputField(label=_("Дата рождения"))
+    email = EmailInputField(label=_('Email'))
+    gender = SelectInputField(label=_('Пол'),choices=[
+        (None, _('Выберите пол')),
+        ('male', _('Мужской')),
+        ('female', _('Женский')),
+    ])
+    
+    def __init__(self, request, user_id=None):
+        self.user = request.orm_session.query(User).get(request.current_user.id)
+        super().__init__(request, request.current_user.to_dict() if request.current_user else {})
+
+    def clean(self):
+        pass
+
+
+    def cmd_profile_edit(self, request):
+        self.user.last_name = self.cleaned_data.get('last_name')
+        self.user.first_name = self.cleaned_data.get('first_name')
+        self.user.birth_date = self.cleaned_data.get('birth_date')
+        self.user.gender = self.cleaned_data.get('gender')
+        self.user.email = self.cleaned_data.get('email')
+        request.orm_session.commit()
+        return '/profile/'
+
+    
+
+class FormPassword(FormBase):
+    current_password = PasswordInputField(label=_('Текущий пароль'))
+    new_password = PasswordInputField(label=_('Новый пароль'))
+    confirm_password = PasswordInputField(label=_('Подтвердите новый пароль'))
+    def __init__(self, request, user_id=None):
+        self.user = request.orm_session.query(User).get(request.current_user.id)
+        super().__init__(request, {})
+    def clean(self):
+        if 'cmd_password_edit' in self.request.POST:
+            if User.create_password(self.cleaned_data.get('current_password')) != self.user.password:
+                raise ValidationError(_("Не верный пароль"))
+            if self.cleaned_data.get('new_password') != self.cleaned_data.get('confirm_password'):
+                raise ValidationError(_("Пароли не совпадают"))
+            
+    def cmd_password_edit(self, request):
+        self.cleaned_data.get('current_password')
+        self.cleaned_data.get('new_password')
+        self.cleaned_data.get('confirm_password')
+        return '/profile/'

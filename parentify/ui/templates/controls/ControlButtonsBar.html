@@ -1,4 +1,4 @@
-<div id="{{control.name}}" class="flex gap-4">
+<div id="{{control.name}}" class="flex gap-4 m-2">
     {% for subcontrol in control.controls %}
     {% include subcontrol.template with control=subcontrol%}
     {% endfor %}

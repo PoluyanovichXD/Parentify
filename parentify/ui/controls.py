@@ -186,7 +186,7 @@ class ControlRecordlist(ControlBase):
         self._fields_sort = [self._fields_sort] if type(self._fields_sort) == str else self._fields_sort
         self._fields_event = [self._fields_event] if type(self._fields_event) == str else self._fields_event
         self._kwargs = kwargs
-        self._kwargs['no_zip'] = True
+        self._kwargs['no_zip'] = True if kwargs.get('no_zip') else False
         super().__init__(control_template)
 
     def add_control(self, name, control,classname=None):
@@ -241,10 +241,10 @@ class ControlRecordlist(ControlBase):
             valRow = []
             keyRow = []
             if self.__fields:
-                for f in self.__fields:
+                for f, findex in self.__fields:
                     sv = o
                     sv_class = type(sv)
-                    if type(f[1]) == str:
+                    if type(f[0]) == str:
                         for v in f[1].split('.'):
                             sv_class = type(getattr(type(sv),v).type) if hasattr(type(sv),v) and hasattr(getattr(type(sv),v),'type') and type(getattr(type(sv),v).type) in list_types else sv_class
                             if type(sv) == dict:

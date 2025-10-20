@@ -1,7 +1,12 @@
 from django.http                    import HttpResponseRedirect
 from django.shortcuts               import render
-from parentify.models.models        import GenderEnum, User
+from parentify.models.models        import User
 from django.contrib.auth.hashers    import *
+
+from parentify.ui.controls import ControlInputs
+from parentify.ui.decorators import common_page, with_form
+from parentify.ui.pages import PageSimple
+from parentify.web.forms import FormPassword, FormProfile
 
 
 def home(request):
@@ -28,7 +33,7 @@ def register(request):
             True,
             False,
             post.get('birth_date'),
-            GenderEnum.MALE if post.get('gender')=='male' else GenderEnum.FEMALE,
+            'male' if post.get('gender')=='male' else 'female',
         )
         request.session['token'] = make_password(password, salt=User.get_salt(user.email))
         return HttpResponseRedirect('/')
@@ -39,5 +44,11 @@ def logout(request):
     request.session.delete()
     return HttpResponseRedirect('/')
 
-def profile(request):
-    return render(request, 'pages/profile.html')
+@common_page()
+@with_form('form_profile', FormProfile, 'cmd_profile_edit')
+@with_form('form_password', FormPassword, 'cmd_password_edit')
+def profile(request, form_profile, form_password):
+    page = PageSimple('Профиль пользователя', 'pages/profile.html')
+    page.add_control('form_profile', ControlInputs(form_profile))
+    page.add_control('form_password', ControlInputs(form_password))
+    return page

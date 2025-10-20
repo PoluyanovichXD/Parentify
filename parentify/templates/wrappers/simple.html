@@ -1,127 +1,135 @@
 {% extends "core.html" %}
 {% block wrapper %}
-<header class="sticky top-0 bg-white shadow-sm z-50 py-5">
-    <div class="container mx-auto px-5 max-w-6xl">
-        <div class="flex justify-between items-center">
-            <a href="/" class="logo flex items-center text-2xl font-bold text-primary">
-                <img src="/static/images/mishka.png" class="w-6 mr-1" alt="">
-                Parentify
-            </a>
+<div class="min-h-screen flex flex-col">
+    <header class="sticky top-0 bg-white shadow-sm z-50 py-5">
+        <div class="container mx-auto px-5 max-w-6xl">
+            <div class="flex justify-between items-center">
+                <a href="/" class="logo flex items-center text-2xl font-bold text-primary">
+                    <img src="/static/images/mishka.png" class="w-6 mr-1" alt="">
+                    Parentify
+                </a>
 
-            <nav class="hidden md:block">
-                <ul class="flex space-x-6">
-                    <li><a href="/" class="font-medium hover:text-primary transition-colors">Главная</a></li>
-                    <li><a href="#" class="font-medium hover:text-primary transition-colors">Информация</a></li>
-                    <li><a href="#" class="font-medium hover:text-primary transition-colors">Календарь</a></li>
-                    <li><a href="#" class="font-medium hover:text-primary transition-colors">Трекеры</a></li>
-                    <li><a href="#" class="font-medium hover:text-primary transition-colors">Форум</a></li>
-                    <li><a href="#" class="font-medium hover:text-primary transition-colors">Товары</a></li>
-                    <li><a href="#" class="font-medium hover:text-primary transition-colors">Карта</a></li>
-                </ul>
-            </nav>
+                <nav class="hidden md:block">
+                    <ul class="flex space-x-6">
+                        <li><a href="/" class="font-medium hover:text-primary transition-colors">Главная</a></li>
+                        <li><a href="#" class="font-medium hover:text-primary transition-colors">Информация</a></li>
+                        <li><a href="#" class="font-medium hover:text-primary transition-colors">Календарь</a></li>
+                        <li><a href="#" class="font-medium hover:text-primary transition-colors">Трекеры</a></li>
+                        <li><a href="#" class="font-medium hover:text-primary transition-colors">Форум</a></li>
+                        <li><a href="#" class="font-medium hover:text-primary transition-colors">Товары</a></li>
+                        <li><a href="#" class="font-medium hover:text-primary transition-colors">Карта</a></li>
+                    </ul>
+                </nav>
 
-            <div class="flex space-x-4">
-                {% if request.current_user %}
-                <div class="relative group">
-                    <button
-                        class="btn bg-primary text-white px-5 py-2.5 rounded-full font-semibold hover:bg-[#e88d96] transition-all flex items-center">
-                        <i class="fas fa-user mr-2"></i>{{ request.current_user.first_name }}
-                        <i class="fas fa-chevron-down ml-2 text-sm"></i>
-                    </button>
-                    <div
-                        class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                        <a href="/profile" class="block px-4 py-3 hover:bg-gray-100 rounded-t-lg">Профиль</a>
-                        {% if request.current_user.is_admin %}
-                        <a href="/admin" class="block px-4 py-3 hover:bg-gray-100">Администрирование</a>
-                        {% endif %}
-                        <a href="/settings" class="block px-4 py-3 hover:bg-gray-100">Настройки</a>
-                        <div class="border-t">
-                            <button onclick="window.location.href = '/logout'"
-                                class="w-full text-left px-4 py-3 hover:bg-gray-100 rounded-b-lg text-red-600">
-                                Выйти
-                            </button>
+                <div class="flex space-x-4">
+                    {% if request.current_user %}
+                    <div class="relative group">
+                        <button
+                            class="btn bg-primary text-white px-5 py-2.5 rounded-full font-semibold hover:bg-[#e88d96] transition-all flex items-center">
+                            <i class="fas fa-user mr-2"></i>{{ request.current_user.first_name }}
+                            <i class="fas fa-chevron-down ml-2 text-sm"></i>
+                        </button>
+                        <div
+                            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                            <a href="/profile" class="block px-4 py-3 hover:bg-gray-100 rounded-t-lg">Профиль</a>
+                            {% if request.current_user.is_admin %}
+                            <a href="/admin" class="block px-4 py-3 hover:bg-gray-100">Администрирование</a>
+                            {% endif %}
+                            <a href="/settings" class="block px-4 py-3 hover:bg-gray-100">Настройки</a>
+                            <div class="border-t">
+                                <button onclick="window.location.href = '/logout'"
+                                    class="w-full text-left px-4 py-3 hover:bg-gray-100 rounded-b-lg text-red-600">
+                                    Выйти
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                {% else %}
-                <a href="/login"
-                    class="btn bg-secondary text-gray-800 px-5 py-2.5 rounded-full font-semibold hover:bg-[#a1d8c5] transition-all">Вход</a>
-                <a href="/register"
-                    class="btn bg-primary text-white px-5 py-2.5 rounded-full font-semibold hover:bg-[#e88d96] hover:-translate-y-0.5 transition-all">Регистрация</a>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</header>
-{% block page %}
-{% for subcontrol in controls %}
-       {% include subcontrol.template with control=subcontrol %}
-{% endfor %}
-{% for subcontrol in btn_controls %}
-       {% include subcontrol.template with control=subcontrol %}
-{% endfor %}
-{% endblock %}
-<footer class="bg-gray-100 pt-16 pb-8 mt-20">
-    <div class="container mx-auto px-5 max-w-6xl">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
-            <div class="footer-column">
-                <h3 class="text-xl font-semibold mb-5">Parentify</h3>
-                <p class="mb-5">Платформа для современных родителей, заботящихся о гармоничном развитии своих детей.</p>
-                <div class="social-links flex space-x-4">
-                    <a href="#"
-                        class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
-                        <i class="fab fa-vk"></i>
-                    </a>
-                    <a href="#"
-                        class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
-                        <i class="fab fa-telegram"></i>
-                    </a>
-                    <a href="#"
-                        class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
-                        <i class="fab fa-youtube"></i>
-                    </a>
-                    <a href="#"
-                        class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
-                        <i class="fab fa-instagram"></i>
-                    </a>
+                    {% else %}
+                    <a href="/login"
+                        class="btn bg-secondary text-gray-800 px-5 py-2.5 rounded-full font-semibold hover:bg-[#a1d8c5] transition-all">Вход</a>
+                    <a href="/register"
+                        class="btn bg-primary text-white px-5 py-2.5 rounded-full font-semibold hover:bg-[#e88d96] hover:-translate-y-0.5 transition-all">Регистрация</a>
+                    {% endif %}
                 </div>
             </div>
+        </div>
+    </header>
+    <main class="flex-grow">
+        <div class="container mx-auto px-5 max-w-6xl mb-12">
+            {% block page %}
+            {% for subcontrol in controls %}
+            {% include subcontrol.template with control=subcontrol %}
+            {% endfor %}
+            {% for subcontrol in btn_controls %}
+            {% include subcontrol.template with control=subcontrol %}
+            {% endfor %}
+            {% endblock %}
+        </div>
+    </main>
+    <footer class="bg-gray-100 pt-16 pb-8 mt-auto">
+        <div class="container mx-auto px-5 max-w-6xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
+                <div class="footer-column">
+                    <h3 class="text-xl font-semibold mb-5">Parentify</h3>
+                    <p class="mb-5">Платформа для современных родителей, заботящихся о гармоничном развитии своих детей.
+                    </p>
+                    <div class="social-links flex space-x-4">
+                        <a href="#"
+                            class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                            <i class="fab fa-vk"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                            <i class="fab fa-telegram"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
 
-            <div class="footer-column">
-                <h3 class="text-xl font-semibold mb-5">Разделы</h3>
-                <ul class="space-y-2">
-                    <li><a href="/" class="hover:text-primary transition-colors">Главная</a></li>
-                    <li><a href="#" class="hover:text-primary transition-colors">Информационный раздел</a></li>
-                    <li><a href="#" class="hover:text-primary transition-colors">Календарь развития</a></li>
-                    <li><a href="#" class="hover:text-primary transition-colors">Трекеры</a></li>
-                    <li><a href="/forum" class="hover:text-primary transition-colors">Форум</a></li>
-                </ul>
+                <div class="footer-column">
+                    <h3 class="text-xl font-semibold mb-5">Разделы</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="hover:text-primary transition-colors">Главная</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Информационный раздел</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Календарь развития</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Трекеры</a></li>
+                        <li><a href="/forum" class="hover:text-primary transition-colors">Форум</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3 class="text-xl font-semibold mb-5">Полезное</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-primary transition-colors">Рекомендованные товары</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Карта мест</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Чек-листы</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">Справочные материалы</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3 class="text-xl font-semibold mb-5">Контакты</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center"><i class="fas fa-envelope mr-2"></i> info@Parentify.ru</li>
+                        <li class="flex items-center"><i class="fas fa-phone mr-2"></i> +7 (800) 123-45-67</li>
+                        <li class="flex items-center"><i class="fas fa-map-marker-alt mr-2"></i> Москва, ул. Примерная,
+                            15
+                        </li>
+                    </ul>
+                </div>
             </div>
 
-            <div class="footer-column">
-                <h3 class="text-xl font-semibold mb-5">Полезное</h3>
-                <ul class="space-y-2">
-                    <li><a href="#" class="hover:text-primary transition-colors">Рекомендованные товары</a></li>
-                    <li><a href="#" class="hover:text-primary transition-colors">Карта мест</a></li>
-                    <li><a href="#" class="hover:text-primary transition-colors">Чек-листы</a></li>
-                    <li><a href="#" class="hover:text-primary transition-colors">Справочные материалы</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-column">
-                <h3 class="text-xl font-semibold mb-5">Контакты</h3>
-                <ul class="space-y-2">
-                    <li class="flex items-center"><i class="fas fa-envelope mr-2"></i> info@Parentify.ru</li>
-                    <li class="flex items-center"><i class="fas fa-phone mr-2"></i> +7 (800) 123-45-67</li>
-                    <li class="flex items-center"><i class="fas fa-map-marker-alt mr-2"></i> Москва, ул. Примерная, 15
-                    </li>
-                </ul>
+            <div class="copyright text-center pt-8 border-t border-gray-300 text-gray-600">
+                <p>© 2023 Parentify. Все права защищены.</p>
             </div>
         </div>
-
-        <div class="copyright text-center pt-8 border-t border-gray-300 text-gray-600">
-            <p>© 2023 Parentify. Все права защищены.</p>
-        </div>
-    </div>
-</footer>
+    </footer>
+</div>
 {% endblock %}

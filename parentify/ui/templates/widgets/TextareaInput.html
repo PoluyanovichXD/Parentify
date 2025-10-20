@@ -1,0 +1,13 @@
+
+                          
+
+<div>
+    {% for val in value %}
+    <label for="{{attrs.id}}" class="block font-medium mb-2">
+        <textarea name="{{name}}" id="{{attrs.id}}"
+        autocomplete="off" type="text"
+                            class="w-full h-40 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300 resize-vertical"
+                            placeholder="{{w.attrs.label}}  {% for k, v in w.attrs.items %} {% if v %} {{k}}="{{v}}" {% endif %} {% endfor %}"></textarea>
+    </label>
+    {% endfor %}
+</div>

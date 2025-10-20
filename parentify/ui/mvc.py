@@ -50,14 +50,14 @@ class PageModelEditor(PageSimple):
         if filter_form:
             controlsFilter = ControlBase()
             inputs = ControlInputs(filter_form, 'forms/FilterForm.html')
-            if toobar_buttons:
-                inputs.add_control('users_toolbar', toobar_buttons)
             
             bt_bar = ControlButtonsBar()
             bt_bar.add_button(_('Фильтровать'),'Default', submit_name='cmd_filter')
             bt_bar.add_button(_('Очистить фильтр'),'Default', submit_name='cmd_discard')
             inputs.add_botton_control('bt_bar', bt_bar)
             controlsFilter.add_control("filter_inputs", inputs)
+            if toobar_buttons:
+                controlsFilter.add_botton_control('users_toolbar', toobar_buttons)
             recordsForm.add_control('formFilter', controlsFilter)
         else:
             if toobar_buttons:
@@ -177,9 +177,8 @@ class PageModelEditor(PageSimple):
         if 'closeall' in request.GET:
             self._model_info.model_editor_close_alltabs()
             raise HttpRedirectException(request.path)
-        items = [self._model_info.query.get(itemId)]
-        if len(items) == 0:
-            self.clear_controls()
+        if not self._model_info.query.get(itemId):
+            # self.clear_controls()
             return self.add_control('NotFound',ControlExeption(control_template="controls/catch/NotFound.html"))
             raise Http404()
         if not control:
@@ -204,9 +203,8 @@ class PageModelEditor(PageSimple):
             self.change_template('wrappers/clear.html')
             return self.render(request)
         if not 'iframe_form' in request.GET and not 'iframe_close' in request.GET:
-            items = [self._model_info.query.get(itemId)]
-            if len(items) == 0:
-                self.clear_controls()
+            if not self._model_info.query.get(itemId):
+                # self.clear_controls()
                 return self.add_control('NotFound',ControlExeption(control_template="controls/catch/NotFound.html"))
             
         formControl = ControlForm()

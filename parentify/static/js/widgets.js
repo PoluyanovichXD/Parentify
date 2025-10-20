@@ -65,6 +65,13 @@ $(window).on('load', function () {
             grid.appendChild(pageBtn);
         }
     });
+    var property_inputmask = {
+        showMaskOnFocus: true,
+        showMaskOnHover: false,
+        autoUnmask: true,
+        clearMaskOnLostFocus: true
+    }
+    $("input[data-inputmask]").inputmask(property_inputmask);
 })
 function isDict(d) {
     return !!d && typeof d==='object' && d!==null && !(d instanceof Array) && !(d instanceof Date) && isJsonable(d);

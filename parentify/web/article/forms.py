@@ -59,3 +59,44 @@ class FormFilterArticle(FormModelFilter):
             if self.cleaned_data.get('category_id'):
                 data_query = data_query.filter(Article.category_id==self.cleaned_data.get('category_id'))
         return data_query
+    
+
+# ArticleCategory
+class FormCategory(FormBase):
+    name = TextInputField(label=_('Название'), max_length=350, required=False)
+    def __init__(self, request, category_id=None):
+        if category_id:
+            self.category_id = category_id
+            self.category = request.orm_session.query(ArticleCategory).get(self.category_id)
+            super().__init__(request, {
+                'name':self.category.name
+            })
+        else:
+            self.category = ArticleCategory()
+            super().__init__(request)
+    
+    def clean(self):
+        super(FormCategory, self).clean()
+        if self.request.orm_session.query(ArticleCategory).filter(ArticleCategory.name == self.cleaned_data.get('name')).first():
+            raise ValidationError(_("Данная категория уже присутствует"))
+
+    def cmd_model_create(self, request):
+        self.category.name = self.cleaned_data.get('name')
+        self.request.orm_session.add(self.category)
+        self.request.orm_session.commit()
+        return '/article/categories'
+
+    def cmd_model_update(self, request):
+        self.category.name = self.cleaned_data.get('name')
+        self.request.orm_session.commit()
+        return f'/article/categories'
+class FormFilterCategory(FormModelFilter):
+    name = TextInputField(label=_('Название'), max_length=350, required=False)
+    def __init__(self, request):
+        super().__init__(request, 'category_filter')
+
+    def filter(self, data_query):
+        if self.is_valid():
+            if self.cleaned_data.get('name'):
+                data_query = data_query.filter(ArticleCategory.name.ilike("%" + self.cleaned_data['name'] + "%"))
+        return data_query

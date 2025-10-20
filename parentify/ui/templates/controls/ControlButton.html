@@ -1,7 +1,7 @@
 {% if control.type == "submit" %}
     <button class="{% if not control.title and control.icon %}btn_icon{% endif %} 
-                  {% if control.is_admin %}bg-purple-600 hover:bg-purple-700{% else %}bg-primary hover:bg-[#e88d96]{% endif %}
-                  text-white px-6 py-3.5 rounded-full font-semibold transition-all duration-300 
+                  {% if control.is_admin %}bg-primary hover:bg-[#e88d96] border-l-4 border-yellow-400{% else %}bg-primary hover:bg-[#e88d96]{% endif %}
+                  text-white px-6 py-3.5 rounded-xl font-semibold transition-all duration-300 
                   transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0
                   flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             type="submit" 
@@ -16,14 +16,19 @@
                 {% include "icons/"|add:control.icon|add:".html" %}
             </span>
         {% endif %}
+        {% if control.is_admin %}
+            <span class="flex-shrink-0 ml-1">
+                <i class="fas fa-shield-alt text-yellow-300 text-sm"></i>
+            </span>
+        {% endif %}
         {% if control.title %}
-            <span class="{% if control.icon %}ml-2{% endif %}">{{ control.title }}</span>
+            <span class="{% if control.icon or control.is_admin %}ml-2{% endif %}">{{ control.title }}</span>
         {% endif %}
     </button>
 {% elif control.type == "redirect" %}
     <button class="{% if not control.title and control.icon %}btn_icon{% endif %}
-                  {% if control.is_admin %}bg-purple-600 hover:bg-purple-700{% else %}bg-secondary text-gray-800 hover:bg-[#a1d8c5]{% endif %}
-                  px-6 py-3.5 rounded-full font-semibold transition-all duration-300 
+                  {% if control.is_admin %}bg-secondary text-gray-800 hover:bg-[#a1d8c5] border-l-4 border-yellow-400{% else %}bg-secondary text-gray-800 hover:bg-[#a1d8c5]{% endif %}
+                  px-6 py-3.5 rounded-xl font-semibold transition-all duration-300 
                   transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0
                   flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             type="button" 
@@ -37,14 +42,19 @@
                 {% include "icons/"|add:control.icon|add:".html" %}
             </span>
         {% endif %}
+        {% if control.is_admin %}
+            <span class="flex-shrink-0 ml-1">
+                <i class="fas fa-shield-alt text-yellow-500 text-sm"></i>
+            </span>
+        {% endif %}
         {% if control.title %}
-            <span class="{% if control.icon %}ml-2{% endif %}">{{ control.title }}</span>
+            <span class="{% if control.icon or control.is_admin %}ml-2{% endif %}">{{ control.title }}</span>
         {% endif %}
     </button>
 {% elif control.type == "js" %}
     <button class="{% if not control.title and control.icon %}btn_icon{% endif %}
-                  {% if control.is_admin %}bg-purple-600 hover:bg-purple-700{% else %}bg-primary hover:bg-[#e88d96]{% endif %}
-                  text-white px-6 py-3.5 rounded-full font-semibold transition-all duration-300 
+                  {% if control.is_admin %}bg-primary hover:bg-[#e88d96] border-l-4 border-yellow-400{% else %}bg-primary hover:bg-[#e88d96]{% endif %}
+                  text-white px-6 py-3.5 rounded-xl font-semibold transition-all duration-300 
                   transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0
                   flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             type="button" 
@@ -58,8 +68,13 @@
                 {% include "icons/"|add:control.icon|add:".html" %}
             </span>
         {% endif %}
+        {% if control.is_admin %}
+            <span class="flex-shrink-0 ml-1">
+                <i class="fas fa-shield-alt text-yellow-300 text-sm"></i>
+            </span>
+        {% endif %}
         {% if control.title %}
-            <span class="{% if control.icon %}ml-2{% endif %}">{{ control.title }}</span>
+            <span class="{% if control.icon or control.is_admin %}ml-2{% endif %}">{{ control.title }}</span>
         {% endif %}
     </button>
 {% endif %}

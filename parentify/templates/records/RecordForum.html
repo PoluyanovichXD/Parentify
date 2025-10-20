@@ -1,0 +1,461 @@
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-5 max-w-4xl">
+        <!-- Хлебные крошки -->
+        <nav class="mb-8">
+            <ol class="flex items-center space-x-2 text-sm text-gray-600">
+                <li><a href="/" class="hover:text-primary transition-colors">Главная</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li><a href="/forum" class="hover:text-primary transition-colors">Форум</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li class="text-gray-900 font-medium">{{ control.content.title|truncatewords:5 }}</li>
+            </ol>
+        </nav>
+
+        <!-- Основной контент темы форума -->
+        <article class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Заголовок и мета-информация -->
+            <header class="p-8 border-b border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
+                            {{ control.content.category }}
+                        </span>
+                        {% if control.content.is_closed %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-600">
+                            <i class="fas fa-lock mr-1 text-xs"></i>
+                            Закрыта
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.current_user and request.current_user.is_admin %}
+                        <button onclick="ClickBtn('edit/')" 
+                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors cursor-pointer">
+                            <i class="fas fa-edit mr-1 text-xs"></i>
+                            Изменить
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="flex items-center space-x-4 text-sm text-gray-500">
+                        <span class="flex items-center">
+                            <i class="far fa-comments mr-1"></i>
+                            {{ control.content.comments|length }} ответов
+                        </span>
+                        <span>{{ control.content.created_at|date:"d.m.Y H:i" }}</span>
+                    </div>
+                </div>
+                
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                    {{ control.content.title }}
+                </h1>
+                
+                <!-- Автор темы -->
+                <div class="flex items-center space-x-3 mt-6 pt-4 border-t border-gray-100">
+                    <div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-gray-700 font-semibold text-sm">
+                        {{ control.content.user.first_name|first|upper }}{{ control.content.user.last_name|first|upper }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">
+                            {{ control.content.user.first_name }} {{ control.content.user.last_name }}
+                        </p>
+                        <p class="text-xs text-gray-500">Автор темы</p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Содержание темы -->
+            <div class="p-8 prose prose-lg max-w-none">
+                <div class="forum-content">
+                    {{ control.content.content|safe }}
+                </div>
+                
+                <!-- Теги -->
+                {% if control.content.tags %}
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="flex flex-wrap gap-2">
+                        {% for tag in control.content.tags %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                            <i class="fas fa-tag mr-1 text-xs"></i>
+                            {{ tag }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Действия с темой -->
+            <footer class="p-6 border-t border-gray-200 bg-gray-50">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        {% if not control.content.is_closed %}
+                        <button onclick="toggleReplyForm()" 
+                                class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl font-semibold hover:bg-[#e88d96] transition-all duration-300 transform hover:-translate-y-0.5">
+                            <i class="fas fa-reply mr-2"></i>
+                            Ответить
+                        </button>
+                        {% endif %}
+                        
+                        <button onclick="toggleSubscribe()" 
+                                class="inline-flex items-center px-4 py-2 bg-white text-gray-700 rounded-xl font-semibold border border-gray-300 hover:border-primary hover:text-primary transition-all duration-300">
+                            <i class="far fa-bell mr-2"></i>
+                            Подписаться
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <button class="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg">
+                            <i class="fas fa-flag"></i>
+                        </button>
+                        <button class="p-2 text-gray-400 hover:text-blue-500 transition-colors rounded-lg">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </footer>
+        </article>
+
+        <!-- Форма ответа (скрыта по умолчанию) -->
+        <form id="replyForm" method="post" class="mt-6 bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hidden">
+            {% csrf_token %}            
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Ваш ответ</h3>
+            </div>
+            <div class="p-6">
+                <textarea name="content" 
+                          id="replyContent"
+                          required
+                          class="w-full h-40 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-300 resize-vertical"
+                          placeholder="Напишите ваш ответ..."></textarea>
+                <div class="flex items-center justify-between mt-4">
+                    <div class="flex items-center space-x-4 text-sm text-gray-500">
+                        <label class="flex items-center cursor-pointer">
+                           
+                        </label>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button type="button" onclick="toggleReplyForm()" 
+                                class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+                            Отмена
+                        </button>
+                        <button type="submit" 
+                                class="px-6 py-2 bg-primary text-white rounded-xl font-semibold hover:bg-[#e88d96] transition-all duration-300 flex items-center">
+                            <span id="submitText">Отправить ответ</span>
+                            <div id="submitSpinner" class="hidden ml-2">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Комментарии -->
+        <section class="mt-8">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">
+                    Ответы 
+                    <span class="text-primary">({{ control.content.comments|length }})</span>
+                </h2>
+                
+                <div class="flex items-center space-x-2 text-sm">
+                    <span class="text-gray-500">Сортировка:</span>
+                    <select class="px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:border-primary">
+                        <option value="newest">Сначала новые</option>
+                        <option value="oldest">Сначала старые</option>
+                        <option value="popular">По популярности</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Список комментариев -->
+            <div class="space-y-4">
+                {% for comment in control.content.comments %}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md">
+                    <div class="p-6">
+                        <!-- Заголовок комментария -->
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-gray-700 font-semibold text-xs">
+                                    {{ comment.user.first_name|first|upper }}{{ comment.user.last_name|first|upper }}
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">
+                                        {{ comment.user.first_name }} {{ comment.user.last_name }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">{{ comment.created_at|date:"d.m.Y H:i" }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-2">
+                                {% if comment.like_count > 0 %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                    <i class="fas fa-thumbs-up mr-1"></i>
+                                    {{ comment.like_count }}
+                                </span>
+                                {% endif %}
+                                
+                                {% if request.current_user and request.current_user.is_admin %}
+                                <form method="post" action="{% url 'forum_comment_delete' comment.id %}" class="inline" onsubmit="return confirm('Удалить комментарий?')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="p-1 text-gray-400 hover:text-red-500 transition-colors rounded">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Содержание комментария -->
+                        <div class="prose prose-sm max-w-none text-gray-700 mb-4">
+                            {{ comment.content|safe }}
+                        </div>
+                        
+                        <!-- Действия с комментарием -->
+                        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                            <div class="flex items-center space-x-4">
+                                <form method="post" action="{% url 'forum_comment_like' comment.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" 
+                                            class="inline-flex items-center text-sm text-gray-500 hover:text-green-600 transition-colors">
+                                        <i class="far fa-thumbs-up mr-1"></i>
+                                        Нравится
+                                    </button>
+                                </form>
+                                
+                                {% if not control.content.is_closed %}
+                                <button onclick="showReplyToComment({{ comment.id }})" 
+                                        class="inline-flex items-center text-sm text-gray-500 hover:text-primary transition-colors">
+                                    <i class="fas fa-reply mr-1"></i>
+                                    Ответить
+                                </button>
+                                {% endif %}
+                            </div>
+                            
+                            {% if comment.replies_count > 0 %}
+                            <button onclick="toggleReplies({{ comment.id }})" 
+                                    class="inline-flex items-center text-sm text-primary hover:text-[#e88d96] transition-colors">
+                                <i class="fas fa-comments mr-1"></i>
+                                Ответы ({{ comment.replies_count }})
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Ответы на комментарий (если есть) -->
+                    {% if comment.replies %}
+                    <div id="replies-{{ comment.id }}" class="bg-gray-50 border-t border-gray-200 p-4 hidden">
+                        <div class="space-y-3 ml-8">
+                            {% for reply in comment.replies %}
+                            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-6 h-6 bg-secondary/50 rounded-full flex items-center justify-center text-gray-600 font-semibold text-xs">
+                                        {{ reply.user.first_name|first|upper }}
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <span class="text-sm font-medium text-gray-900">
+                                                {{ reply.user.first_name }} {{ reply.user.last_name }}
+                                            </span>
+                                            <span class="text-xs text-gray-500">{{ reply.created_at|date:"d.m.Y H:i" }}</span>
+                                        </div>
+                                        <p class="text-sm text-gray-700">{{ reply.content|safe }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
+                    <i class="fas fa-comments text-4xl text-gray-300 mb-4"></i>
+                    <h3 class="text-lg font-semibold text-gray-600 mb-2">Пока нет ответов</h3>
+                    <p class="text-gray-500">Будьте первым, кто оставит комментарий!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Похожие темы -->
+        <section class="mt-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Похожие темы</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for similar_topic in control.similar_topics|slice:":4" %}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">
+                    <div class="p-6">
+                        <span class="inline-block px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded mb-3">
+                            {{ similar_topic.category }}
+                        </span>
+                        <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-primary transition-colors cursor-pointer">
+                            {{ similar_topic.title }}
+                        </h3>
+                        <div class="flex items-center justify-between text-sm text-gray-500">
+                            <span>{{ similar_topic.created_at|date:"d.m.Y" }}</span>
+                            <span class="flex items-center">
+                                <i class="far fa-comments mr-1"></i>
+                                {{ similar_topic.comments_count }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-2 text-center py-8 text-gray-500">
+                    <i class="fas fa-search text-2xl mb-2"></i>
+                    <p>Похожих тем не найдено</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+
+<style>
+.forum-content {
+    line-height: 1.7;
+}
+
+.forum-content h2 {
+    @apply text-2xl font-bold text-gray-900 mt-8 mb-4;
+}
+
+.forum-content h3 {
+    @apply text-xl font-semibold text-gray-900 mt-6 mb-3;
+}
+
+.forum-content p {
+    @apply text-gray-700 mb-4;
+}
+
+.forum-content ul, .forum-content ol {
+    @apply text-gray-700 mb-4 pl-6;
+}
+
+.forum-content li {
+    @apply mb-2;
+}
+
+.forum-content blockquote {
+    @apply border-l-4 border-primary bg-gray-50 italic p-4 my-6;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Стили для загрузки */
+.submit-loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+</style>
+
+<script>
+function toggleReplyForm() {
+    const form = document.getElementById('replyForm');
+    form.classList.toggle('hidden');
+    
+    if (!form.classList.contains('hidden')) {
+        document.getElementById('replyContent').focus();
+    }
+}
+
+function toggleSubscribe() {
+    const button = event.target.closest('button');
+    const icon = button.querySelector('i');
+    
+    if (icon.classList.contains('far')) {
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+        button.classList.add('bg-primary', 'text-white');
+        button.classList.remove('bg-white', 'text-gray-700', 'border-gray-300');
+    } else {
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+        button.classList.remove('bg-primary', 'text-white');
+        button.classList.add('bg-white', 'text-gray-700', 'border-gray-300');
+    }
+}
+
+function toggleReplies(commentId) {
+    const replies = document.getElementById(`replies-${commentId}`);
+    replies.classList.toggle('hidden');
+}
+
+function showReplyToComment(commentId) {
+    toggleReplyForm();
+    // Можно добавить логику для ответа на конкретный комментарий
+    const content = document.getElementById('replyContent');
+    content.value = `@${commentId} `;
+    content.focus();
+}
+
+// Обработка отправки формы
+document.getElementById('replyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const submitText = document.getElementById('submitText');
+    const submitSpinner = document.getElementById('submitSpinner');
+    
+    // Показываем индикатор загрузки
+    submitText.textContent = 'Отправка...';
+    submitSpinner.classList.remove('hidden');
+    submitBtn.classList.add('submit-loading');
+    
+    // Собираем данные формы
+    const formData = new FormData(form);
+    
+    // Отправляем POST запрос
+    FormSubmit(form,'cmd_model_create');
+});
+
+// Валидация формы перед отправкой
+document.getElementById('replyContent').addEventListener('input', function() {
+    const submitBtn = document.querySelector('#replyForm button[type="submit"]');
+    if (this.value.trim().length > 0) {
+        submitBtn.disabled = false;
+    } else {
+        submitBtn.disabled = true;
+    }
+});
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем анимации для комментариев
+    const comments = document.querySelectorAll('.bg-white.rounded-2xl');
+    comments.forEach((comment, index) => {
+        comment.style.animationDelay = `${index * 0.1}s`;
+        comment.style.animation = 'fadeInUp 0.6s ease-out forwards';
+    });
+    
+    // Инициализируем кнопку отправки
+    const submitBtn = document.querySelector('#replyForm button[type="submit"]');
+    submitBtn.disabled = true;
+});
+
+// CSS анимации
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .bg-white.rounded-2xl {
+        opacity: 0;
+    }
+`;
+document.head.appendChild(style);
+</script>
