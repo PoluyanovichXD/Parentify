@@ -106,8 +106,8 @@ class User(Base):
         orm.commit()
         return user
     @staticmethod
-    def create_password(password, salt=None):
-        return make_password(password, salt=self.get_salt(self.email if not salt else salt))
+    def create_password(password, salt):
+        return make_password(password, salt=User.get_salt(salt))
     
     def check_password(self, raw_password):
         if not self.password:
@@ -115,7 +115,7 @@ class User(Base):
         return check_password(raw_password, self.password)
 
     def set_password(self, password, salt=None):
-        self.password = make_password(password, salt=self.get_salt(self.email if not salt else salt))
+        self.password = make_password(password, salt=User.get_salt(self.email if not salt else salt))
     
 
     @staticmethod

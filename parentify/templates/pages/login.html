@@ -13,30 +13,11 @@
         <form class="text-left" method="post">
             {% csrf_token %}
             <div class="mb-5">
-                <label for="email" class="block font-medium mb-2">Email</label>
-                <input 
-                    name="email"
-                    type="email" 
-                    id="email" 
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors" 
-                    placeholder="Ваш email" 
-                    required
-                >
+                {{controls.0.content.email}}
             </div>
             
             <div class="mb-5 relative">
-                <label for="password" class="block font-medium mb-2">Пароль</label>
-                <input 
-                    name="password"
-                    type="password" 
-                    id="password" 
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors pr-12" 
-                    placeholder="Ваш пароль" 
-                    required
-                >
-                <span class="absolute right-3 bottom-3 text-gray-500 cursor-pointer" id="togglePassword">
-                    <i class="far fa-eye"></i>
-                </span>
+                {{controls.0.content.password}}
             </div>
             
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3 sm:gap-0">
@@ -51,9 +32,29 @@
                 <a href="#" class="text-primary font-medium hover:underline text-sm">Забыли пароль?</a>
             </div>
             
+            {% if controls.0.content.non_field_errors %}
+                <div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <ul class="space-y-3">
+                    {% for error in controls.0.content.non_field_errors %}
+                        <li class="flex items-start text-red-600 text-sm">
+                            <em type="error" 
+                                class="cursor-pointer mr-3 mt-0.5 flex-shrink-0">
+                                <svg viewBox="0 0 20 20" class="w-5 h-5">
+                                    <circle class="marker--ring" fill="currentColor" r="8" cx="10" cy="10"/>
+                                    <path class="marker--pfft" fill="white" d="M9,13h2v2H9V13z M9,5h2v6H9V5z"/>
+                                </svg>
+                            </em>
+                            <span class="font-medium bg-white px-2 py-1 rounded-lg">{{error}}</span>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
             <button 
-                type="submit" 
-                class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-[#e88d96] hover:-translate-y-0.5 transition-all duration-300 mb-4"
+                type="submit"
+                name="cmd_login" 
+                class="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-[#e88d96] hover:-translate-y-0.5 transition-all duration-300 mb-4 mt-2"
             >
                 Войти
             </button>
