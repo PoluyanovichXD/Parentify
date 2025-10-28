@@ -67,10 +67,12 @@ class FormForumComment(FormBase):
         self.comment.topic_id = self.forum_id
         self.request.orm_session.add(self.comment)
         self.request.orm_session.commit()
-        return '/forum'
+        return f'/forum/{self.forum_id}'
 
     def cmd_model_update(self, request):
         self.comment.content = self.cleaned_data.get('content')
         self.comment.updated_at = datetime.datetime.now()
         self.request.orm_session.commit()
-        return f'/forum/{self.article_id}'
+        return f'/forum/{self.forum_id}'
+    
+    

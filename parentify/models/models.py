@@ -1,5 +1,5 @@
 import bcrypt
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, ForeignKey, Enum, LargeBinary, Text
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, ForeignKey, Enum, LargeBinary, Text, Float, ARRAY
 from sqlalchemy.orm import relationship
 from django.contrib.auth.hashers import make_password, check_password
 from datetime import datetime
@@ -408,6 +408,33 @@ class NotificationRead(Base):
             'user_id': self.user_id,
             'read_at': self.created_at.isoformat() if self.created_at else None
         }
+    
+
+class Place(Base):
+    __tablename__ = "places"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    title = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+
+    image = Column(LargeBinary, nullable=True)
+
+    rating = Column(Float, nullable=True)
+
+    tags = Column(ARRAY(String), nullable=True)
+
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+
+    address = Column(String(255), nullable=True)
+    phone = Column(String(50), nullable=True)
+    website = Column(String(255), nullable=True)
+
+    schedule = Column(String(255), nullable=True)
+
+    def __repr__(self):
+        return f"<Place(id={self.id}, title='{self.title}')>"
 
 
 class SiteEvent(Base):

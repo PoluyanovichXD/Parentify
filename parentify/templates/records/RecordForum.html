@@ -33,6 +33,11 @@
                             <i class="fas fa-edit mr-1 text-xs"></i>
                             Изменить
                         </button>
+                        <button onclick="ClickBtn(window.location.pathname + '?delete=delete')" 
+                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer">
+                            <i class="fas fa-trash mr-1 text-xs"></i>
+                            Удалить
+                        </button>
                         {% endif %}
                     </div>
                     
@@ -95,21 +100,15 @@
                             Ответить
                         </button>
                         {% endif %}
-                        
-                        <button onclick="toggleSubscribe()" 
-                                class="inline-flex items-center px-4 py-2 bg-white text-gray-700 rounded-xl font-semibold border border-gray-300 hover:border-primary hover:text-primary transition-all duration-300">
-                            <i class="far fa-bell mr-2"></i>
-                            Подписаться
-                        </button>
                     </div>
                     
                     <div class="flex items-center space-x-2">
-                        <button class="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg">
+                        <!-- <button class="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-lg">
                             <i class="fas fa-flag"></i>
                         </button>
                         <button class="p-2 text-gray-400 hover:text-blue-500 transition-colors rounded-lg">
                             <i class="fas fa-share-alt"></i>
-                        </button>
+                        </button> -->
                     </div>
                 </div>
             </footer>
@@ -196,7 +195,7 @@
                                 {% endif %}
                                 
                                 {% if request.current_user and request.current_user.is_admin %}
-                                <form method="post" action="{% url 'forum_comment_delete' comment.id %}" class="inline" onsubmit="return confirm('Удалить комментарий?')">
+                                <form method="post" class="inline" onsubmit="confirm('Удалить комментарий?')?ClickBtn(window.location.pathname + '?delete_comment={{comment.id}}'):''">
                                     {% csrf_token %}
                                     <button type="submit" class="p-1 text-gray-400 hover:text-red-500 transition-colors rounded">
                                         <i class="fas fa-trash text-xs"></i>
@@ -214,14 +213,14 @@
                         <!-- Действия с комментарием -->
                         <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                             <div class="flex items-center space-x-4">
-                                <form method="post" action="{% url 'forum_comment_like' comment.id %}" class="inline">
+                                <!-- <form method="post" class="inline">
                                     {% csrf_token %}
                                     <button type="submit" 
                                             class="inline-flex items-center text-sm text-gray-500 hover:text-green-600 transition-colors">
                                         <i class="far fa-thumbs-up mr-1"></i>
                                         Нравится
                                     </button>
-                                </form>
+                                </form> -->
                                 
                                 {% if not control.content.is_closed %}
                                 <button onclick="showReplyToComment({{ comment.id }})" 

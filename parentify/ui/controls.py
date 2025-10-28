@@ -186,7 +186,7 @@ class ControlRecordlist(ControlBase):
         self._fields_sort = [self._fields_sort] if type(self._fields_sort) == str else self._fields_sort
         self._fields_event = [self._fields_event] if type(self._fields_event) == str else self._fields_event
         self._kwargs = kwargs
-        self._kwargs['no_zip'] = True if kwargs.get('no_zip') else False
+        self._kwargs['type_list'] = kwargs.get('type_list', 'zip')
         super().__init__(control_template)
 
     def add_control(self, name, control,classname=None):
@@ -225,8 +225,8 @@ class ControlRecordlist(ControlBase):
         #     context_branch['inside'] = True
         context_branch['api'] = bool(self._kwargs.get('api', True))
         context_branch['api_get'] = self._kwargs.get('api_get', None)
-        if not self._kwargs.get('no_zip'):
-            context_branch['headers'] = zip(headers,keys)
+        if self._kwargs['type_list'] == 'zip':
+            context_branch['headers'] = list(zip(headers, keys))
         else:
             context_branch['headers'] = headers
         if len(self.__subcontrols) > 0:
@@ -241,7 +241,7 @@ class ControlRecordlist(ControlBase):
             valRow = []
             keyRow = []
             if self.__fields:
-                for f, findex in self.__fields:
+                for f in self.__fields:
                     sv = o
                     sv_class = type(sv)
                     if type(f[0]) == str:
@@ -305,10 +305,15 @@ class ControlRecordlist(ControlBase):
                     valRow = {}
                     for k in sorted(o.keys()):
                         valRow[k] = o.get(k)
-            if not self._kwargs.get('no_zip'):
-                zipRow = valRow if type(valRow) == dict else zip(valRow,keyRow)
-            else:
+            t = self._kwargs['type_list']
+            if t == 'zip':
+                zipRow = list(zip(valRow, keyRow))
+            elif t == 'dict':
+                zipRow = dict(zip(keyRow, valRow))
+            elif t == 'list':
                 zipRow = valRow
+            else:
+                zipRow = valRow 
             if type(o) == dict:
                 id = o.get(self.__id_field, '') if self.__id_field else ''
             else:

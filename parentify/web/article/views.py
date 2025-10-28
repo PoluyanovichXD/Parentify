@@ -18,7 +18,7 @@ class articles:
     @with_get_int('p', 0, 255)
     def all(request, p, form_filter):
         modelInfo = PageModelInfo(request.session, '/article/', request.orm_session.query(Article), Article.id)
-        return PageArticleEditor(modelInfo).items(request, p, form_filter)
+        return PageArticleEditor(modelInfo).items(request, p, form_filter, type_list='list')
 
     @common_page()
     @with_form('form_article', FormArticle, 'cmd_model_create')
