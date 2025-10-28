@@ -170,7 +170,7 @@ class ControlRecordlist(ControlBase):
     """Global tabbed control with paginated records list with ability to view/edit/create new records"""
 
     def __init__(self, queryset, fields=[], id_field=None, url_field=None, get="{%%}", target="_self",
-                 control_template='controls/ControlRecordlist.html',fields_url=[],fields_sort=[],fields_event=[],*args,**kwargs):
+                 control_template='controls/ControlRecordList.html',fields_url=[],fields_sort=[],fields_event=[],*args,**kwargs):
         
         self.__records = list(queryset)
         self.__fields = fields

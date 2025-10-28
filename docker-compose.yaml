@@ -5,13 +5,18 @@ services:
     container_name: database
     image: postgres:16
     environment:
-      POSTGRES_DB: parentify_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   application:
     container_name: application
@@ -21,7 +26,16 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - database
+      database:
+        condition: service_healthy
+    command: >
+      sh -c "
+        python manage.py init_db --config=Test &&
+        python manage.py runserver --config=Test 0.0.0.0:8000
+      "
+    volumes:
+      - db_initialized:/tmp
 
 volumes:
   postgres_data:
+  db_initialized:

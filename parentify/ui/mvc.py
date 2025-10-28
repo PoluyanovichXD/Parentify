@@ -36,7 +36,7 @@ class PageModelEditor(PageSimple):
         return ControlRecord(self._model_info.query.filter(primary_key == itemId), self._record_fields,
                              self._record_template)
 
-    def items(self, request, page_number, filter_form=None, toobar_buttons=None, list_name=None, get = None, controls=None,recordlist_template='controls/ControlRecordlist.html',*args,**kwargs):
+    def items(self, request, page_number, filter_form=None, toobar_buttons=None, list_name=None, get = None, controls=None,recordlist_template='controls/ControlRecordList.html',*args,**kwargs):
         if 'closeall' in request.GET:
             self._model_info.model_editor_close_alltabs()
             raise HttpRedirectException(request.path)
