@@ -8,15 +8,14 @@ import datetime
 
 class FormPlace(FormBase):
     title = TextInputField(label=_("Название"), required=True)
-    description = TextAreaInputField(label=_("Описание"), required=False)
-    address = TextInputField(label=_("Адрес"), required=False)
     phone = TextInputField(label=_("Телефон"), required=False)
     website = TextInputField(label=_("Веб-сайт"), required=False)
-    schedule = TextInputField(label=_("Режим работы"), required=False)
-    latitude = NumberInputField(label=_("Широта"), required=True)
-    longitude = NumberInputField(label=_("Долгота"), required=True)
-    rating = NumberInputField(label=_("Рейтинг"), required=False)
-    tags = TextInputField(label=_("Теги"), required=False, multiply=True)
+    schedule = TextInputField(label=_("Режим работы"), required=True)
+    rating = NumberInputField(label=_("Рейтинг"), required=False, min=0, max=5)
+    tags = TextInputField(label=_("Теги(через запятую)"), required=False)
+    address = TextInputField(label=_("Адрес"), required=True)
+    coords = CoordinatesInputField(label=_("Координаты"), required=True)
+    description = TextAreaInputField(label=_("Описание"), required=False)
     image = FileField(label=_("Изображение"), required=False, images_type=True)
 
     def __init__(self, request, place_id=None):
@@ -24,6 +23,7 @@ class FormPlace(FormBase):
             self.place_id = place_id
             self.place = request.orm_session.query(Place).get(self.place_id)
             place_data = self.place.to_dict()
+            place_data['tags'] = place_data.get('tags_str','')
             super().__init__(request, place_data)
         else:
             self.place = Place()
@@ -39,10 +39,10 @@ class FormPlace(FormBase):
         self.place.phone = self.cleaned_data.get('phone')
         self.place.website = self.cleaned_data.get('website')
         self.place.schedule = self.cleaned_data.get('schedule')
-        self.place.latitude = self.cleaned_data.get('latitude')
-        self.place.longitude = self.cleaned_data.get('longitude')
-        self.place.rating = self.cleaned_data.get('rating')
-        self.place.tags = self.cleaned_data.get('tags', [])
+        self.place.latitude = self.cleaned_data.get('coords')[0] if self.cleaned_data.get('coords')[0] else None
+        self.place.longitude = self.cleaned_data.get('coords')[1] if self.cleaned_data.get('coords')[1] else None
+        self.place.rating = self.cleaned_data.get('rating', 0)
+        self.place.tags = [tag.strip() for tag in self.cleaned_data.get('tags', '').split(',')] if self.cleaned_data.get('tags') else []
         
         image_file = self.cleaned_data.get('image')
         if image_file:
@@ -58,10 +58,10 @@ class FormPlace(FormBase):
         self.place.phone = self.cleaned_data.get('phone')
         self.place.website = self.cleaned_data.get('website')
         self.place.schedule = self.cleaned_data.get('schedule')
-        self.place.latitude = self.cleaned_data.get('latitude')
-        self.place.longitude = self.cleaned_data.get('longitude')
-        self.place.rating = self.cleaned_data.get('rating')
-        self.place.tags = self.cleaned_data.get('tags', [])
+        self.place.latitude = self.cleaned_data.get('coords')[0] if self.cleaned_data.get('coords')[0] else None
+        self.place.longitude = self.cleaned_data.get('coords')[1] if self.cleaned_data.get('coords')[1] else None
+        self.place.rating = self.cleaned_data.get('rating', 0)
+        self.place.tags = [tag.strip() for tag in self.cleaned_data.get('tags', '').split(',')] if self.cleaned_data.get('tags') else []
         
         image_file = self.cleaned_data.get('image')
         if image_file:
@@ -74,7 +74,6 @@ class FormPlace(FormBase):
 class FormFilterPlace(FormModelFilter):
     title = TextInputField(label=_('Название'), max_length=255, required=False)
     address = TextInputField(label=_('Адрес'), max_length=255, required=False)
-    tags = TextInputField(label=_('Теги'), required=False, multiply=True)
     min_rating = NumberInputField(label=_('Минимальный рейтинг'), required=False)
     max_rating = NumberInputField(label=_('Максимальный рейтинг'), required=False)
 

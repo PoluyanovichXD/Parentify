@@ -11,7 +11,7 @@ class PagePlaceEditor(PageModelEditor):
     _page_title = _('Места')
 
     _record_template = 'records/RecordPlace.html'
-    _record_list_template = 'recordlists/RecordListPlace.html'
+    _record_list_template = 'recordlists/RecordListMap.html'
 
     _new_item_title = "Новое место"
 
@@ -20,7 +20,7 @@ class PagePlaceEditor(PageModelEditor):
         (_('id'), 'id'),
         (_('title'), 'title'),
         (_('description'), 'description'),
-        (_('image'), 'image'),
+        # (_('image'), 'image'),
         (_('image_url'), 'image_url'),
         (_('rating'), 'rating'),
         (_('tags'), 'tags'),

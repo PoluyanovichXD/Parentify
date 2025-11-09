@@ -411,7 +411,7 @@ class NotificationRead(Base):
     
 
 class Place(Base):
-    __tablename__ = "places"
+    __tablename__ = "place"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
@@ -435,7 +435,28 @@ class Place(Base):
 
     def __repr__(self):
         return f"<Place(id={self.id}, title='{self.title}')>"
-
+    
+    @property
+    def image_url(self):
+        return f'/map/{self.id}/image.png'
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "description": self.description,
+            "image": self.image_url,
+            "rating": self.rating,
+            "tags": self.tags,
+            "tags_str": ','.join(self.tags),
+            "address": self.address,
+            "phone": self.phone,
+            "website": self.website,
+            "schedule": self.schedule,
+            "latitude": self.latitude,
+            "longitude": self.longitude,
+            "coords": f"{self.latitude},{self.longitude}"
+        }
 
 class SiteEvent(Base):
     __tablename__ = "site_event"

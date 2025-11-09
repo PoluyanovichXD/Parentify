@@ -1,0 +1,360 @@
+<div class="min-h-screen bg-gray-50 flex flex-col">
+    <!-- Заголовок -->
+    <div class="bg-white shadow-sm border-b border-gray-200">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Детские места Минска</h1>
+                    <p class="text-gray-600 mt-2">Лучшие площадки, кафе и развлечения для детей в городе</p>
+                </div>
+                
+                <!-- Фильтры -->
+                <div class="flex flex-wrap gap-3">
+                    {% if request.current_user and request.current_user.is_admin %}
+                    <a onclick="ClickBtn('0/new/')" class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-purple-600 hover:bg-purple-700transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
+                        <i class="fas fa-plus mr-2 text-sm"></i>
+                        Добавить место
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="flex-1 flex flex-col md:flex-row">
+        <!-- Карта -->
+        <div class="flex-1 h-96 md:h-auto relative">
+            <div id="map" class="w-full h-full"></div>
+            
+            <!-- Кнопка переключения сайдбара -->
+            <button id="toggleSidebar" style="display: none;" class="absolute top-4 right-4 z-10 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition-colors">
+                <i class="fas fa-chevron-right text-gray-700"></i>
+            </button>
+        </div>
+
+        <!-- Список мест -->
+        <div id="sidebar" class="w-full md:w-96 bg-white border-l border-gray-200 overflow-y-auto">
+            <div class="p-4 border-b border-gray-200">
+                <h3 class="font-semibold text-gray-800">Рекомендованные места <span id="placesCount"></span></h3>
+            </div>
+            <div id="placesList" class="divide-y divide-gray-100">
+                {% for row in control.content %}
+                <div class="p-4 hover:bg-gray-50 cursor-pointer transition-colors" data-place-id="{{forloop.counter0}}">
+                    <div class="flex gap-3">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-400 rounded-lg flex items-center justify-center text-white">
+                            <i class="fas fa-child text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">{{row.2.title}}</h4>
+                            <p class="text-sm text-gray-600 mt-1">{{row.2.address}}</p>
+                            <div class="flex items-center gap-4 mt-2">
+                                <span class="flex items-center gap-1 text-sm text-gray-500">
+                                    <i class="fas fa-star text-yellow-400"></i> {{row.2.rating}}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <!-- <div class="p-4 hover:bg-gray-50 cursor-pointer transition-colors" data-place-id="1">
+                    <div class="flex gap-3">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-400 rounded-lg flex items-center justify-center text-white">
+                            <i class="fas fa-child text-xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">Парк Горького</h4>
+                            <p class="text-sm text-gray-600 mt-1">Центральный детский парк с аттракционами</p>
+                            <div class="flex items-center gap-4 mt-2">
+                                <span class="flex items-center gap-1 text-sm text-gray-500">
+                                    <i class="fas fa-map-marker-alt"></i> 1.2 км
+                                </span>
+                                <span class="flex items-center gap-1 text-sm text-gray-500">
+                                    <i class="fas fa-star text-yellow-400"></i> 4.8
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно с деталями места -->
+<div id="placeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex justify-between items-start">
+                <h3 id="modalTitle" class="text-2xl font-bold text-gray-800">Название места</h3>
+                <div>
+                    {% if request.current_user and request.current_user.is_admin %}
+                    <button type="button" id="btnAdminMapEdit" class="text-gray-400 hover:text-gray-600 text-xl">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    {% endif %}
+                    <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <img id="modalImage" src="" alt="" class="w-full h-48 object-cover rounded-lg">
+                </div>
+                <div>
+                    <div class="flex items-center gap-4 mb-4">
+                        <span>Рейтинг: </span>
+                        <span id="modalRating" class="flex items-center gap-1 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">
+                            <i class="fas fa-star"></i> 0
+                        </span>
+                        <span id="modalDistance" class="text-gray-600"></span>
+                    </div>
+                    <p id="modalDescription" class="text-gray-700 mb-4">Описание места</p>
+                    <div id="modalFeatures" class="space-y-2"></div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-200 pt-6">
+                <h4 class="font-semibold text-gray-800 mb-3">Контакты</h4>
+                <div id="modalContacts" class="space-y-2 text-gray-600"></div>
+            </div>
+            
+            <div class="border-t border-gray-200 pt-6 mt-6">
+                <h4 class="font-semibold text-gray-800 mb-3">Часы работы</h4>
+                <div id="modalHours" class="text-gray-600"></div>
+            </div>
+        </div>
+        
+        <!-- <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+            <div class="flex gap-3">
+                <button class="flex-1 bg-purple-500 text-white py-3 rounded-lg font-semibold hover:bg-purple-600 transition-colors">
+                    <i class="fas fa-route mr-2"></i>Построить маршрут
+                </button>
+                <button class="flex-1 bg-yellow-500 text-gray-800 py-3 rounded-lg font-semibold hover:bg-yellow-600 transition-colors">
+                    <i class="fas fa-heart mr-2"></i>В избранное
+                </button>
+            </div>
+        </div> -->
+    </div>
+</div>
+
+<!-- Яндекс Карты API -->
+<script src="https://api-maps.yandex.ru/2.1/?apikey=b16ac9f2-b515-4061-a6e6-195448556d46&lang=ru_RU" type="text/javascript"></script>
+
+<script>
+    // Данные мест
+    const placesData = [
+        // {% for row in control.content %}
+        {
+            id: "{{row.2.id}}",
+            title: "{{row.2.title}}",
+            description: "{{row.2.description}}",
+            coordinates: [Number("{{row.2.latitude}}"), Number("{{row.2.longitude}}")],
+            rating: Number("{{row.2.rating}}"),
+            distance: "",
+            type: "cafe",
+            features: [
+                // {% for item in row.2.tags %}
+                "{{item}}",
+                // {% endfor %}
+            ],
+            contacts: {
+                address: "{{row.2.address}}",
+                phone: "{{row.2.phone}}",
+                website: "{{row.2.website}}"
+            },
+            hours: "{{row.2.schedule}}",
+            image: "{{row.2.image_url}}"
+        },
+        // {% endfor %}
+    ]
+    // const placesData = {
+        // 1: {
+        //     title: "Парк Горького",
+        //     description: "Крупнейший детский парк в центре Минска с множеством аттракционов, игровых площадок и развлечений для детей всех возрастов.",
+        //     coordinates: [53.9016, 27.5645],
+        //     rating: 4.8,
+        //     distance: "1.2 км",
+        //     type: "park",
+        //     features: ["Аттракционы", "Детские площадки", "Кафе", "Прогулочные зоны"],
+        //     contacts: {
+        //         address: "ул. Фрунзе, 2",
+        //         phone: "+375 (17) 123-45-67",
+        //         website: "park-gorkogo.by"
+        //     },
+        //     hours: "Ежедневно 9:00 - 22:00",
+        //     image: "https://images.unsplash.com/photo-1574613362884-0a6c0a4d9c6a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+        // },
+    // };
+
+    // Инициализация карты
+    let map;
+    let placemarks = [];
+
+    ymaps.ready(initMap);
+
+    function initMap() {
+        map = new ymaps.Map('map', {
+            center: [53.9006, 27.5590], // Центр Минска
+            zoom: 12,
+            controls: ['zoomControl', 'fullscreenControl']
+        });
+
+        // Добавляем метки мест
+        Object.keys(placesData).forEach(placeId => {
+            const place = placesData[placeId];
+            const placemark = new ymaps.Placemark(place.coordinates, {
+                balloonContent: `
+                    <div class="p-2">
+                        <h4 class="font-semibold">${place.title}</h4>
+                        <p class="text-sm text-gray-600">${place.description.substring(0, 100)}...</p>
+                        <button onclick="openModal(${placeId})" class="mt-2 bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600">
+                            Подробнее
+                        </button>
+                    </div>
+                `
+            }, {
+                preset: 'islands#blueIcon'
+            });
+
+            placemark.events.add('click', function() {
+                openModal(placeId);
+            });
+
+            map.geoObjects.add(placemark);
+            placemarks.push(placemark);
+        });
+    }
+
+    // Функция для обновления размеров карты
+    function updateMapSize() {
+        if (map) {
+            setTimeout(() => {
+                map.container.fitToViewport();
+            }, 300); // Задержка для завершения анимации
+        }
+    }
+
+    // Функции модального окна
+    function openModal(placeId) {
+        event.preventDefault()
+        const place = placesData[placeId];
+        
+        document.getElementById('modalTitle').textContent = place.title;
+        document.getElementById('modalImage').src = place.image;
+        document.getElementById('modalRating').innerHTML = `<i class="fas fa-star"></i> ${place.rating}`;
+        document.getElementById('modalDistance').textContent = place.distance + '';
+        document.getElementById('modalDescription').textContent = place.description;
+        document.getElementById('btnAdminMapEdit').setAttribute('onclick', `LinkRedirect("/map/${place.id}/edit")`);
+        
+        
+        // Особенности
+        const featuresHtml = place.features.map(feature => 
+            `<span class="inline-block bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm mr-2 mb-2">${feature}</span>`
+        ).join('');
+        document.getElementById('modalFeatures').innerHTML = featuresHtml;
+        
+        // Контакты
+        const contactsHtml = `
+            <div class="flex items-center gap-2">
+                <i class="fas fa-map-marker-alt text-gray-400 w-4"></i>
+                <span>${place.contacts.address}</span>
+            </div>
+            ${place.contacts.phone ? `
+            <div class="flex items-center gap-2">
+                <i class="fas fa-phone text-gray-400 w-4"></i>
+                <span>${place.contacts.phone}</span>
+            </div>` : ''}
+            ${place.contacts.website ? `
+            <div class="flex items-center gap-2">
+                <i class="fas fa-globe text-gray-400 w-4"></i>
+                <span>${place.contacts.website}</span>
+            </div>` : ''}
+        `;
+        document.getElementById('modalContacts').innerHTML = contactsHtml;
+        
+        // Часы работы
+        document.getElementById('modalHours').textContent = place.hours;
+        
+        document.getElementById('placeModal').classList.remove('hidden');
+        document.getElementById('placeModal').classList.add('flex');
+    }
+
+    function closeModal() {
+        event.preventDefault()
+        document.getElementById('placeModal').classList.add('hidden');
+        document.getElementById('placeModal').classList.remove('flex');
+    }
+
+    // Обработка кликов по списку мест
+    document.querySelectorAll('[data-place-id]').forEach(item => {
+        item.addEventListener('click', function() {
+            event.preventDefault();
+            const placeId = this.getAttribute('data-place-id');
+            openModal(placeId);
+            
+            // Центрируем карту на выбранном месте
+            const place = placesData[placeId];
+            map.setCenter(place.coordinates, 15);
+        });
+    });
+
+    // Управление сайдбаром
+    const sidebar = document.getElementById('sidebar');
+    const toggleButton = document.getElementById('toggleSidebar');
+    const mainContainer = document.querySelector('.min-h-screen');
+    let isSidebarHidden = false;
+
+    toggleButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        
+        if (isSidebarHidden) {
+            // Показать сайдбар
+            sidebar.classList.remove('sidebar-hidden');
+            toggleButton.querySelector('i').classList.remove('fa-chevron-left');
+            toggleButton.querySelector('i').classList.add('fa-chevron-right');
+            isSidebarHidden = false;
+        } else {
+            // Скрыть сайдбар
+            sidebar.classList.add('sidebar-hidden');
+            toggleButton.querySelector('i').classList.remove('fa-chevron-right');
+            toggleButton.querySelector('i').classList.add('fa-chevron-left');
+            isSidebarHidden = true;
+        }
+        
+        // Обновляем размеры карты после изменения видимости сайдбара
+        updateMapSize();
+    });
+
+    // Адаптивность для мобильных устройств
+    function handleResize() {
+        if (window.innerWidth < 768) {
+            // На мобильных устройствах сайдбар скрыт по умолчанию
+            sidebar.classList.add('sidebar-hidden');
+            toggleButton.querySelector('i').classList.remove('fa-chevron-right');
+            toggleButton.querySelector('i').classList.add('fa-chevron-left');
+            isSidebarHidden = true;
+        } else {
+            // На десктопе сайдбар виден по умолчанию
+            sidebar.classList.remove('sidebar-hidden');
+            toggleButton.querySelector('i').classList.remove('fa-chevron-left');
+            toggleButton.querySelector('i').classList.add('fa-chevron-right');
+            isSidebarHidden = false;
+        }
+        
+        // Обновляем размеры карты при изменении размера окна
+        updateMapSize();
+    }
+
+    // Инициализация при загрузке
+    window.addEventListener('load', handleResize);
+    window.addEventListener('resize', handleResize);
+</script>
+
+{% for subcontrol in control.controls %}
+    {% include subcontrol.template with control=subcontrol %}
+{% endfor %}

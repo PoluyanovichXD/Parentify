@@ -55,6 +55,7 @@
         </div>
     </header>
     <main class="flex-grow">
+        {% block page_wrapper %}
         <div class="container mx-auto px-5 max-w-6xl mb-12">
             {% block page %}
             {% for subcontrol in controls %}
@@ -65,6 +66,7 @@
             {% endfor %}
             {% endblock %}
         </div>
+        {% endblock %}
     </main>
     <footer class="bg-gray-100 pt-16 pb-8 mt-auto">
         <div class="container mx-auto px-5 max-w-6xl">
