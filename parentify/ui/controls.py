@@ -290,16 +290,18 @@ class ControlRecordlist(ControlBase):
                         elif sv_class==DateTime or type(sv) == datetime.datetime:
                             sv = sv.strftime('%d %b %Yг %H:%M')
                         elif type(sv)==list or type(sv)==tuple:
-                            sv = ', '.join([str(svi) for svi in sv])
+                            # sv = ', '.join([str(svi) for svi in sv])
+                            sv = [str(svi) for svi in sv]
                     except Exception as ex:
                         print(ex)
-                    
-                    if not self._kwargs.get('only_data'):
-                        valRow.append(str(sv))
-                        keyRow.append(str(f[1]))
-                    else:
-                        valRow.append(sv)
-                        keyRow.append(f[1])
+                    valRow.append(sv)
+                    keyRow.append(f[1])
+                    # if not self._kwargs.get('only_data'):
+                    #     valRow.append(str(sv))
+                    #     keyRow.append(str(f[1]))
+                    # else:
+                    #     valRow.append(sv)
+                    #     keyRow.append(f[1])
             else:
                 if type(o) == dict:
                     valRow = {}

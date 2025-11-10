@@ -415,6 +415,8 @@ class Place(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
+    category_id = Column(Integer, ForeignKey('place_category.id'), nullable=False)
+
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
 
@@ -433,6 +435,8 @@ class Place(Base):
 
     schedule = Column(String(255), nullable=True)
 
+    category = relationship('PlaceCategory', back_populates='places')
+
     def __repr__(self):
         return f"<Place(id={self.id}, title='{self.title}')>"
     
@@ -443,6 +447,7 @@ class Place(Base):
     def to_dict(self):
         return {
             "id": self.id,
+            "category_id": self.category_id,
             "title": self.title,
             "description": self.description,
             "image": self.image_url,
@@ -457,6 +462,43 @@ class Place(Base):
             "longitude": self.longitude,
             "coords": f"{self.latitude},{self.longitude}"
         }
+    
+class PlaceCategory(Base):
+    __tablename__ = 'place_category'
+    url_key_name = 'id'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(100), nullable=False, unique=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    places = relationship('Place', back_populates='category')
+    
+    def __repr__(self):
+        return f'<PlaceCategory {self.name}>'
+    
+    def __str__(self):
+        return self.name
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "created_at": self.created_at
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class SiteEvent(Base):
     __tablename__ = "site_event"

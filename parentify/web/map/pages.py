@@ -31,3 +31,14 @@ class PagePlaceEditor(PageModelEditor):
         (_('website'), 'website'),
         (_('schedule'), 'schedule')
     )
+
+class PageCategoryEditor(PageModelEditor):
+
+    _page_title = _('Категории мест')
+
+    _new_item_title = "Новая категория"
+
+    _default_page_size = 30
+    _fields = ((_('Название'), 'name',),)
+    toolbar = ControlButtonsBar()
+    toolbar.add_button(_('Добавить новую категорию'), 'add', redirect_url='0/new/',is_admin=True)
