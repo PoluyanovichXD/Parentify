@@ -1,7 +1,7 @@
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
-from parentify.models.models import Place
+from parentify.models.models import Place, PlaceCategory
 from parentify.ui.controls import ControlInputs
 from parentify.ui.decorators import common_page, with_form, with_get_int
 from parentify.ui.mvc import PageModelInfo

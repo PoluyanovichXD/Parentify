@@ -8,13 +8,14 @@ import datetime
 
 class FormPlace(FormBase):
     title = TextInputField(label=_("Название"), required=True)
+    rating = NumberInputField(label=_("Рейтинг"), required=False, min=0, max=5)
     phone = TextInputField(label=_("Телефон"), required=False)
     website = TextInputField(label=_("Веб-сайт"), required=False)
     schedule = TextInputField(label=_("Режим работы"), required=True)
-    rating = NumberInputField(label=_("Рейтинг"), required=False, min=0, max=5)
-    tags = TextInputField(label=_("Теги"), required=False, multiply=True)
+    category_id = SelectInputField(label=_("Категория"), required=True)
     address = TextInputField(label=_("Адрес"), required=True)
     coords = CoordinatesInputField(label=_("Координаты"), required=True)
+    tags = TextInputField(label=_("Теги"), required=False, multiply=True)
     description = TextAreaInputField(label=_("Описание"), required=False)
     image = FileField(label=_("Изображение"), required=False, images_type=True)
 
@@ -27,6 +28,7 @@ class FormPlace(FormBase):
         else:
             self.place = Place()
             super().__init__(request)
+        self.fields['category_id'].choices = choise_name_orm(request, PlaceCategory, False)
 
     def clean(self):
         super(FormPlace, self).clean()
@@ -34,6 +36,7 @@ class FormPlace(FormBase):
     def cmd_model_create(self, request):
         coords = [float(item) for item in self.cleaned_data.get('coords').split(',')] if self.cleaned_data.get('coords') else [None, None]
         self.place.title = self.cleaned_data.get('title')
+        self.place.category_id = self.cleaned_data.get('category_id')
         self.place.description = self.cleaned_data.get('description')
         self.place.address = self.cleaned_data.get('address')
         self.place.phone = self.cleaned_data.get('phone')
@@ -54,6 +57,7 @@ class FormPlace(FormBase):
     def cmd_model_update(self, request):
         coords = [float(item) for item in self.cleaned_data.get('coords').split(',')] if self.cleaned_data.get('coords') else [None, None]
         self.place.title = self.cleaned_data.get('title')
+        self.place.category_id = self.cleaned_data.get('category_id')
         self.place.description = self.cleaned_data.get('description')
         self.place.address = self.cleaned_data.get('address')
         self.place.phone = self.cleaned_data.get('phone')
@@ -123,12 +127,12 @@ class FormCategory(FormBase):
         self.category.name = self.cleaned_data.get('name')
         self.request.orm_session.add(self.category)
         self.request.orm_session.commit()
-        return '/article/categories'
+        return '/map/categories'
 
     def cmd_model_update(self, request):
         self.category.name = self.cleaned_data.get('name')
         self.request.orm_session.commit()
-        return f'/article/categories'
+        return f'/map/categories'
 class FormFilterCategory(FormModelFilter):
     name = TextInputField(label=_('Название'), max_length=350, required=False)
     def __init__(self, request):

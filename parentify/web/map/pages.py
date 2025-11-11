@@ -21,6 +21,7 @@ class PagePlaceEditor(PageModelEditor):
         (_('title'), 'title'),
         (_('description'), 'description'),
         # (_('image'), 'image'),
+        (_('category'), 'category'),
         (_('image_url'), 'image_url'),
         (_('rating'), 'rating'),
         (_('tags'), 'tags'),

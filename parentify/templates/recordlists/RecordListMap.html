@@ -50,7 +50,7 @@
                             <i class="fas fa-child text-xl"></i>
                         </div>
                         <div class="flex-1">
-                            <h4 class="font-semibold text-gray-800">{{row.2.title}}</h4>
+                            <h4 class="font-semibold text-gray-800">{{row.2.category.name}}: {{row.2.title}}</h4>
                             <p class="text-sm text-gray-600 mt-1">{{row.2.address}}</p>
                             <div class="flex items-center gap-4 mt-2">
                                 <span class="flex items-center gap-1 text-sm text-gray-500">
@@ -163,7 +163,7 @@
             coordinates: [Number("{{row.2.latitude}}"), Number("{{row.2.longitude}}")],
             rating: Number("{{row.2.rating}}".replace(',','.')),
             distance: "",
-            type: "cafe",
+            type: "{{row.2.category.name}}",
             features: [
                 // {% for item in row.2.tags %}
                 //{{row.2.tags}}
@@ -252,7 +252,7 @@
         event.preventDefault()
         const place = placesData[placeId];
         
-        document.getElementById('modalTitle').textContent = place.title;
+        document.getElementById('modalTitle').textContent = `${place.type}: ${place.title}`;
         document.getElementById('modalImage').src = place.image;
         document.getElementById('modalRating').innerHTML = `<i class="fas fa-star"></i> ${place.rating}`;
         document.getElementById('modalDistance').textContent = place.distance + '';

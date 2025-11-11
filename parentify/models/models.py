@@ -285,6 +285,7 @@ class ForumTopic(Base):
     __tablename__ = 'forum_topic'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
+    category_id = Column(Integer, ForeignKey('forum_topic_category.id'), nullable=False)
     title = Column(String(200), nullable=False, index=True)
     content = Column(Text, nullable=False)
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
@@ -296,13 +297,15 @@ class ForumTopic(Base):
     
     user = relationship('User', back_populates='forum_topics')
     comments = relationship("ForumComment", back_populates="topic", cascade="all, delete-orphan")
+    category = relationship('ForumTopicCategory', back_populates='forums')
     
     def __repr__(self):
         return f"<ForumTopic(id={self.id}, title='{self.title}')>"
-    
+
     def to_dict(self):
         return {
             'id': self.id,
+            "category_id": self.category_id,
             'title': self.title,
             'content': self.content,
             'user_id': self.user_id,
@@ -311,6 +314,29 @@ class ForumTopic(Base):
             'tags': self.tags.split(',') if self.tags else [],
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+class ForumTopicCategory(Base):
+    __tablename__ = 'forum_topic_category'
+    url_key_name = 'id'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(100), nullable=False, unique=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    forums = relationship('ForumTopic', back_populates='category')
+    
+    def __repr__(self):
+        return f'<ForumTopicCategory {self.name}>'
+    
+    def __str__(self):
+        return self.name
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "created_at": self.created_at
         }
 
 

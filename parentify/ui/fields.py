@@ -226,6 +226,8 @@ class NumberInputField(forms.CharField):
     def __init__(self,multiply=False,validator=False,visible_text=True,min=None,max=None,step="1",*args, **kwargs):
         super().__init__(*args,**kwargs_init(**kwargs))
         self.step = step
+        self.min = min
+        self.max = max
         self._multiply = multiply
         self.widget = NumberInputWidget(attrs={'type': 'number','label':self.label,'visible_text':visible_text,'validator':validator,'multiply':multiply,'min':min,'max':max,'step':step}|kwargs)
     @property
@@ -242,9 +244,21 @@ class NumberInputField(forms.CharField):
             if not self.multiply:
                 value = value[0]
                 value = self.res_number(value) if value and not str(value).isspace() else None
+                if value is not None:
+                    if self.min is not None and value < self.min:
+                        raise ValidationError(_(f'Значение не может быть меньше {self.min}'))
+                    if self.max is not None and value > self.max:
+                        raise ValidationError(_(f'Значение не может быть больше {self.max}'))
             else:
                 value = [self.res_number(item) for item in list(filter(lambda x:x and not str(x).isspace(),value))]
                 value = value if value else None
+                if value:
+                    for item in value:
+                        if item is not None:
+                            if self.min is not None and item < self.min:
+                                raise ValidationError(_(f'Все значения должны быть не меньше {self.min}'))
+                            if self.max is not None and item > self.max:
+                                raise ValidationError(_(f'Все значения должны быть не больше {self.max}'))
             return value
         except ValueError:
             raise ValidationError(_('Некорректный ввод'))
