@@ -40,3 +40,9 @@ def profile(request, form_profile, form_password):
     page.add_control('form_profile', ControlInputs(form_profile))
     page.add_control('form_password', ControlInputs(form_password))
     return page
+
+@page_has_user()
+@common_page()
+def settings(request):
+    page = PageSimple('Профиль пользователя', 'pages/settings.html')
+    return page

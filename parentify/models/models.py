@@ -166,6 +166,19 @@ class UserChild(Base):
     def __str__(self):
         return self.full_name
     
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "is_active": self.is_active,
+            "birth_date": self.birth_date,
+            "gender": self.gender,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }
+    
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"

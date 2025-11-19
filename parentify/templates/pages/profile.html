@@ -149,28 +149,34 @@
                 <div class="bg-white rounded-xl shadow-lg p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-xl font-semibold text-gray-800">Мои дети</h3>
-                        <button class="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-dark transition-colors flex items-center gap-2">
+                        <a href="/profile/childs/0/new" class="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary-dark transition-colors flex items-center gap-2">
                             <i class="fas fa-plus"></i> Добавить ребенка
-                        </button>
+                        </a>
                     </div>
 
-                    {% if user.childs %}
+                    {% if user.children %}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {% for child in user.childs %}
+                        {% for child in user.children %}
                         <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-colors">
                             <div class="flex items-center gap-3 mb-3">
                                 <div class="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white font-semibold">
-                                    {{ child.name|first }}
+                                    {{ child.first_name|first }}{{ child.last_name|first }}
                                 </div>
                                 <div>
-                                    <h4 class="font-semibold text-gray-800">{{ child.name }}</h4>
-                                    <p class="text-sm text-gray-600">{{ child.get_age_display }}</p>
+                                    <h4 class="font-semibold text-gray-800">{{ child.first_name }} {{ child.last_name }}</h4>
+                                    <p class="text-sm text-gray-600">
+                                        {{ child.birth_date|date:"d.m.Y" }} • 
+                                        {% if child.gender == 'MALE' %}Мальчик{% elif child.gender == 'FEMALE' %}Девочка{% else %}Не указан{% endif %}
+                                    </p>
+                                    {% if child.zodiac_sign %}
+                                    <p class="text-xs text-gray-500 mt-1">Знак зодиака: {{ child.zodiac_sign }}</p>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="flex gap-2">
-                                <button class="flex-1 bg-gray-100 text-gray-700 py-2 rounded text-sm hover:bg-gray-200 transition-colors">
+                                <a href="/profile/childs/{{ child.id }}/edit" class="flex-1 bg-gray-100 text-gray-700 py-2 rounded text-sm hover:bg-gray-200 transition-colors text-center">
                                     <i class="fas fa-edit mr-1"></i> Изменить
-                                </button>
+                                </a>
                                 <button class="flex-1 bg-gray-100 text-gray-700 py-2 rounded text-sm hover:bg-gray-200 transition-colors">
                                     <i class="fas fa-chart-line mr-1"></i> Статистика
                                 </button>
@@ -190,76 +196,28 @@
         </div>
     </div>
 </div>
-
-<!-- Модальное окно для добавления ребенка -->
-<div id="addChildModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-        <h3 class="text-xl font-semibold mb-4">Добавить ребенка</h3>
-        <form method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="form_type" value="add_child">
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Имя ребенка</label>
-                    <input type="text" name="child_name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Дата рождения</label>
-                    <input type="date" name="child_birth_date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Пол</label>
-                    <select name="child_gender" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors">
-                        <option value="MALE">Мужской</option>
-                        <option value="FEMALE">Женский</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="flex gap-3 justify-end mt-6">
-                <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">Отмена</button>
-                <button type="submit" class="bg-primary text-white px-6 py-2 rounded-lg font-semibold hover:bg-primary-dark transition-colors">Добавить</button>
-            </div>
-        </form>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
     // Функции для показа/скрытия пароля
     document.querySelectorAll('button[type="button"]').forEach(button => {
-        button.addEventListener('click', function() {
-            const input = this.parentElement.querySelector('input');
-            const icon = this.querySelector('i');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        });
+        if (button.querySelector('i.fa-eye') || button.querySelector('i.fa-eye-slash')) {
+            button.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('input');
+                const icon = this.querySelector('i');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        }
     });
-
-    // Функции для модального окна
-    function openModal() {
-        document.getElementById('addChildModal').classList.remove('hidden');
-        document.getElementById('addChildModal').classList.add('flex');
-    }
-
-    function closeModal() {
-        document.getElementById('addChildModal').classList.add('hidden');
-        document.getElementById('addChildModal').classList.remove('flex');
-    }
-
-    // Обработка клика по кнопке добавления ребенка
-    document.querySelector('button:contains("Добавить ребенка")').addEventListener('click', openModal);
 </script>
 {% endblock %}
