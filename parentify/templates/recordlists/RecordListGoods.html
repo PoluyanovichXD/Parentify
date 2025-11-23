@@ -1,0 +1,325 @@
+<div class="min-h-screen bg-gray-50 flex flex-col">
+    <!-- Заголовок -->
+    <div class="bg-white shadow-sm border-b border-gray-200">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Рекомендованные товары для детей</h1>
+                    <p class="text-gray-600 mt-2">Проверенные детские товары, отобранные экспертами для безопасности и развития вашего ребенка</p>
+                </div>
+                
+                <!-- Действия -->
+                <div class="flex flex-wrap gap-3">
+                    {% if request.current_user and request.current_user.is_admin %}
+                    <a onclick="ClickBtn('0/new/')" class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-purple-600 hover:bg-purple-700 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
+                        <i class="fas fa-plus mr-2 text-sm"></i>
+                        Добавить товар
+                    </a>
+                    <a onclick="ClickBtn('categories/')" class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-purple-600 hover:bg-purple-700 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
+                        <i class="fas fa-tags mr-2 text-sm"></i>
+                        Категории товаров
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="flex-1">
+        <!-- Категории -->
+        <section class="container mt-8">
+            <div class="categories flex justify-center gap-4 mb-8 flex-wrap">
+                <div class="category active px-5 py-3 bg-white rounded-full font-semibold cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md" data-category="all">
+                    Все товары
+                </div>
+                {% for category in control.categories %}
+                <div class="category px-5 py-3 bg-white rounded-full font-semibold cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md" data-category="{{ category.id }}">
+                    {{ category.name }}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Сетка товаров -->
+        <section class="container products-section">
+            <div class="products-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for row in control.content %}
+                <div class="product-card bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1" data-category="{{ row.2.category_id }}">
+                    <!-- Изображение товара -->
+                    <div class="product-image h-48 overflow-hidden relative">
+                        {% if row.2.image %}
+                        <img src="{{row.2.image_url}}" 
+                             alt="{{ row.2.title }}" 
+                             class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+                        {% else %}
+                        <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                            <i class="fas fa-shopping-bag text-4xl text-gray-400"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Бейдж статуса -->
+                        <div class="product-badge absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold 
+                            {% if row.2.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {% if row.2.is_active %}Активный{% else %}Неактивный{% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Содержимое карточки -->
+                    <div class="product-content p-5 flex flex-col flex-grow">
+                        <!-- Категория -->
+                        <div class="mb-3">
+                            <span class="inline-block px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded">
+                                {% if row.2.category %}
+                                    {{ row.2.category.name }}
+                                {% else %}
+                                    Без категории
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <!-- Заголовок -->
+                        <h3 class="product-title text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
+                            {{ row.2.title }}
+                        </h3>
+                        
+                        <!-- Описание -->
+                        <p class="product-description text-gray-600 text-sm mb-4 flex-grow line-clamp-3">
+                            {{ row.2.description|default:"Описание товара отсутствует" }}
+                        </p>
+                        
+                        <!-- Место покупки -->
+                        {% if row.2.best_place_to_buy %}
+                        <div class="product-recommendation bg-gray-50 rounded-lg p-3 mb-4">
+                            <div class="recommendation-title font-semibold text-gray-800 text-sm mb-1 flex items-center gap-2">
+                                <i class="fas fa-store text-primary text-xs"></i>
+                                Лучшее место покупки
+                            </div>
+                            <p class="recommendation-text text-gray-600 text-xs">
+                                {{ row.2.best_place_to_buy }}
+                            </p>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Действия -->
+                        <div class="product-actions flex gap-2 mt-auto">
+                            <a onclick="ClickBtn('{{ row.2.id }}/')" 
+                               class="product-btn-primary flex-1 bg-primary text-white py-2 px-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors text-sm text-center cursor-pointer flex items-center justify-center gap-2">
+                                <i class="fas fa-eye text-xs"></i>
+                                Подробнее
+                            </a>
+                            
+                            {% if request.current_user and request.current_user.is_admin %}
+                            <a onclick="ClickBtn('{{ row.2.id }}/edit/')" 
+                               class="product-btn-secondary flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors text-sm text-center cursor-pointer flex items-center justify-center gap-2">
+                                <i class="fas fa-edit text-xs"></i>
+                                Изменить
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <!-- Состояние пустого списка -->
+                <div class="col-span-3 bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
+                    <i class="fas fa-shopping-bag text-5xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Товары не найдены</h3>
+                    <p class="text-gray-600 mb-6">Добавьте первый товар для рекомендаций родителям</p>
+                    {% if request.current_user and request.current_user.is_admin %}
+                    <button onclick="ClickBtn('0/new/')" 
+                            class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-all duration-300 transform hover:-translate-y-0.5">
+                        <i class="fas fa-plus mr-2"></i>
+                        Добавить товар
+                    </button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Советы по выбору -->
+        <section class="container expert-advice mt-12 mb-8">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Советы по выбору товаров</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto mb-8">Рекомендации от наших экспертов по выбору лучших товаров для вашего ребенка</p>
+                
+                <div class="advice-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="advice-item bg-gray-50 rounded-xl p-5 text-left">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-check-circle text-primary"></i>
+                            Проверяйте состав
+                        </h3>
+                        <p class="text-gray-600 text-sm">Обращайте внимание на отсутствие вредных добавок, консервантов и искусственных красителей.</p>
+                    </div>
+                    
+                    <div class="advice-item bg-gray-50 rounded-xl p-5 text-left">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-check-circle text-primary"></i>
+                            Сравнивайте цены
+                        </h3>
+                        <p class="text-gray-600 text-sm">Пользуйтесь нашими рекомендациями по магазинам, чтобы найти лучшую цену на качественные товары.</p>
+                    </div>
+                    
+                    <div class="advice-item bg-gray-50 rounded-xl p-5 text-left">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-check-circle text-primary"></i>
+                            Читайте отзывы
+                        </h3>
+                        <p class="text-gray-600 text-sm">Изучайте отзывы других родителей перед покупкой новых продуктов.</p>
+                    </div>
+                    
+                    <div class="advice-item bg-gray-50 rounded-xl p-5 text-left">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-check-circle text-primary"></i>
+                            Учитывайте возраст
+                        </h3>
+                        <p class="text-gray-600 text-sm">Всегда обращайте внимание на возрастные рекомендации на упаковке товаров.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<style>
+.categories .category {
+    transition: all 0.3s ease;
+}
+
+.categories .category.active {
+    background-color: #f59fa8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 159, 168, 0.3);
+}
+
+.categories .category:not(.active):hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+.product-card {
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-image {
+    position: relative;
+}
+
+.product-badge {
+    z-index: 10;
+}
+</style>
+
+<script>
+// Фильтрация по категориям
+document.querySelectorAll('.category').forEach(category => {
+    category.addEventListener('click', function() {
+        // Убираем активный класс у всех категорий
+        document.querySelectorAll('.category').forEach(cat => {
+            cat.classList.remove('active');
+        });
+        
+        // Добавляем активный класс текущей категории
+        this.classList.add('active');
+        
+        const categoryId = this.getAttribute('data-category');
+        const productCards = document.querySelectorAll('.product-card');
+        
+        productCards.forEach(card => {
+            if (categoryId === 'all' || card.getAttribute('data-category') === categoryId) {
+                card.style.display = 'block';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 10);
+            } else {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    card.style.display = 'none';
+                }, 300);
+            }
+        });
+    });
+});
+
+// Плавное появление карточек при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    const productCards = document.querySelectorAll('.product-card');
+    productCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+
+// Функция для добавления в закладки (если понадобится)
+function toggleBookmark(productId) {
+    const button = event.target.closest('button');
+    const icon = button.querySelector('i');
+    
+    if (icon.classList.contains('far')) {
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+        button.classList.add('text-primary');
+        showNotification('Товар добавлен в закладки', 'success');
+    } else {
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+        button.classList.remove('text-primary');
+        showNotification('Товар удален из закладок', 'info');
+    }
+}
+
+function showNotification(message, type = 'info') {
+    // Создаем элемент уведомления
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium transform transition-all duration-300 ${
+        type === 'success' ? 'bg-green-500' : 
+        type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+    }`;
+    notification.textContent = message;
+    
+    // Добавляем уведомление на страницу
+    document.body.appendChild(notification);
+    
+    // Удаляем уведомление через 3 секунды
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+</script>
+
+{% for subcontrol in control.controls %}
+    {% include subcontrol.template with control=subcontrol %}
+{% endfor %}

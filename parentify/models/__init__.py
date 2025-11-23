@@ -7,7 +7,7 @@ from django.conf                    import settings
 
 
 
-DATABASE_CONNECTION_STRING = os.getenv('DATABASE_CONNECTION_STRING', 'postgresql+psycopg2://postgres:postgres@localhost/starkonet_web_develop')
+DATABASE_CONNECTION_STRING = os.getenv('DATABASE_CONNECTION_STRING', 'postgresql+psycopg2://postgres:postgres@localhost:5432/parentify_db')
 
 if DATABASE_CONNECTION_STRING.startswith('sqlite://'):
     engine = create_engine(DATABASE_CONNECTION_STRING)
@@ -20,6 +20,7 @@ session = scoped_session(Orm)
 Base = declarative_base()
 Base.query = session.query_property()
 Base.url_key = property(lambda self: getattr(self, self.url_key_name) )
+Base.url_key_name = 'id'
 Base.get_type = lambda self, name: 'Column' if name in inspect(self.__class__ if hasattr(self, '__class__') else self).columns else 'Relationship' if name in inspect(self.__class__ if hasattr(self, '__class__') else self).relationships else None
 Base.is_column = lambda self, name: self.get_type(name)=='Column'
 Base.is_relationship = lambda self, name: self.get_type(name)=='Relationship'

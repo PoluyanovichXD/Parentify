@@ -1,145 +1,150 @@
 from django.http import HttpResponseRedirect
 from django.utils.translation import gettext as _
-from parentify.models.models import Place, PlaceCategory
+from parentify.models.models import Goods, GoodsCategory
 from parentify.ui.forms import FormBase, FormModelFilter, choise_name_orm
 from parentify.ui.fields import *
 import datetime
 
 
 class FormGoods(FormBase):
-    title = TextInputField(label=_("Название"), required=True)
-    rating = NumberInputField(label=_("Рейтинг"), required=False, min=0, max=5)
-    phone = TextInputField(label=_("Телефон"), required=False)
-    website = TextInputField(label=_("Веб-сайт"), required=False)
-    schedule = TextInputField(label=_("Режим работы"), required=True)
+    title = TextInputField(label=_("Название товара"), required=True, max_length=500)
     category_id = SelectInputField(label=_("Категория"), required=True)
-    address = TextInputField(label=_("Адрес"), required=True)
-    coords = CoordinatesInputField(label=_("Координаты"), required=True)
-    tags = TextInputField(label=_("Теги"), required=False, multiply=True)
     description = TextAreaInputField(label=_("Описание"), required=False)
+    best_place_to_buy = TextInputField(label=_("Лучшее место покупки"), required=False, max_length=500)
     image = FileField(label=_("Изображение"), required=False, images_type=True)
+    # is_active = SwitchField(label=_("Активный"), required=False, default=True)
 
-    def __init__(self, request, place_id=None):
-        if place_id:
-            self.place_id = place_id
-            self.place = request.orm_session.query(Place).get(self.place_id)
-            place_data = self.place.to_dict()
-            super().__init__(request, place_data)
+    def __init__(self, request, goods_id=None):
+        if goods_id:
+            self.goods_id = goods_id
+            self.goods = request.orm_session.query(Goods).get(self.goods_id)
+            goods_data = self.goods.to_dict()
+            super().__init__(request, goods_data)
         else:
-            self.place = Place()
+            self.goods = Goods()
             super().__init__(request)
-        self.fields['category_id'].choices = choise_name_orm(request, PlaceCategory, False)
+        self.fields['category_id'].choices = choise_name_orm(request, GoodsCategory, False)
 
     def clean(self):
-        super(FormPlace, self).clean()
+        super(FormGoods, self).clean()
 
     def cmd_model_create(self, request):
-        coords = [float(item) for item in self.cleaned_data.get('coords').split(',')] if self.cleaned_data.get('coords') else [None, None]
-        self.place.title = self.cleaned_data.get('title')
-        self.place.category_id = self.cleaned_data.get('category_id')
-        self.place.description = self.cleaned_data.get('description')
-        self.place.address = self.cleaned_data.get('address')
-        self.place.phone = self.cleaned_data.get('phone')
-        self.place.website = self.cleaned_data.get('website')
-        self.place.schedule = self.cleaned_data.get('schedule')
-        self.place.latitude = coords[0] if coords[0] else None
-        self.place.longitude = coords[1] if coords[1] else None
-        self.place.rating = self.cleaned_data.get('rating', 0)
-        self.place.tags = self.cleaned_data.get('tags', []) if self.cleaned_data.get('tags') else []
+        self.goods.title = self.cleaned_data.get('title')
+        self.goods.category_id = self.cleaned_data.get('category_id')
+        self.goods.description = self.cleaned_data.get('description')
+        self.goods.best_place_to_buy = self.cleaned_data.get('best_place_to_buy')
+        self.goods.is_active = self.cleaned_data.get('is_active', True)
         
         image_file = self.cleaned_data.get('image')
         if image_file:
-            self.place.image = image_file.read()
+            self.goods.image = image_file.read()
         
-        request.orm_session.add(self.place)
+        request.orm_session.add(self.goods)
         request.orm_session.commit()
-        return '/map' 
-    def cmd_model_update(self, request):
-        coords = [float(item) for item in self.cleaned_data.get('coords').split(',')] if self.cleaned_data.get('coords') else [None, None]
-        self.place.title = self.cleaned_data.get('title')
-        self.place.category_id = self.cleaned_data.get('category_id')
-        self.place.description = self.cleaned_data.get('description')
-        self.place.address = self.cleaned_data.get('address')
-        self.place.phone = self.cleaned_data.get('phone')
-        self.place.website = self.cleaned_data.get('website')
-        self.place.schedule = self.cleaned_data.get('schedule')
-        self.place.latitude = coords[0] if coords[0] else None
-        self.place.longitude = coords[1] if coords[1] else None
-        self.place.rating = self.cleaned_data.get('rating', 0)
-        self.place.tags = self.cleaned_data.get('tags', []) if self.cleaned_data.get('tags') else []
-        
-        image_file = self.cleaned_data.get('image')
-        if image_file:
-            self.place.image = image_file.read()
-        
-        request.orm_session.commit()
-        return f'/map'
-    
+        return '/goods'
 
-class FormFilterPlace(FormModelFilter):
-    title = TextInputField(label=_('Название'), max_length=255, required=False)
-    address = TextInputField(label=_('Адрес'), max_length=255, required=False)
-    min_rating = NumberInputField(label=_('Минимальный рейтинг'), required=False)
-    max_rating = NumberInputField(label=_('Максимальный рейтинг'), required=False)
+    def cmd_model_update(self, request):
+        self.goods.title = self.cleaned_data.get('title')
+        self.goods.category_id = self.cleaned_data.get('category_id')
+        self.goods.description = self.cleaned_data.get('description')
+        self.goods.best_place_to_buy = self.cleaned_data.get('best_place_to_buy')
+        self.goods.is_active = self.cleaned_data.get('is_active', True)
+        
+        image_file = self.cleaned_data.get('image')
+        if image_file:
+            self.goods.image = image_file.read()
+        
+        request.orm_session.commit()
+        return f'/goods/{self.goods_id}'
+
+
+class FormFilterGoods(FormModelFilter):
+    title = TextInputField(label=_('Название товара'), max_length=500, required=False)
+    category_id = SelectInputField(label=_("Категория"), required=False)
+    best_place_to_buy = TextInputField(label=_('Место покупки'), max_length=500, required=False)
 
     def __init__(self, request):
-        super().__init__(request, 'place_filter')
+        super().__init__(request, 'goods_filter')
+        self.fields['category_id'].choices = choise_name_orm(request, GoodsCategory, True)
 
     def filter(self, data_query):
         if self.is_valid():
             if self.cleaned_data.get('title'):
-                data_query = data_query.filter(Place.title.ilike("%" + self.cleaned_data['title'] + "%"))
+                data_query = data_query.filter(Goods.title.ilike("%" + self.cleaned_data['title'] + "%"))
             
-            if self.cleaned_data.get('address'):
-                data_query = data_query.filter(Place.address.ilike("%" + self.cleaned_data['address'] + "%"))
+            if self.cleaned_data.get('category_id'):
+                data_query = data_query.filter(Goods.category_id == self.cleaned_data.get('category_id'))
             
-            min_rating = self.cleaned_data.get('min_rating')
-            max_rating = self.cleaned_data.get('max_rating')
-            
-            if min_rating:
-                data_query = data_query.filter(Place.rating >= min_rating)
-            if max_rating:
-                data_query = data_query.filter(Place.rating <= max_rating)
+            if self.cleaned_data.get('best_place_to_buy'):
+                data_query = data_query.filter(Goods.best_place_to_buy.ilike("%" + self.cleaned_data['best_place_to_buy'] + "%"))
         
         return data_query
     
-
-# ArticleCategory
 class FormCategory(FormBase):
-    name = TextInputField(label=_('Название'), max_length=350, required=False)
+    name = TextInputField(label=_('Название категории'), max_length=255, required=True)
+
     def __init__(self, request, category_id=None):
         if category_id:
             self.category_id = category_id
-            self.category = request.orm_session.query(PlaceCategory).get(self.category_id)
+            self.category = request.orm_session.query(GoodsCategory).get(self.category_id)
             super().__init__(request, {
-                'name':self.category.name
+                'name': self.category.name
             })
         else:
-            self.category = PlaceCategory()
+            self.category = GoodsCategory()
             super().__init__(request)
     
     def clean(self):
         super(FormCategory, self).clean()
-        if self.request.orm_session.query(PlaceCategory).filter(PlaceCategory.name == self.cleaned_data.get('name')).first():
-            raise ValidationError(_("Данная категория уже присутствует"))
+        
+        # Проверка на уникальность названия категории
+        name = self.cleaned_data.get('name')
+        if name:
+            existing_category = self.request.orm_session.query(GoodsCategory).filter(
+                GoodsCategory.name == name
+            ).first()
+            
+            if existing_category and (not hasattr(self, 'category_id') or existing_category.id != self.category_id):
+                raise ValidationError(_("Категория с таким названием уже существует"))
 
     def cmd_model_create(self, request):
         self.category.name = self.cleaned_data.get('name')
         self.request.orm_session.add(self.category)
         self.request.orm_session.commit()
-        return '/map/categories'
+        return '/goods/categories'
 
     def cmd_model_update(self, request):
         self.category.name = self.cleaned_data.get('name')
         self.request.orm_session.commit()
-        return f'/map/categories'
+        return f'/goods/categories'
+
+
 class FormFilterCategory(FormModelFilter):
-    name = TextInputField(label=_('Название'), max_length=350, required=False)
+    name = TextInputField(label=_('Название категории'), max_length=255, required=False)
+
     def __init__(self, request):
-        super().__init__(request, 'category_filter')
+        super().__init__(request, 'goods_category_filter')
 
     def filter(self, data_query):
         if self.is_valid():
             if self.cleaned_data.get('name'):
-                data_query = data_query.filter(PlaceCategory.name.ilike("%" + self.cleaned_data['name'] + "%"))
+                data_query = data_query.filter(GoodsCategory.name.ilike("%" + self.cleaned_data['name'] + "%"))
         return data_query
+    
+class FormFavorite(FormBase):
+    """Форма для добавления/удаления из избранного"""
+    
+    def __init__(self, request, goods_id):
+        self.goods_id = goods_id
+        super().__init__(request)
+    
+    def cmd_add_to_favorites(self, request):
+        if request.current_user:
+            favorite = request.current_user.add_to_favorites(request.orm_session, self.goods_id)
+            return f'/goods/{self.goods_id}'
+        return request.path
+    
+    def cmd_remove_from_favorites(self, request):
+        if request.current_user:
+            request.current_user.remove_from_favorites(request.orm_session, self.goods_id)
+        return request.path

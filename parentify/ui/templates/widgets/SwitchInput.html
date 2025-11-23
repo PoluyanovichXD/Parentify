@@ -1,0 +1,42 @@
+{% load filter %}
+<label class="relative inline-flex items-center cursor-pointer group" 
+       {% if w.attrs.switch_select %}switch_select{% endif %} 
+       {% if w.attrs.true_title and w.attrs.false_title %}switch_choise{% endif %}>
+    
+    <input type="checkbox" 
+           id="{{attrs.id}}" 
+           name="{{name}}" 
+           value="{% if value == True or value == 'true' or value == 'True' %}true{% else %}false{%endif%}" 
+           {% if value == True or value == 'true' or value == 'True' %} checked {% elif value and value|is_list %} {% if value.0 == True or value.0 == 'true' or value.0 == 'True' %} checked {% endif %} {%endif%} 
+           {% if w.attrs.disabled %}disabled{% endif %} 
+           {% if w.attrs.onchange %}onchange="{{w.attrs.onchange}}"{% endif %}
+           class="sr-only peer" />
+    
+    {% if w.attrs.switch_select and w.attrs.true_title and w.attrs.false_title %}
+        <span class="mr-3 text-sm font-medium text-gray-600 peer-checked:text-gray-400 transition-colors duration-200">
+            {{w.attrs.false_title}}
+        </span>
+    {% endif %}
+    
+    <!-- Switch с primary цветом -->
+    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer 
+                peer-checked:after:translate-x-full peer-checked:after:border-white 
+                after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border 
+                after:rounded-full after:h-5 after:w-5 after:transition-all after:duration-200 
+                peer-checked:bg-primary hover:peer-checked:bg-[#f3919b] shadow-inner relative">
+    </div>
+    
+    {% if w.attrs.switch_select and w.attrs.true_title and w.attrs.false_title %}
+        <span class="ml-3 text-sm font-medium text-gray-400 peer-checked:text-gray-700 transition-colors duration-200">
+            {{w.attrs.true_title}}
+        </span>
+    {% else %}
+        {% if w.attrs.visible_text %}
+        <span class="ml-3 text-sm font-medium text-gray-700"
+              {% if w.attrs.true_title %}true_title="{{w.attrs.true_title}}"{% endif %} 
+              {% if w.attrs.false_title %}false_title="{{w.attrs.false_title}}"{% endif %}>
+            {% if not w.attrs.true_title and not w.attrs.false_title %}{{w.attrs.label}}{% endif %}
+        </span>
+        {% endif %}
+    {% endif %}
+</label>

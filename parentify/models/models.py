@@ -1,6 +1,7 @@
 import bcrypt
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, Date, ForeignKey, Enum, LargeBinary, Text, Float, ARRAY
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm.session         import object_session
 from django.contrib.auth.hashers import make_password, check_password
 from datetime import datetime
 from enum import Enum as PyEnum
@@ -10,7 +11,6 @@ from parentify.models import Base, Orm
 
 class User(Base):
     __tablename__ = 'user'
-    url_key_name = 'id'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(100), unique=True, nullable=False)
@@ -32,6 +32,8 @@ class User(Base):
     forum_liked_comments = relationship('ForumLikedComment', back_populates='user')
     notifications = relationship('Notification', back_populates='user')
     notification_reads = relationship('NotificationRead', back_populates='user')
+    favorites = relationship("UserFavorite", back_populates="user", cascade="all, delete-orphan")
+
 
     def __str__(self):
         return self.full_name
@@ -54,6 +56,15 @@ class User(Base):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+    
+    @property
+    def gender_name(self):
+        if self.gender == 'MALE':
+            return 'Мальчик'
+        elif self.gender == 'FEMALE':
+            return 'Девочка'
+        else:
+            return 'Другое'
     
     @property
     def zodiac_sign(self) -> Optional[str]:
@@ -145,11 +156,125 @@ class User(Base):
             + output
         )
         return result
+    
+    def has_favorite_goods(self, orm, goods_id):
+        """Проверить, есть ли товар в избранном у пользователя"""
+        if not self.id or not goods_id:
+            return False
+        
+        favorite = orm.query(UserFavorite).filter(
+            UserFavorite.user_id == self.id,
+            UserFavorite.goods_id == goods_id
+        ).first()
+        
+        return favorite is not None
+    
+    def add_to_favorites(self, orm, goods_id):
+        """
+        Добавить товар в избранное пользователя
+        Возвращает созданный объект UserFavorite или существующий
+        """
+        if not self.id or not goods_id:
+            raise ValueError("User ID and Goods ID are required")
+        
+        # Проверяем, не добавлен ли уже товар в избранное
+        existing_favorite = orm.query(UserFavorite).filter(
+            UserFavorite.user_id == self.id,
+            UserFavorite.goods_id == goods_id
+        ).first()
+        
+        if existing_favorite:
+            return existing_favorite  # Уже в избранном
+        
+        # Проверяем существование товара
+        goods = orm.query(Goods).get(goods_id)
+        if not goods:
+            raise ValueError(f"Goods with ID {goods_id} not found")
+        
+        # Создаем новую запись
+        favorite = UserFavorite(
+            user_id=self.id,
+            goods_id=goods_id
+        )
+        orm.add(favorite)
+        orm.commit()
+        
+        return favorite
+
+    def remove_from_favorites(self, orm, goods_id):
+        """
+        Удалить товар из избранного пользователя
+        Возвращает True если удалено, False если не было в избранном
+        """
+        if not self.id or not goods_id:
+            return False
+        
+        favorite = orm.query(UserFavorite).filter(
+            UserFavorite.user_id == self.id,
+            UserFavorite.goods_id == goods_id
+        ).first()
+        
+        if favorite:
+            orm.delete(favorite)
+            orm.commit()
+            return True
+        
+        return False
+
+    def has_favorite_goods(self, orm, goods_id):
+        """
+        Проверить, есть ли товар в избранном у пользователя
+        """
+        if not self.id or not goods_id:
+            return False
+        
+        favorite = orm.query(UserFavorite).filter(
+            UserFavorite.user_id == self.id,
+            UserFavorite.goods_id == goods_id
+        ).first()
+        
+        return favorite is not None
+
+    def get_favorites(self, orm, limit=None, offset=None):
+        """
+        Получить избранные товары пользователя
+        """
+        query = orm.query(UserFavorite).filter(
+            UserFavorite.user_id == self.id
+        ).order_by(UserFavorite.created_at.desc())
+        
+        if limit:
+            query = query.limit(limit)
+        if offset:
+            query = query.offset(offset)
+            
+        return query.all()
+
+    def get_favorites_count(self, orm):
+        """
+        Получить количество избранных товаров пользователя
+        """
+        return orm.query(UserFavorite).filter(
+            UserFavorite.user_id == self.id
+        ).count()
+
+    def clear_favorites(self, orm):
+        """
+        Очистить все избранные товары пользователя
+        """
+        favorites = orm.query(UserFavorite).filter(
+            UserFavorite.user_id == self.id
+        ).all()
+        
+        for favorite in favorites:
+            orm.delete(favorite)
+        
+        orm.commit()
+        return len(favorites)
 
 
 class UserChild(Base):
     __tablename__ = 'user_child'
-    url_key_name = 'id'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey('user.id'))
@@ -182,6 +307,15 @@ class UserChild(Base):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+    
+    @property
+    def gender_name(self):
+        if self.gender == 'MALE':
+            return 'Мальчик'
+        elif self.gender == 'FEMALE':
+            return 'Девочка'
+        else:
+            return 'Другое'
     
     @property
     def zodiac_sign(self) -> Optional[str]:
@@ -221,7 +355,6 @@ class UserChild(Base):
 
 class ArticleCategory(Base):
     __tablename__ = 'article_category'
-    url_key_name = 'id'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False, unique=True)
@@ -238,7 +371,6 @@ class ArticleCategory(Base):
 
 class Article(Base):
     __tablename__ = 'article'
-    url_key_name = 'id'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String(200), nullable=False)
@@ -331,7 +463,6 @@ class ForumTopic(Base):
 
 class ForumTopicCategory(Base):
     __tablename__ = 'forum_topic_category'
-    url_key_name = 'id'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False, unique=True)
@@ -504,7 +635,6 @@ class Place(Base):
     
 class PlaceCategory(Base):
     __tablename__ = 'place_category'
-    url_key_name = 'id'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False, unique=True)
@@ -525,10 +655,195 @@ class PlaceCategory(Base):
             "created_at": self.created_at
         }
 
+class GoodsCategory(Base):
+    __tablename__ = 'goods_category'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Связи
+    goods = relationship("Goods", back_populates="category")
+    
+    def __str__(self):
+        return self.name
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
+        }
 
+class Goods(Base):
+    __tablename__ = 'goods'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String(500), nullable=False)
+    image = Column(LargeBinary, nullable=True)  # для хранения изображения
+    category_id = Column(Integer, ForeignKey('goods_category.id'), nullable=False)
+    description = Column(Text, nullable=True)
+    best_place_to_buy = Column(String(500), nullable=True)  # лучшее место покупки
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    category = relationship("GoodsCategory", back_populates="goods")
+    favorites = relationship("UserFavorite", back_populates="goods", cascade="all, delete-orphan")
 
+    
+    def __str__(self):
+        return self.title
+    
+    def image_url(self):
+        return f'/goods/preview/image_{self.id}.png'
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'category_id': self.category_id,
+            'description': self.description,
+            'best_place_to_buy': self.best_place_to_buy,
+            'is_active': self.is_active,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'category': self.category.to_dict() if self.category else None
+        }
+    
+    def is_favorite(self, user_id):
+        """Проверяет, находится ли товар в избранном у пользователя"""
+        if not user_id:
+            return False
+        orm = object_session(self)
+        favorite = orm.query(UserFavorite).filter(
+            UserFavorite.user_id == user_id,
+            UserFavorite.goods_id == self.id
+        ).first()
+        
+        return favorite is not None
+    
+class UserFavorite(Base):
+    __tablename__ = 'user_favorite'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    goods_id = Column(Integer, ForeignKey('goods.id'), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    user = relationship("User", back_populates="favorites")
+    goods = relationship("Goods", back_populates="favorites")
+    
+    def __str__(self):
+        return f"Favorite: User {self.user_id} - Goods {self.goods_id}"
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "goods_id": self.goods_id,
+            "created_at": self.created_at,
+            "goods": self.goods.to_dict() if self.goods else None,
+            "user": {
+                "id": self.user.id,
+                "first_name": self.user.first_name,
+                "last_name": self.user.last_name
+            } if self.user else None
+        }
+    
+    @staticmethod
+    def add_to_favorites(orm, user_id, goods_id):
+        """Добавить товар в избранное"""
+        # Проверяем, не добавлен ли уже товар в избранное
+        existing_favorite = orm.query(UserFavorite).filter(
+            UserFavorite.user_id == user_id,
+            UserFavorite.goods_id == goods_id
+        ).first()
+        
+        if existing_favorite:
+            return existing_favorite  # Уже в избранном
+        
+        favorite = UserFavorite(
+            user_id=user_id,
+            goods_id=goods_id
+        )
+        orm.add(favorite)
+        orm.commit()
+        return favorite
+    
+    @staticmethod
+    def remove_from_favorites(orm, user_id, goods_id):
+        """Удалить товар из избранного"""
+        favorite = orm.query(UserFavorite).filter(
+            UserFavorite.user_id == user_id,
+            UserFavorite.goods_id == goods_id
+        ).first()
+        
+        if favorite:
+            orm.delete(favorite)
+            orm.commit()
+            return True
+        return False
+    
+    @staticmethod
+    def is_favorite(orm, user_id, goods_id):
+        """Проверить, находится ли товар в избранном у пользователя"""
+        favorite = orm.query(UserFavorite).filter(
+            UserFavorite.user_id == user_id,
+            UserFavorite.goods_id == goods_id
+        ).first()
+        return favorite is not None
+    
+    @staticmethod
+    def get_user_favorites(orm, user_id, limit=None, offset=None):
+        """Получить избранные товары пользователя"""
+        query = orm.query(UserFavorite).filter(
+            UserFavorite.user_id == user_id
+        ).order_by(UserFavorite.created_at.desc())
+        
+        if limit:
+            query = query.limit(limit)
+        if offset:
+            query = query.offset(offset)
+            
+        return query.all()
+    
+    @staticmethod
+    def get_favorite_count(orm, user_id):
+        """Получить количество избранных товаров пользователя"""
+        return orm.query(UserFavorite).filter(
+            UserFavorite.user_id == user_id
+        ).count()
 
+class ChildDevelopmentWeek(Base):
+    __tablename__ = 'child_development_week'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    week_number = Column(Integer, nullable=False, unique=True)  # номер недели
+    title = Column(String(255), nullable=False)  # заголовок
+    description = Column(Text, nullable=True)  # текст
+    parent_tips = Column(ARRAY(Text), nullable=True)  # советы родителям
+    key_skills = Column(ARRAY(Text), nullable=True)  # ключевые навыки
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __str__(self):
+        return f"Week {self.week_number}: {self.title}"
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "week_number": self.week_number,
+            "title": self.title,
+            "description": self.description,
+            "parent_tips": self.parent_tips or [],
+            "key_skills": self.key_skills or [],
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }
 
 
 
@@ -541,7 +856,6 @@ class PlaceCategory(Base):
 
 class SiteEvent(Base):
     __tablename__ = "site_event"
-    url_key_name = "id"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -565,3 +879,32 @@ class SiteEvent(Base):
     @property
     def s_time(self):
         return self.created_at.strftime('%d.%m.%Y %H:%M') if self.created_at else ''
+    
+
+
+class ChildDevelopmentCalendar(Base):
+    __tablename__ = 'child_development_calendar'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    week_number = Column(Integer, nullable=False)  # Номер недели (1, 2, 3...)
+    title = Column(String(500), nullable=False)    # Заголовок совета
+    description = Column(Text, nullable=False)     # Подробное описание совета
+    category = Column(String(255), nullable=True)  # Категория развития
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def __str__(self):
+        return f"Week {self.week_number}: {self.title}"
+    
+    @property
+    def category_display(self):
+        categories = {
+            'PHYSICAL': 'Физическое развитие',
+            'MENTAL': 'Умственное развитие', 
+            'SOCIAL': 'Социальное развитие',
+            'EMOTIONAL': 'Эмоциональное развитие',
+            'HEALTH': 'Здоровье и уход',
+            'NUTRITION': 'Питание'
+        }
+        return categories.get(self.category, 'Общее')

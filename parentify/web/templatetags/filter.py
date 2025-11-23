@@ -15,6 +15,24 @@ from parentify.methods import FileInformation, getattrkey
 register = template.Library()
 
 @register.filter
+def is_favorite(goods, user_id):
+    """
+    Template filter для проверки, находится ли товар в избранном у пользователя
+    """
+    if not goods or not user_id:
+        return False
+    
+    return goods.is_favorite(user_id)
+
+
+
+
+
+
+
+
+
+@register.filter
 def plus(value, arg):
     return value + arg
 

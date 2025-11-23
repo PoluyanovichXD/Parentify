@@ -1,0 +1,311 @@
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-5 max-w-4xl">
+        <!-- Хлебные крошки -->
+        <nav class="mb-8">
+            <ol class="flex items-center space-x-2 text-sm text-gray-600">
+                <li><a href="/" class="hover:text-primary transition-colors">Главная</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li><a href="/profile" class="hover:text-primary transition-colors">Профиль</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li><a href="/profile/childs" class="hover:text-primary transition-colors">Мои дети</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li class="text-gray-900 font-medium">{{ control.content.first_name }} {{ control.content.last_name }}</li>
+            </ol>
+        </nav>
+
+        <!-- Основной контент профиля ребенка -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Заголовок и действия -->
+            <header class="p-8 border-b border-gray-200">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                            <div class="w-20 h-20 rounded-full bg-gradient-to-br 
+                                {% if control.content.gender == 'MALE' %}from-blue-500 to-blue-400
+                                {% elif control.content.gender == 'FEMALE' %}from-pink-500 to-pink-400
+                                {% else %}from-gray-500 to-gray-400{% endif %} 
+                                flex items-center justify-center text-white font-bold text-2xl">
+                                {{ control.content.first_name|first }}{{ control.content.last_name|first }}
+                            </div>
+                            {% if control.content.is_active %}
+                            <div class="absolute bottom-0 right-0 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                                <i class="fas fa-check text-white text-xs"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">
+                                {{ control.content.first_name }} {{ control.content.last_name }}
+                            </h1>
+                            <p class="text-gray-600 mt-1">
+                                {% if control.content.gender == 'MALE' %}Мальчик
+                                {% elif control.content.gender == 'FEMALE' %}Девочка
+                                {% else %}Пол не указан
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <span onclick="ClickBtn('edit/')" 
+                              class="cursor-pointer inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary-dark transition-colors">
+                            <i class="fas fa-edit mr-2"></i>Редактировать
+                        </span>
+                        <span onclick="ClickBtn('stats/')" 
+                              class="cursor-pointer inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-colors">
+                            <i class="fas fa-chart-line mr-2"></i>Статистика
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Статус и мета-информация -->
+                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-calendar-alt"></i>
+                        Добавлен: {{ control.content.created_at|date:"d.m.Y" }}
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <i class="fas fa-sync-alt"></i>
+                        Обновлен: {{ control.content.updated_at|date:"d.m.Y" }}
+                    </span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                        {% if control.content.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                        {% if control.content.is_active %}Активный профиль{% else %}Профиль неактивен{% endif %}
+                    </span>
+                </div>
+            </header>
+
+            <!-- Основная информация -->
+            <div class="p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Левая колонка - Основные данные -->
+                    <div class="space-y-6">
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-900 mb-4">Основная информация</h2>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                                    <span class="text-gray-600">Полное имя</span>
+                                    <span class="font-medium text-gray-900">{{ control.content.first_name }} {{ control.content.last_name }}</span>
+                                </div>
+                                
+                                <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                                    <span class="text-gray-600">Дата рождения</span>
+                                    <span class="font-medium text-gray-900">{{ control.content.birth_date|date:"d.m.Y" }}</span>
+                                </div>
+                                
+                                <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                                    <span class="text-gray-600">Возраст</span>
+                                    <span class="font-medium text-gray-900">
+                                        {% now "Y" as current_year %}
+                                        {% now "m" as current_month %}
+                                        {% now "d" as current_day %}
+                                        {% with birth_year=control.content.birth_date.year birth_month=control.content.birth_date.month birth_day=control.content.birth_date.day %}
+                                            {% with age_years=current_year|add:0|subtract:birth_year %}
+                                                {% with age_months=current_month|add:0|subtract:birth_month %}
+                                                    {% if age_months < 0 %}
+                                                        {{ age_years|add:"-1" }} лет
+                                                    {% else %}
+                                                        {{ age_years }} лет
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% endwith %}
+                                        {% endwith %}
+                                    </span>
+                                </div>
+                                
+                                <div class="flex justify-between items-center py-3 border-b border-gray-100">
+                                    <span class="text-gray-600">Знак зодиака</span>
+                                    <span class="font-medium text-gray-900">{{ control.content.zodiac_sign|default:"Не определен" }}</span>
+                                </div>
+                                
+                                <div class="flex justify-between items-center py-3">
+                                    <span class="text-gray-600">Пол</span>
+                                    <span class="font-medium text-gray-900">
+                                        {% if control.content.gender == 'MALE' %}Мужской
+                                        {% elif control.content.gender == 'FEMALE' %}Женский
+                                        {% else %}Не указан
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Правая колонка - Дополнительная информация и статистика -->
+                    <div class="space-y-6">
+                        <!-- Блок развития -->
+                        <div class="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                            <h3 class="text-lg font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                                <i class="fas fa-chart-line text-blue-600"></i>
+                                Развитие ребенка
+                            </h3>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-blue-700">Этап развития</span>
+                                    <span class="font-medium text-blue-900">
+                                        {% with age_years=current_year|add:0|subtract:control.content.birth_date.year %}
+                                            {% if age_years < 1 %}Новорожденный
+                                            {% elif age_years < 3 %}Ранний возраст
+                                            {% elif age_years < 7 %}Дошкольник
+                                            {% elif age_years < 12 %}Младший школьник
+                                            {% elif age_years < 18 %}Подросток
+                                            {% else %}Старший подросток
+                                            {% endif %}
+                                        {% endwith %}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-blue-700">Рекомендации</span>
+                                    <span class="font-medium text-blue-900">Доступно: 12</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-blue-700">Активность</span>
+                                    <span class="font-medium text-blue-900">Высокая</span>
+                                </div>
+                            </div>
+                            <button onclick="ClickBtn('development/')" 
+                                    class="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                                Просмотреть развитие
+                            </button>
+                        </div>
+
+                        <!-- Блок здоровья -->
+                        <div class="bg-green-50 rounded-xl p-6 border border-green-200">
+                            <h3 class="text-lg font-semibold text-green-900 mb-3 flex items-center gap-2">
+                                <i class="fas fa-heartbeat text-green-600"></i>
+                                Здоровье
+                            </h3>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-green-700">Медицинские записи</span>
+                                    <span class="font-medium text-green-900">5 записей</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-green-700">Прививки</span>
+                                    <span class="font-medium text-green-900">По графику</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-green-700">Последний осмотр</span>
+                                    <span class="font-medium text-green-900">2 недели назад</span>
+                                </div>
+                            </div>
+                            <button onclick="ClickBtn('health/')" 
+                                    class="w-full mt-4 bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                                Медицинская карта
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок достижений -->
+                <div class="mt-8 pt-8 border-t border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Достижения и активность</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-center p-6 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl text-white">
+                            <i class="fas fa-book-open text-3xl mb-3"></i>
+                            <div class="text-2xl font-bold">24</div>
+                            <div class="text-sm opacity-90">Прочитано статей</div>
+                        </div>
+                        
+                        <div class="text-center p-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl text-white">
+                            <i class="fas fa-tasks text-3xl mb-3"></i>
+                            <div class="text-2xl font-bold">12</div>
+                            <div class="text-sm opacity-90">Выполнено заданий</div>
+                        </div>
+                        
+                        <div class="text-center p-6 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl text-white">
+                            <i class="fas fa-trophy text-3xl mb-3"></i>
+                            <div class="text-2xl font-bold">8</div>
+                            <div class="text-sm opacity-90">Получено наград</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Быстрые действия -->
+            <footer class="p-8 border-t border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Быстрые действия</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button onclick="ClickBtn('add-note/')" 
+                            class="p-4 bg-white rounded-xl border border-gray-200 hover:border-primary transition-all duration-300 text-center group">
+                        <i class="fas fa-sticky-note text-2xl text-gray-400 group-hover:text-primary mb-2"></i>
+                        <div class="font-medium text-gray-900 group-hover:text-primary">Добавить запись</div>
+                    </button>
+                    
+                    <button onclick="ClickBtn('add-milestone/')" 
+                            class="p-4 bg-white rounded-xl border border-gray-200 hover:border-primary transition-all duration-300 text-center group">
+                        <i class="fas fa-flag text-2xl text-gray-400 group-hover:text-primary mb-2"></i>
+                        <div class="font-medium text-gray-900 group-hover:text-primary">Новая веха</div>
+                    </button>
+                    
+                    <button onclick="ClickBtn('schedule/')" 
+                            class="p-4 bg-white rounded-xl border border-gray-200 hover:border-primary transition-all duration-300 text-center group">
+                        <i class="fas fa-calendar-plus text-2xl text-gray-400 group-hover:text-primary mb-2"></i>
+                        <div class="font-medium text-gray-900 group-hover:text-primary">Расписание</div>
+                    </button>
+                    
+                    <button onclick="ClickBtn('share/')" 
+                            class="p-4 bg-white rounded-xl border border-gray-200 hover:border-primary transition-all duration-300 text-center group">
+                        <i class="fas fa-share-alt text-2xl text-gray-400 group-hover:text-primary mb-2"></i>
+                        <div class="font-medium text-gray-900 group-hover:text-primary">Поделиться</div>
+                    </button>
+                </div>
+            </footer>
+        </div>
+
+        <!-- Навигация между детьми -->
+        {% if control.siblings %}
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% if control.previous_child %}
+            <a onclick="ClickBtn('{{ control.previous_child.id }}/')" 
+               class="cursor-pointer group p-6 bg-white rounded-2xl shadow-sm border border-gray-200 hover:border-primary transition-all duration-300">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-arrow-left text-gray-400 group-hover:text-primary transition-colors"></i>
+                    <div>
+                        <span class="text-sm text-gray-500">Предыдущий ребенок</span>
+                        <p class="font-semibold text-gray-900 group-hover:text-primary transition-colors">
+                            {{ control.previous_child.first_name }} {{ control.previous_child.last_name }}
+                        </p>
+                    </div>
+                </div>
+            </a>
+            {% else %}
+            <div class="p-6 bg-gray-100 rounded-2xl border border-gray-200 opacity-50">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-arrow-left text-gray-400"></i>
+                    <div>
+                        <span class="text-sm text-gray-500">Предыдущий ребенок</span>
+                        <p class="font-semibold text-gray-900">Нет</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if control.next_child %}
+            <a onclick="ClickBtn('{{ control.next_child.id }}/')" 
+               class="cursor-pointer group p-6 bg-white rounded-2xl shadow-sm border border-gray-200 hover:border-primary transition-all duration-300 text-right">
+                <div class="flex items-center space-x-3 justify-end">
+                    <div>
+                        <span class="text-sm text-gray-500">Следующий ребенок</span>
+                        <p class="font-semibold text-gray-900 group-hover:text-primary transition-colors">
+                            {{ control.next_child.first_name }} {{ control.next_child.last_name }}
+                        </p>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-400 group-hover:text-primary transition-colors"></i>
+                </div>
+            </a>
+            {% else %}
+            <div class="p-6 bg-gray-100 rounded-2xl border border-gray-200 opacity-50 text-right">
+                <div class="flex items-center space-x-3 justify-end">
+                    <div>
+                        <span class="text-sm text-gray-500">Следующий ребенок</span>
+                        <p class="font-semibold text-gray-900">Нет</p>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-400"></i>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>

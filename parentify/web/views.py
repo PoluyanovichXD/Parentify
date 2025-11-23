@@ -3,7 +3,7 @@ from django.shortcuts               import render
 from parentify.models.models        import User
 from django.contrib.auth.hashers    import *
 
-from parentify.ui.controls import ControlInputs
+from parentify.ui.controls import ControlInputs, ControlRecord
 from parentify.ui.decorators import common_page, page_has_user, with_form
 from parentify.ui.pages import PageSimple
 from parentify.web.forms import FormLogin, FormPassword, FormProfile, FormRegister
@@ -39,6 +39,7 @@ def profile(request, form_profile, form_password):
     page = PageSimple('Профиль пользователя', 'pages/profile.html')
     page.add_control('form_profile', ControlInputs(form_profile))
     page.add_control('form_password', ControlInputs(form_password))
+    page.add_control('record', ControlRecord(request.orm_session.query(User).filter(User.id==request.current_user.id)))
     return page
 
 @page_has_user()
