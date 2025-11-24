@@ -27,47 +27,47 @@
                 {% endfor %}>
                 
                 {% if attrs.placeholder and not attrs.choices and not w.attrs.choices %}
-                    <option value="" disabled selected>{{ attrs.placeholder }}</option>
+                    <option value="" disabled selected class="text-gray-600">{{ attrs.placeholder }}</option>
                 {% endif %}
                 
                 {% if attrs.choices %}
                     {% for choice in attrs.choices %}
                         {% if choice.0 == None or choice.1 == '' %}
-                            <option value="" class="text-gray-400" {% if not val %}selected{% endif %}>Не выбрано</option>
+                            <option value="" class="text-gray-600" {% if not val %}selected{% endif %}>Не выбрано</option>
                         {% elif choice.1|is_list %}
-                            <optgroup label="{{choice.0}}" class="text-sm font-semibold text-gray-700">
+                            <optgroup label="{{choice.0}}" class="text-gray-600">
                                 {% for prechoice in choice.1 %}
                                     {% if prechoice.0|to_str == val|to_str %}
-                                        <option selected value="{{prechoice.0}}" class="py-2">{{prechoice.1}}</option>
+                                        <option selected value="{{prechoice.0}}" class="text-gray-600">{{prechoice.1}}</option>
                                     {% else %}
-                                        <option value="{{prechoice.0}}" class="py-2">{{prechoice.1}}</option>
+                                        <option value="{{prechoice.0}}" class="text-gray-600">{{prechoice.1}}</option>
                                     {% endif %}
                                 {% endfor %}
                             </optgroup>
                         {% elif choice.0|to_str == val|to_str %}
-                            <option selected value="{{choice.0}}" class="py-2">{{choice.1}}</option>
+                            <option selected value="{{choice.0}}" class="text-gray-600">{{choice.1}}</option>
                         {% else %}
-                            <option value="{{choice.0}}" class="py-2">{{choice.1}}</option>
+                            <option value="{{choice.0}}" class="text-gray-600">{{choice.1}}</option>
                         {% endif %}
                     {% endfor %}
                 {% elif w.attrs.choices %}
                     {% for choice in w.attrs.choices %}
                         {% if choice.0 == None or choice.1 == '' %}
-                            <option value="" class="text-gray-400" {% if not val %}selected{% endif %}>Не выбрано</option>
+                            <option value="" class="text-gray-600" {% if not val %}selected{% endif %}>Не выбрано</option>
                         {% elif choice.1|is_list %}
-                            <optgroup label="{{choice.0}}" class="text-sm font-semibold text-gray-700">
+                            <optgroup label="{{choice.0}}" class="text-gray-600">
                                 {% for prechoice in choice.1 %}
                                     {% if prechoice.0|to_str == val|to_str %}
-                                        <option selected value="{{prechoice.0}}" class="py-2">{{prechoice.1}}</option>
+                                        <option selected value="{{prechoice.0}}" class="text-gray-600">{{prechoice.1}}</option>
                                     {% else %}
-                                        <option value="{{prechoice.0}}" class="py-2">{{prechoice.1}}</option>
+                                        <option value="{{prechoice.0}}" class="text-gray-600">{{prechoice.1}}</option>
                                     {% endif %}
                                 {% endfor %}
                             </optgroup>
                         {% elif choice.0|to_str == val|to_str %}
-                            <option selected value="{{choice.0}}" class="py-2">{{choice.1}}</option>
+                            <option selected value="{{choice.0}}" class="text-gray-600">{{choice.1}}</option>
                         {% else %}
-                            <option value="{{choice.0}}" class="py-2">{{prechoice.1}}</option>
+                            <option value="{{choice.0}}" class="text-gray-600">{{prechoice.1}}</option>
                         {% endif %}
                     {% endfor %}
                 {% endif %}
@@ -91,44 +91,26 @@
 </div>
 {% endfor %}
 
-<!-- <style>
+<style>
 select option {
-    @apply py-2 px-3 text-gray-700 bg-white;
-}
-
-select option:checked {
-    @apply bg-primary/10 text-primary font-medium;
-}
-
-select option:hover {
-    @apply bg-gray-100;
+    background-color: white;
+    color: #374151;
+    padding: 8px 12px;
 }
 
 select optgroup {
-    @apply text-sm font-semibold text-gray-700 bg-gray-50;
+    background-color: white;
+    color: #374151;
+    font-weight: 600;
+    font-size: 0.875rem;
 }
 
-select::-webkit-scrollbar {
-    width: 6px;
+/* select option:checked {
+    background-color: rgb(59 130 246 / 0.1);
+    color: #3b82f6;
 }
 
-select::-webkit-scrollbar-track {
-    @apply bg-gray-100 rounded;
-}
-
-select::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded;
-}
-
-select::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400;
-}
-
-select {
-    transition: all 0.3s ease;
-}
-
-select:focus {
-    transform: translateY(-1px);
-}
-</style> -->
+select option:hover {
+    background-color: #f3f4f6;
+} */
+</style>

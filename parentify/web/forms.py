@@ -124,11 +124,7 @@ class FormProfile(FormBase):
     first_name = TextInputField(label=_("Имя"))
     birth_date = DateInputField(label=_("Дата рождения"))
     email = EmailInputField(label=_('Email'))
-    gender = SelectInputField(label=_('Пол'),choices=[
-        (None, _('Выберите пол')),
-        ('male', _('Мужской')),
-        ('female', _('Женский')),
-    ])
+    gender = SelectInputField(label=_('Пол'))
     
     def __init__(self, request, user_id=None):
         if request.current_user:
@@ -136,6 +132,11 @@ class FormProfile(FormBase):
         else:
             self.user = None
         super().__init__(request, self.user.to_dict() if self.user else {})
+        self.fields['gender'].choices=[
+            (None, _('Выберите пол')),
+            ('male', _('Мужской')),
+            ('female', _('Женский')),
+        ]
 
     def clean(self):
         pass
