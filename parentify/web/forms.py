@@ -44,11 +44,6 @@ class FormRegister(FormBase):
     birth_date = DateInputField(label=_("Дата рождения"), required=True)
     gender = SelectInputField(
         label=_('Пол'),
-        choices=[
-            (None, _('Выберите пол')),
-            ('male', _('Мужской')),
-            ('female', _('Женский')),
-        ],
         required=True
     )
     email = EmailInputField(
@@ -68,6 +63,11 @@ class FormRegister(FormBase):
 
     def __init__(self, request):
         super().__init__(request)
+        self.fields['gender'].choices=[
+            (None, _('Выберите пол')),
+            ('male', _('Мужской')),
+            ('female', _('Женский')),
+        ]
 
     def clean_email(self):
         email = self.cleaned_data.get('email')

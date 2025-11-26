@@ -1,16 +1,26 @@
 {% extends "wrappers/simple.html" %}
 {% block page %}
 
-<section class="bg-gray-100 py-20 rounded-b-3xl">
-    <div class="container mx-auto px-5 max-w-6xl text-center">
-        <h1 class="text-4xl md:text-5xl font-bold mb-5">Забота о ребенке стала проще</h1>
-        <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">Ежедневное сопровождение для современных родителей:
-            отслеживание развития, полезные советы и сообщество единомышленников</p>
-        <a href="#"
-            class="btn bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-[#e88d96] hover:-translate-y-0.5 transition-all inline-block">Начать
-            пользоваться</a>
+<div class="bg-white rounded-[2rem] shadow-lg overflow-hidden flex flex-col lg:flex-row">
+    <!-- Текстовая часть -->
+    <div class="p-12 lg:p-16 flex flex-col justify-center">
+        <h1 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+            Забота о ребенке стала проще
+        </h1>
+        <p class="text-xl text-gray-600 leading-relaxed">
+            Ежедневное сопровождение для современных родителей: отслеживание развития, полезные советы и сообщество единомышленников
+        </p>
     </div>
-</section>
+    
+    <!-- Изображение -->
+    <div class="lg:w-1/2">
+        <img 
+            src="/static/images/baby.jpg" 
+            alt="Ребёнок" 
+            class="w-full h-full object-cover"
+        >
+    </div>
+</div>
 
 <section class="py-20">
     <div class="container mx-auto px-5 max-w-6xl">
@@ -33,7 +43,7 @@
                     <i class="fas fa-calendar-alt"></i>
                 </div>
                 <h3 class="text-xl font-semibold mb-4">Календарь развития</h3>
-                <p class="text-gray-600">Отслеживайте этапы развития вашего ребенка и получайте персональные
+                <p class="text-gray-600">Отслеживайте этапы развития вашего ребенка до года и получайте персональные
                     рекомендации</p>
             </a>
 
@@ -42,7 +52,7 @@
                 <div class="feature-icon text-4xl text-primary mb-5">
                     <i class="fas fa-chart-line"></i>
                 </div>
-                <h3 class="text-xl font-semibold mb-4">Трекеры и планировщик</h3>
+                <h3 class="text-xl font-semibold mb-4">Трекеры</h3>
                 <p class="text-gray-600">Контролируйте сон, питание и здоровье вашего ребенка с помощью удобных
                     инструментов</p>
             </a>
@@ -56,7 +66,7 @@
                 <p class="text-gray-600">Общайтесь, делитесь опытом и получайте поддержку от других родителей</p>
             </a>
 
-            <a href="/"
+            <a href="/goods"
                 class="feature-card bg-gray-100 rounded-2xl p-8 text-center hover:-translate-y-2.5 transition-transform">
                 <div class="feature-icon text-4xl text-primary mb-5">
                     <i class="fas fa-shopping-cart"></i>

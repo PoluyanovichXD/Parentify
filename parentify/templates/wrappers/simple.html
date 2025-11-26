@@ -12,12 +12,14 @@
                 <nav class="hidden md:block">
                     <ul class="flex space-x-6">
                         <li><a href="/" class="font-medium hover:text-primary transition-colors">Главная</a></li>
-                        <li><a href="/article" class="font-medium hover:text-primary transition-colors">Информация</a></li>
-                        <li><a href="/calendar" class="font-medium hover:text-primary transition-colors">Календарь</a></li>
-                        <li><a href="#" class="font-medium hover:text-primary transition-colors">Трекеры</a></li>
                         <li><a href="/forum" class="font-medium hover:text-primary transition-colors">Форум</a></li>
+                        <li><a href="/article" class="font-medium hover:text-primary transition-colors">Статьи</a></li>
                         <li><a href="/goods" class="font-medium hover:text-primary transition-colors">Товары</a></li>
-                        <li><a href="/map" class="font-medium hover:text-primary transition-colors">Карта</a></li>
+                        <li><a href="/map" class="font-medium hover:text-primary transition-colors">Места</a></li>
+                        {% if request.current_user %}
+                        <li><a href="/calendar" class="font-medium hover:text-primary transition-colors">Развитие</a></li>
+                        <li><a href="#" class="font-medium hover:text-primary transition-colors">Трекеры</a></li>
+                        {% endif %}
                     </ul>
                 </nav>
 
