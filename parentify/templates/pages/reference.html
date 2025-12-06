@@ -1,0 +1,573 @@
+{% extends "wrappers/simple.html" %}
+{% load static %}
+
+{% block page %}
+<div class="py-10">
+    <!-- Заголовок страницы -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Справочные материалы</h1>
+        <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+            Полезные таблицы, памятки и руководства для родителей. Все самое важное в одном месте.
+        </p>
+    </div>
+
+    <!-- Фильтры категорий -->
+    <div class="mb-10">
+        <div class="flex flex-wrap justify-center gap-4">
+            <button class="category-filter px-6 py-3 bg-white rounded-full shadow-sm hover:shadow-md transition-all border border-gray-200 hover:border-primary font-medium active"
+                    data-category="all">
+                Все материалы
+            </button>
+            <button class="category-filter px-6 py-3 bg-white rounded-full shadow-sm hover:shadow-md transition-all border border-gray-200 hover:border-primary font-medium"
+                    data-category="health">
+                Здоровье
+            </button>
+            <button class="category-filter px-6 py-3 bg-white rounded-full shadow-sm hover:shadow-md transition-all border border-gray-200 hover:border-primary font-medium"
+                    data-category="development">
+                Развитие
+            </button>
+            <button class="category-filter px-6 py-3 bg-white rounded-full shadow-sm hover:shadow-md transition-all border border-gray-200 hover:border-primary font-medium"
+                    data-category="safety">
+                Безопасность
+            </button>
+            <button class="category-filter px-6 py-3 bg-white rounded-full shadow-sm hover:shadow-md transition-all border border-gray-200 hover:border-primary font-medium"
+                    data-category="nutrition">
+                Питание
+            </button>
+            <button class="category-filter px-6 py-3 bg-white rounded-full shadow-sm hover:shadow-md transition-all border border-gray-200 hover:border-primary font-medium"
+                    data-category="checklists">
+                Чек-листы
+            </button>
+        </div>
+    </div>
+
+    <!-- Поиск -->
+    <div class="mb-12 max-w-2xl mx-auto">
+        <div class="relative">
+            <input type="text" 
+                   id="searchInput" 
+                   placeholder="Поиск по материалам..." 
+                   class="w-full px-6 py-4 rounded-2xl border border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+            <i class="fas fa-search absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+        </div>
+    </div>
+
+    <!-- Сетка материалов -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16" id="materialsGrid">
+        <!-- Материал 1 -->
+        <div class="material-card group" data-category="health">
+            <div class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-2xl p-6 mb-4 h-48 flex items-center justify-center">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-temperature-high text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Таблица температуры</h3>
+                </div>
+            </div>
+            <div>
+                <span class="inline-block px-4 py-1 bg-pink-100 text-primary rounded-full text-sm font-medium mb-3">
+                    Здоровье
+                </span>
+                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">
+                    Нормы температуры у детей
+                </h3>
+                <p class="text-gray-600 mb-4">
+                    Подробная таблица нормальной температуры тела у детей разных возрастов и рекомендации при повышенной температуре.
+                </p>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-500 text-sm">
+                        <i class="far fa-eye mr-1"></i> Просмотр
+                    </span>
+                    <button onclick="openMaterialModal('temperature')" 
+                            class="view-btn text-primary font-semibold flex items-center gap-2 hover:gap-3 transition-all">
+                        Открыть <i class="fas fa-external-link-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Материал 2 -->
+        <div class="material-card group" data-category="development">
+            <div class="bg-gradient-to-br from-mint-50 to-mint-100 rounded-2xl p-6 mb-4 h-48 flex items-center justify-center">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-secondary text-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-brain text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Этапы развития</h3>
+                </div>
+            </div>
+            <div>
+                <span class="inline-block px-4 py-1 bg-mint-100 text-gray-800 rounded-full text-sm font-medium mb-3">
+                    Развитие
+                </span>
+                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">
+                    Основные этапы развития до 3 лет
+                </h3>
+                <p class="text-gray-600 mb-4">
+                    Подробный гид по физическому, эмоциональному и речевому развитию ребенка от рождения до 3 лет.
+                </p>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-500 text-sm">
+                        <i class="far fa-eye mr-1"></i> Просмотр
+                    </span>
+                    <button onclick="openMaterialModal('development')" 
+                            class="view-btn text-primary font-semibold flex items-center gap-2 hover:gap-3 transition-all">
+                        Открыть <i class="fas fa-external-link-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Материал 3 -->
+        <div class="material-card group" data-category="safety">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 mb-4 h-48 flex items-center justify-center">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-home text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Безопасность дома</h3>
+                </div>
+            </div>
+            <div>
+                <span class="inline-block px-4 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium mb-3">
+                    Безопасность
+                </span>
+                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">
+                    Чек-лист безопасности дома
+                </h3>
+                <p class="text-gray-600 mb-4">
+                    Полный список мер безопасности для создания безопасной среды для ребенка в квартире или доме.
+                </p>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-500 text-sm">
+                        <i class="far fa-eye mr-1"></i> Просмотр
+                    </span>
+                    <button onclick="openMaterialModal('safety')" 
+                            class="view-btn text-primary font-semibold flex items-center gap-2 hover:gap-3 transition-all">
+                        Открыть <i class="fas fa-external-link-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Материал 4 -->
+        <div class="material-card group" data-category="nutrition">
+            <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl p-6 mb-4 h-48 flex items-center justify-center">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-yellow-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-apple-alt text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Таблица прикорма</h3>
+                </div>
+            </div>
+            <div>
+                <span class="inline-block px-4 py-1 bg-yellow-100 text-yellow-600 rounded-full text-sm font-medium mb-3">
+                    Питание
+                </span>
+                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">
+                    Введение прикорма по месяцам
+                </h3>
+                <p class="text-gray-600 mb-4">
+                    Подробная таблица введения продуктов прикорма с 4 до 12 месяцев с указанием размеров порций.
+                </p>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-500 text-sm">
+                        <i class="far fa-eye mr-1"></i> Просмотр
+                    </span>
+                    <button onclick="openMaterialModal('nutrition')" 
+                            class="view-btn text-primary font-semibold flex items-center gap-2 hover:gap-3 transition-all">
+                        Открыть <i class="fas fa-external-link-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Материал 5 -->
+        <div class="material-card group" data-category="checklists">
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 mb-4 h-48 flex items-center justify-center">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-list-check text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Чек-листы</h3>
+                </div>
+            </div>
+            <div>
+                <span class="inline-block px-4 py-1 bg-purple-100 text-purple-600 rounded-full text-sm font-medium mb-3">
+                    Чек-листы
+                </span>
+                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">
+                    Чек-лист на выписку из роддома
+                </h3>
+                <p class="text-gray-600 mb-4">
+                    Полный список вещей для мамы и ребенка при выписке из роддома. Не забудьте ничего важного!
+                </p>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-500 text-sm">
+                        <i class="far fa-eye mr-1"></i> Просмотр
+                    </span>
+                    <button onclick="openMaterialModal('checklists')" 
+                            class="view-btn text-primary font-semibold flex items-center gap-2 hover:gap-3 transition-all">
+                        Открыть <i class="fas fa-external-link-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Материал 6 -->
+        <div class="material-card group" data-category="health">
+            <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-6 mb-4 h-48 flex items-center justify-center">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-red-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-first-aid text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">Аптечка</h3>
+                </div>
+            </div>
+            <div>
+                <span class="inline-block px-4 py-1 bg-red-100 text-red-600 rounded-full text-sm font-medium mb-3">
+                    Здоровье
+                </span>
+                <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">
+                    Состав детской аптечки
+                </h3>
+                <p class="text-gray-600 mb-4">
+                    Полный список лекарств и средств для детской аптечки с рекомендациями по применению и хранению.
+                </p>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-500 text-sm">
+                        <i class="far fa-eye mr-1"></i> Просмотр
+                    </span>
+                    <button onclick="openMaterialModal('first-aid')" 
+                            class="view-btn text-primary font-semibold flex items-center gap-2 hover:gap-3 transition-all">
+                        Открыть <i class="fas fa-external-link-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Раздел популярных материалов -->
+    <div class="mb-16">
+        <h2 class="text-3xl font-bold text-gray-900 mb-8">Популярные материалы</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-gradient-to-r from-primary/5 to-primary/10 rounded-2xl p-8">
+                <div class="flex items-start gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center">
+                            <i class="fas fa-calendar-alt text-2xl"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Календарь прививок</h3>
+                        <p class="text-gray-600 mb-4">
+                            Национальный календарь профилактических прививок для детей с рождения до 18 лет.
+                        </p>
+                        <button onclick="openMaterialModal('vaccination')" 
+                                class="view-btn text-primary font-semibold flex items-center gap-2">
+                            Открыть <i class="fas fa-external-link-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-r from-secondary/5 to-secondary/10 rounded-2xl p-8">
+                <div class="flex items-start gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-16 h-16 bg-secondary text-gray-800 rounded-full flex items-center justify-center">
+                            <i class="fas fa-ruler-combined text-2xl"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Таблица размеров одежды</h3>
+                        <p class="text-gray-600 mb-4">
+                            Таблица соответствия размеров детской одежды по возрасту, росту и весу ребенка.
+                        </p>
+                        <button onclick="openMaterialModal('clothing')" 
+                                class="view-btn text-primary font-semibold flex items-center gap-2">
+                            Открыть <i class="fas fa-external-link-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== МЕТОД CreateIframeModal ====================
+    
+    /**
+     * Универсальный метод для создания модальных окон с iframe или HTML-контентом
+     * @param {string} srcdoc - HTML-контент или URL для загрузки
+     * @param {string} title - Заголовок модального окна
+     * @param {number} timeout - Задержка перед открытием (мс)
+     * @param {object} options - Дополнительные опции
+     * @returns {string|null} - ID iframe или null
+     */
+    
+    
+    // ==================== ОСТАЛЬНОЙ КОД СТРАНИЦЫ ====================
+    
+    // Данные материалов (остается без изменений)
+    const materialsData = {
+        temperature: {
+            title: "Нормы температуры у детей",
+            category: "Здоровье",
+            content: `
+                <div class="space-y-6 p-4">
+                    <div class="bg-pink-50 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Нормальная температура тела у детей</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full border-collapse">
+                                <thead>
+                                    <tr class="bg-pink-100">
+                                        <th class="border border-pink-200 px-4 py-3 text-left">Возраст</th>
+                                        <th class="border border-pink-200 px-4 py-3 text-left">Норма (°C)</th>
+                                        <th class="border border-pink-200 px-4 py-3 text-left">Измерение</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="bg-white">
+                                        <td class="border border-pink-200 px-4 py-3">Новорожденные</td>
+                                        <td class="border border-pink-200 px-4 py-3">36.5 - 37.5</td>
+                                        <td class="border border-pink-200 px-4 py-3">Ректально</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="border border-pink-200 px-4 py-3">1-12 месяцев</td>
+                                        <td class="border border-pink-200 px-4 py-3">36.8 - 37.7</td>
+                                        <td class="border border-pink-200 px-4 py-3">Ректально</td>
+                                    </tr>
+                                    <tr class="bg-white">
+                                        <td class="border border-pink-200 px-4 py-3">1-3 года</td>
+                                        <td class="border border-pink-200 px-4 py-3">36.6 - 37.7</td>
+                                        <td class="border border-pink-200 px-4 py-3">Орально/ректально</td>
+                                    </tr>
+                                    <tr class="bg-gray-50">
+                                        <td class="border border-pink-200 px-4 py-3">3-5 лет</td>
+                                        <td class="border border-pink-200 px-4 py-3">36.3 - 37.5</td>
+                                        <td class="border border-pink-200 px-4 py-3">Орально</td>
+                                    </tr>
+                                    <tr class="bg-white">
+                                        <td class="border border-pink-200 px-4 py-3">5+ лет</td>
+                                        <td class="border border-pink-200 px-4 py-3">36.1 - 37.2</td>
+                                        <td class="border border-pink-200 px-4 py-3">Орально/подмышечно</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-red-50 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Когда обращаться к врачу</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
+                                <span>Температура выше 38°C у детей младше 3 месяцев</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
+                                <span>Температура выше 39°C у детей любого возраста</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
+                                <span>Лихорадка длится более 3 дней</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-circle text-red-500 mt-1 mr-3"></i>
+                                <span>Присутствуют дополнительные симптомы: сыпь, рвота, диарея</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-blue-50 rounded-2xl p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Рекомендации по снижению температуры</h3>
+                        <ol class="space-y-3 list-decimal pl-5">
+                            <li>Обеспечьте прохладный воздух в комнате (20-22°C)</li>
+                            <li>Не кутайте ребенка, используйте легкую одежду</li>
+                            <li>Предлагайте частое питье маленькими порциями</li>
+                            <li>При температуре выше 38.5°C используйте жаропонижающие по рекомендации врача</li>
+                            <li>Измеряйте температуру каждые 2-3 часа</li>
+                        </ol>
+                    </div>
+                </div>
+            `
+        },
+        // ... остальные материалы (development, safety, nutrition и т.д.)
+    };
+    
+    // Универсальная функция открытия модального окна
+    function openMaterialModal(materialId) {
+        const material = materialsData[materialId];
+        if (!material) return;
+        
+        // Формируем HTML контент
+        const htmlContent = `
+            <div class="material-modal-content h-full overflow-y-auto p-6">
+                <div class="max-w-4xl mx-auto">
+                    <div class="mb-8 text-center">
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">${material.title}</h1>
+                        <span class="inline-block px-4 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                            ${material.category}
+                        </span>
+                    </div>
+                    ${material.content}
+                    <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+                        <button onclick="printCurrentContent()" 
+                                class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full hover:bg-primary-dark transition-all font-medium">
+                            <i class="fas fa-print"></i>
+                            Распечатать материал
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Используем CreateIframeModal для отображения
+        CreateIframeModal(htmlContent, material.title, 0, {
+            width: '95%',
+            maxWidth: '1000px',
+            showPrintButton: false // Скрываем кнопку печати в заголовке, так как она есть в контенте
+        });
+    }
+    
+    // Функция для печати текущего контента
+    function printCurrentContent() {
+        const printWindow = window.open('', '_blank');
+        const modalContent = document.querySelector('.modal-iframe-container:last-child .material-modal-content');
+        
+        if (modalContent) {
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${document.querySelector('.modal-title')?.textContent || 'Материал'}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; }
+                        h1, h2, h3 { color: #333; }
+                        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+                        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                        th { background-color: #f5f5f5; }
+                        ul, ol { margin: 10px 0; padding-left: 20px; }
+                        .print-only { display: block; }
+                        @media print {
+                            body { padding: 0; }
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${modalContent.innerHTML}
+                    <div class="no-print" style="margin-top: 30px; text-align: center;">
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                            Печать
+                        </button>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+    }
+    
+    // Фильтрация по категориям (остается без изменений)
+    document.querySelectorAll('.category-filter').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.category-filter').forEach(btn => {
+                btn.classList.remove('active', 'bg-primary', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-700');
+            });
+            
+            this.classList.add('active', 'bg-primary', 'text-white');
+            this.classList.remove('bg-white', 'text-gray-700');
+            
+            const category = this.getAttribute('data-category');
+            const materials = document.querySelectorAll('.material-card');
+            
+            materials.forEach(material => {
+                if (category === 'all' || material.getAttribute('data-category') === category) {
+                    material.style.display = 'block';
+                } else {
+                    material.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Поиск по материалам (остается без изменений)
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const materials = document.querySelectorAll('.material-card');
+        
+        materials.forEach(material => {
+            const title = material.querySelector('h3').textContent.toLowerCase();
+            const description = material.querySelector('p').textContent.toLowerCase();
+            const category = material.querySelector('span').textContent.toLowerCase();
+            
+            material.style.display = 
+                title.includes(searchTerm) || 
+                description.includes(searchTerm) || 
+                category.includes(searchTerm) 
+                ? 'block' : 'none';
+        });
+    });
+    
+    // Инициализация активной кнопки фильтра
+    document.querySelector('.category-filter.active').classList.add('bg-primary', 'text-white');
+    </script>
+    
+    <style>
+    /* Дополнительные стили для модальных окон iframe */
+    .modal-iframe-container {
+        animation: fadeIn 0.2s ease;
+    }
+    
+    .modal-iframe-wrapper {
+        animation: scaleIn 0.2s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+    
+    /* Стили для скроллбара в модальном окне */
+    .modal-content-wrapper::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .modal-content-wrapper::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .modal-content-wrapper::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    
+    .modal-content-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* Загрузчик */
+    .loader-spinner {
+        border-top-color: transparent;
+    }
+    
+    /* Стили для кнопок */
+    .modal-print-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .modal-close-btn:hover {
+        transform: rotate(90deg);
+    }
+    </style>
+{% endblock %}

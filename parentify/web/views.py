@@ -47,3 +47,9 @@ def profile(request, form_profile, form_password):
 def settings(request):
     page = PageSimple('Профиль пользователя', 'pages/settings.html')
     return page
+
+
+@common_page()
+def reference(request):
+    page = PageSimple('Профиль пользователя', 'pages/reference.html')
+    return page

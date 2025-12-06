@@ -1,5 +1,5 @@
 from django.urls import re_path, include
-from parentify.web.views import home, login, register, logout, profile, settings
+from parentify.web.views import home, login, register, logout, profile, settings, reference
 from django.views.generic.base import RedirectView
 
 urlpatterns = [
@@ -14,6 +14,7 @@ urlpatterns = [
     re_path(r'^register/$', register, name='register'),
     re_path(r'^logout/$', logout, name='logout'),
     re_path(r'^settings/$', settings, name='settings'),
+    re_path(r'^reference/$', reference, name='reference'),
 
     re_path(r'^profile/$', profile, name='profile'),
     re_path(r'^profile/childs/', include('parentify.web.childs.urls')),

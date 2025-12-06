@@ -37,7 +37,7 @@
                             {% if request.current_user.is_admin %}
                             <a href="/admin" class="block px-4 py-3 hover:bg-gray-100">Администрирование</a>
                             {% endif %}
-                            <a href="/settings" class="block px-4 py-3 hover:bg-gray-100">Настройки</a>
+                            <!-- <a href="/settings" class="block px-4 py-3 hover:bg-gray-100">Настройки</a> -->
                             <div class="border-t">
                                 <button onclick="window.location.href = '/logout'"
                                     class="w-full text-left px-4 py-3 hover:bg-gray-100 rounded-b-lg text-red-600">
@@ -114,7 +114,7 @@
                         <li><a href="/goods" class="hover:text-primary transition-colors">Рекомендованные товары</a></li>
                         <li><a href="/map" class="hover:text-primary transition-colors">Карта мест</a></li>
                         <li><a href="#" class="hover:text-primary transition-colors">Чек-листы</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">Справочные материалы</a></li>
+                        <li><a href="/reference" class="hover:text-primary transition-colors">Справочные материалы</a></li>
                     </ul>
                 </div>
 

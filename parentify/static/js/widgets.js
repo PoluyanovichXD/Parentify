@@ -1,3 +1,158 @@
+function changeIcon(href){
+    var link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+    }
+    link.href = href;
+}
+function loadScript(src,onload=null){
+    if(hasScript(src)){
+        return findScript(src);
+    }
+    var js_script = document.createElement("script");
+    js_script.type = "text/javascript";
+    js_script.src = src;
+    js_script.onload = function() {
+        if(onload){
+            onload.call()
+        }
+    }
+    document.head.append(js_script)
+    return js_script;
+}
+function loadStyle(css_list){
+    if(typeof css_list == 'string'){
+      var cssLink = document.createElement("link");
+      cssLink.href = css_list;
+      cssLink.rel = "stylesheet";
+      cssLink.type = "text/css";
+      document.head.append(cssLink)
+    } else{
+      for (const css of css_list) {
+        var cssLink = document.createElement("link");
+        cssLink.href = css;
+        cssLink.rel = "stylesheet";
+        cssLink.type = "text/css";
+        document.head.append(cssLink)
+      }
+    }
+}
+function findScript(src){
+    return document.querySelector(`script[src="${src}"]`);
+}
+function hasScript(src){
+    return findScript(src)?true:false;
+}
+function findStyle(src){
+    return document.querySelector(`link[src="${src}"][rel="stylesheet"]`);
+}
+function hasStyle(src){
+    return findStyle(src)?true:false;
+}
+function removeScript(src){
+    if(hasScript(src)){
+        findScript(src).remove()
+        return true
+    } else{
+        return false
+    }
+}
+function removeStyle(src){
+    if(hasStyle(src)){
+        findStyle(src).remove()
+        return true
+    } else{
+        return false
+    }
+}
+function hasUrl(url) {
+    var http = new XMLHttpRequest();
+    http.open('HEAD', url, false);
+    http.send();
+    if (http.status != 404)
+        return true;
+    else
+        return false;
+}
+function inIframe() {
+    try {
+        return window.self !== window.top;
+    } catch (e) {
+        return true;
+    }
+}
+async function blobToBase64(blob) {
+    return new Promise((resolve, _) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      return reader.readAsDataURL(blob);
+    });
+}
+function formatDate(date){
+    var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    if(typeof date ==  'string'){
+        date = new Date(date)
+    }
+    return date.toLocaleDateString("ru-RU",options)
+}
+function formatDatetime(date){
+    var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    if(typeof date ==  'string'){
+        date = new Date(date)
+    }
+    return `${date.toLocaleDateString("ru-RU",options)} ${date.toLocaleTimeString('ru-RU')}`
+}
+function formatTime(date){
+    if(typeof date ==  'string'){
+        date = new Date(date)
+    }
+    return date.toLocaleTimeString('ru-RU')
+}
+function formatDatetimeNow(){
+    const date = new Date();
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const time = date.toLocaleTimeString().replace(/:\d+ /, ' ');;
+    const res = `${date.toLocaleDateString('ru-RU', options)} ${time}`
+    return res;
+}
+var dynamicColors = function() {
+    var r = Math.floor(Math.random() * 255);
+    var g = Math.floor(Math.random() * 255);
+    var b = Math.floor(Math.random() * 255);
+    return {rgb:"rgb(" + r + "," + g + "," + b + ")",rgba:"rgba(" + r + "," + g + "," + b + ",0.2)"};
+};
+function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 байт';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['байт', 'КБ', 'МБ', 'ГБ', 'ТБ', 'ПТ', 'ЕБ', 'ЗБ', 'ЮБ'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+const truncateDecimal = (num, decimalPlaces) => {
+    const factor = Math.pow(10, decimalPlaces);
+    return Math.trunc(num * factor) / factor;
+};
+const id_generator = (size=6,characters=null) => {
+    let result = '';
+    characters = characters==null?'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789':characters;
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < size) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    return result;
+}
+function randomId() {
+    const uint32 = window.crypto.getRandomValues(new Uint32Array(1))[0];
+    return uint32.toString(16);
+}
+function scrollTop(){
+    $(document.querySelector('.wrapper')).scrollTop(0)
+}
 $(window).on('load', function () {
     const labels_RU = {
         labelIdle: 'Перетащите или выберите <span class="filepond--label-action"> Изображение </span>',
