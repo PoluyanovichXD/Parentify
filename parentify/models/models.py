@@ -7,6 +7,7 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from typing import Optional
 from parentify.models import Base, Orm
+from parentify.models.event_types import EventTypes
 
 
 class User(Base):
@@ -864,14 +865,7 @@ class SiteEvent(Base):
     user_id = Column(Integer, ForeignKey('user.id'), nullable=True)
     
     user = relationship("User", back_populates="site_events")
-
-    def __init__(self, text, type, user=None, created_at=None):
-        self.text = text
-        self.type = type
-        if user:
-            self.user = user
-        if created_at:
-            self.created_at = created_at
+    Types = EventTypes
 
     def __str__(self):
         return self.text
@@ -880,6 +874,16 @@ class SiteEvent(Base):
     def s_time(self):
         return self.created_at.strftime('%d.%m.%Y %H:%M') if self.created_at else ''
     
+    @staticmethod
+    def create(orm, type_event, user_event_id=None):
+        evnt = SiteEvent(**{
+            "type": type_event.name if getattr(type_event,'name') else (type_event.get('name') if type_event and type_event.get('name') else type_event),
+            "text": type_event.value if getattr(type_event,'value') else (type_event.get('value') if type_event and type_event.get('value') else type_event),
+            "user_id": user_event_id.id if isinstance(user_event_id, User) else user_event_id
+        })
+        orm.add(evnt)
+        orm.commit()
+        return evnt
 
 
 class ChildDevelopmentCalendar(Base):

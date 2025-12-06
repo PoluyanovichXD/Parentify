@@ -1,4 +1,5 @@
 {% extends "core.html" %}
+{% load filter %}
 {% load static %}
 
 {% block wrapper %}
@@ -19,45 +20,24 @@
 
         <nav class="p-4">
             <ul class="space-y-2">
+                {% for key, val in request.admin_menu.items %}
                 <li>
-                    <a href="#dashboard" class="flex items-center gap-3 p-3 rounded-lg bg-primary text-white transition-colors">
-                        <i class="fas fa-tachometer-alt w-5 text-center"></i>
-                        <span>Дашборд</span>
+                    <a href="/admin/{{key}}" class="
+                    flex items-center gap-3 p-3 rounded-lg transition-colors 
+                    {% if request.path|startswith:val.url %}
+                    flex items-center gap-3 p-3 rounded-lg bg-primary text-white
+                    {% else %}
+                    text-gray-700 hover:bg-gray-100 
+                    {% endif %}
+                    ">
+                        <i class="fas {{val.icon}} w-5 text-center"></i>
+                        <span>{{val.name}}</span>
+                        {% if val.count %}
+                        <span class="ml-auto bg-primary text-white text-xs px-2 py-1 rounded-full">{{val.count}}</span>
+                        {% endif %}
                     </a>
                 </li>
-                <li>
-                    <a href="#users" class="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-users w-5 text-center"></i>
-                        <span>Пользователи</span>
-                        <span class="ml-auto bg-primary text-white text-xs px-2 py-1 rounded-full">42</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#articles" class="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-newspaper w-5 text-center"></i>
-                        <span>Статьи</span>
-                        <span class="ml-auto bg-green-500 text-white text-xs px-2 py-1 rounded-full">156</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#forum" class="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-comments w-5 text-center"></i>
-                        <span>Форум</span>
-                        <span class="ml-auto bg-blue-500 text-white text-xs px-2 py-1 rounded-full">89</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#analytics" class="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-chart-bar w-5 text-center"></i>
-                        <span>Аналитика</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#settings" class="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-cog w-5 text-center"></i>
-                        <span>Настройки</span>
-                    </a>
-                </li>
+                {% endfor %}
             </ul>
 
             <div class="mt-8 pt-4 border-t border-gray-200">
@@ -81,12 +61,12 @@
 
                 <div class="flex items-center gap-4">
                     <!-- Notifications -->
-                    <div class="relative">
+                    <!-- <div class="relative">
                         <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
                             <i class="fas fa-bell text-gray-600"></i>
                             <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
                         </button>
-                    </div>
+                    </div> -->
 
                     <!-- User Menu -->
                     <div class="relative group">
@@ -102,9 +82,6 @@
                             <a href="/profile" class="block px-4 py-3 hover:bg-gray-50 rounded-t-lg">
                                 <i class="fas fa-user mr-2 text-gray-400"></i>Профиль
                             </a>
-                            <a href="#" class="block px-4 py-3 hover:bg-gray-50">
-                                <i class="fas fa-cog mr-2 text-gray-400"></i>Настройки
-                            </a>
                             <div class="border-t border-gray-200">
                                 <form action="/logout" method="post" class="m-0">
                                     {% csrf_token %}
@@ -119,6 +96,12 @@
             </div>
         </header>
         {% block page %}
+            {% for subcontrol in controls %}
+            {% include subcontrol.template with control=subcontrol %}
+            {% endfor %}
+            {% for subcontrol in btn_controls %}
+            {% include subcontrol.template with control=subcontrol %}
+            {% endfor %}
         {% endblock %}
     </div>
 </div>

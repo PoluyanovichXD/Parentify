@@ -6,7 +6,7 @@ from django.forms import Form
 from django.contrib.auth import authenticate, login
 from django.core.exceptions import ValidationError
 import re
-from parentify.models.models import User
+from parentify.models.models import SiteEvent, User
 from parentify.ui import *
 from parentify.ui.forms import FormBase
 from django.contrib.auth.hashers    import *
@@ -18,6 +18,7 @@ class FormLogin(FormBase):
 
     def __init__(self, request):
         super().__init__(request)
+        self.user = None
 
     def clean(self):
         super(FormLogin, self).clean()
@@ -34,6 +35,7 @@ class FormLogin(FormBase):
             
     def cmd_login(self, request):
         request.session['token'] = make_password(self.cleaned_data['password'], salt=User.get_salt(self.cleaned_data['email']))
+        SiteEvent.create(request.orm_session, SiteEvent.Types.login, self.user)
         return '/'
 
 
@@ -115,6 +117,7 @@ class FormRegister(FormBase):
             **self.cleaned_data
         )
         request.session['token'] = make_password(self.cleaned_data['password'], salt=User.get_salt(self.cleaned_data['email']))
+        SiteEvent.create(request.orm_session, SiteEvent.Types.register, user)
         return '/'
     
 
