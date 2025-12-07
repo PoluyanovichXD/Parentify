@@ -5,21 +5,27 @@ from django.contrib.auth.hashers    import *
 
 from sqlalchemy import inspect
 
-from parentify.ui.controls import ControlInputs, ControlRecord
+from parentify.ui.controls import ControlBase, ControlHtml, ControlInputs, ControlPagerFull, ControlRecord, ControlRecordlist
 from parentify.ui.decorators import HttpRedirectException, common_page, page_has_user, with_form, with_get_int
 from parentify.ui.mvc import PageModelInfo
 from parentify.ui.pages import PageSimple
 from parentify.web.admin.pages import PageAdminEditor
+from parentify.web.childs.forms import FormChild
 from parentify.web.forms import FormRegister
-from parentify.web.forum.forms import FormForum, FormCategory as FormForumCategory
+from parentify.web.forum.forms import FormForum, FormCategory as FormForumCategory, FormForumComment
 from parentify.web.goods.forms import FormGoods, FormCategory as FormGoodsCategory
 from parentify.web.map.forms import FormPlace, FormCategory as FormPlaceCategory
 from parentify.web.article.forms import FormArticle, FormCategory as FormArticleCategory
+from datetime import datetime, timedelta
+
 
 dictAdminModels = {
     "": [None, "Дашборд", "fas fa-tachometer-alt",[],None],
     "user": [User, "Пользователи", "fas fa-users",
         [['ФИО', 'full_name'],['Почта', "email"]], FormRegister,
+    ],
+    "user_child": [UserChild, "Дети", "fas fa-child",
+        [['ФИО', 'full_name'],['Родитель', "user.full_name"]], FormChild,
     ],
     "article": [Article, "Статьи", "fas fa-newspaper",
         [['Название','title']], FormArticle,
@@ -29,6 +35,9 @@ dictAdminModels = {
     ],
     "forum_topic": [ForumTopic, "Темы форума", "fas fa-comments",
         [['Название','title']], FormForum,
+    ],
+    "forum_comment": [ForumComment, "Коментарии форума", "fas fa-message",
+        [['Название','topic.title'], ['Пользователь','user.full_name'], ['Сообщение','content']], FormForumComment,
     ],
     "forum_topic_category": [ForumTopicCategory, "Категории форума", "fas fa-tags",
         [['Название','name']], FormForumCategory,
@@ -93,8 +102,32 @@ def page_admin():
 
 class admin:
     @page_admin()
-    def dashboard(request):
-        page = PageSimple('Администрирование', 'pages/admin.html')
+    @with_get_int('p', 0, 255)
+    def dashboard(request, p):
+        page_number = p
+        page_size = 25
+        page = PageSimple('Администрирование')
+        dashboard = ControlBase('controls/ControlDashboard.html')
+        now = datetime.now()
+        week_ago = now - timedelta(days=7)
+        dashboard.add_context({
+            'user_count': request.orm_session.query(User).count(),
+            'user_child_count': request.orm_session.query(UserChild).count(),
+            'article_count': request.orm_session.query(Article).count(),
+            'forum_topic_count': request.orm_session.query(ForumTopic).count(),
+            'new_users': request.orm_session.query(User).filter(User.created_at >= week_ago),
+            'new_users_count': request.orm_session.query(User).filter(User.created_at >= week_ago).count(),
+        })
+        query = request.orm_session.query(SiteEvent)
+        recordList = ControlRecordlist(query[page_number * page_size: (page_number + 1) * page_size],
+        [
+            ['Пользователь', 'user.full_name'],
+            ['Действие', 'text'],
+            ['Время', 'created_at'],
+        ])
+        recordList.add_pager('bottom_pager', ControlPagerFull(query, page_number, page_size, query.count(), query.count()))
+        page.add_control('dashboard', dashboard)
+        page.add_control('html', recordList)
         return page
     
     @page_admin()
@@ -106,25 +139,31 @@ class admin:
         if request.GET.get('delete'):
             request.orm_session.delete(request.orm_session.query(dataModel['model']).get(request.GET.get('delete')))
             request.orm_session.commit()
-            return HttpResponseRedirect('/admin/')
-        modelInfo = PageModelInfo(request.session, '/admin/', request.orm_session.query(dataModel['model']), dataModel['model'].id)
+            return HttpResponseRedirect(dataModel['url'])
+        modelInfo = PageModelInfo(request.session, dataModel['url'], request.orm_session.query(dataModel['model']), dataModel['model'].id)
         PageAdminEditor._fields = dataModel['fields']
         return PageAdminEditor(modelInfo).items(request, p, None, PageAdminEditor.toolbar)
     @page_admin()
     def model_create(request,model):
-        form_model=None
         dataModel = adminMenu(request.orm_session).get(model)
         if not dataModel:
             raise Http404()
+        form_model=dataModel['form'](request)
+        if 'cmd_model_create' in request.POST and form_model.is_valid():
+            form_model.cmd_model_create(request)
+            return HttpResponseRedirect(dataModel['url'])
         modelInfo = PageModelInfo(request.session, dataModel['url'], request.orm_session.query(dataModel['model']), dataModel['model'].id)
         page = PageAdminEditor(modelInfo).new(request, ControlInputs(form_model))
         return page 
     @page_admin()
     def model_edit(request, model, model_id):
-        form_model=None
-        dataModel = not adminMenu(request.orm_session).get(model)
+        dataModel = adminMenu(request.orm_session).get(model)
         if not dataModel:
             raise Http404()
+        form_model=dataModel['form'](request, model_id)
+        if 'cmd_model_update' in request.POST and form_model.is_valid():
+            form_model.cmd_model_create(request)
+            return HttpResponseRedirect(dataModel['url'])
         modelInfo = PageModelInfo(request.session, dataModel['url'], request.orm_session.query(dataModel['model']), dataModel['model'].id)
         page = PageAdminEditor(modelInfo)
         return page.edit(request,model_id, ControlInputs(form_model))

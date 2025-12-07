@@ -18,6 +18,7 @@ class User(Base):
     first_name = Column(String(255), nullable=False)
     last_name = Column(String(255), nullable=False)
     password = Column(String(255), nullable=False)
+    avatar = Column(LargeBinary, nullable=True) 
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
     birth_date = Column(Date, nullable=True)
@@ -50,6 +51,7 @@ class User(Base):
             "is_admin":self.is_admin,
             "birth_date":self.birth_date,
             "gender":self.gender,
+            "avatar":self.avatar_url,
             "created_at":self.created_at,
             "updated_at":self.updated_at
         }
@@ -57,6 +59,12 @@ class User(Base):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
+    
+    @property
+    def avatar_url(self):
+        if self.avatar:
+            return f'/users/{self.id}/avatar.png'
+        return None
     
     @property
     def gender_name(self):
@@ -103,7 +111,7 @@ class User(Base):
         
     @staticmethod
     def create(orm, email, first_name, last_name, password, is_active=True, 
-               is_admin=False, birth_date=None, gender=None):
+               is_admin=False, birth_date=None, gender=None, avatar=None):
         user = User(
             email=email,
             first_name=first_name,
@@ -111,7 +119,8 @@ class User(Base):
             is_active=is_active,
             is_admin=is_admin,
             birth_date=birth_date,
-            gender=gender
+            gender=gender,
+            avatar=avatar
         )
         user.set_password(password)
         orm.add(user)

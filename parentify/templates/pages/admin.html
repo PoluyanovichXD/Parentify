@@ -81,18 +81,7 @@
             </div>
             
             <div class="space-y-4">
-                {% for i in "12345" %}
-                <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold">
-                        U{{ forloop.counter }}
-                    </div>
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-800">Пользователь {{ forloop.counter }}</p>
-                        <p class="text-sm text-gray-600">user{{ forloop.counter }}@example.com</p>
-                    </div>
-                    <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Новый</span>
-                </div>
-                {% endfor %}
+                
             </div>
         </div>
     </div>
@@ -112,23 +101,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for i in "12345" %}
-                    <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                        <td class="py-3 px-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                    U{{ forloop.counter }}
-                                </div>
-                                <span class="font-medium">Пользователь {{ forloop.counter }}</span>
-                            </div>
-                        </td>
-                        <td class="py-3 px-4 text-gray-600">Зарегистрировался на сайте</td>
-                        <td class="py-3 px-4 text-gray-600">2 часа назад</td>
-                        <td class="py-3 px-4">
-                            <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Успешно</span>
-                        </td>
-                    </tr>
-                    {% endfor %}
+                    
                 </tbody>
             </table>
         </div>

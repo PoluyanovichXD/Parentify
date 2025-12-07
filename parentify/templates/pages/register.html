@@ -107,6 +107,25 @@
                         {% endif %}
                 </div>
 
+                <!-- Аватар -->
+                <div class="mb-5">
+                    {{controls.0.content.avatar}}
+                    {% if controls.0.content.avatar %}
+                            {% for error in controls.0.content.avatar.errors %}
+                            <div class="error_msg mt-2 flex items-start text-red-600 text-sm bg-red-50 px-4 py-3 rounded-xl border border-red-200 animate-pulse" 
+                                type="error" 
+                                aria-label="{{error}}"
+                                data-microtip-position="top-left"
+                                role="tooltip">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" class="w-4 h-4 mr-2 mt-0.5 flex-shrink-0">
+                                    <path fill="currentColor" d="M10,1c-5,0-9,4.1-9,9s4.1,9,9,9s9-4.1,9-9S15,1,10,1z M10.9,14.6H9.1v-1.8H11v1.8H10.9z M10.9,10.9H9.1V5.4H11v5.4H10.9z"/>
+                                </svg>
+                                <span class="font-medium">{{error}}</span>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                </div>
+
                 <!-- Пароль -->
                 <div class="mb-5 relative">
                     {{controls.0.content.password}}

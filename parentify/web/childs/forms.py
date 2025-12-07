@@ -21,7 +21,7 @@ class FormChild(FormBase):
             self.child = UserChild()
             super().__init__(request)
         if request.current_user and request.current_user.is_admin:
-            self.fields['user_id'] = SelectInputField(label=_("Пользователь"), required=True)
+            self.fields['user_id'] = SelectInputField(label=_("Родитель"), required=True)
             self.fields['user_id'].choices = choise_name_orm(request, User, True, User.last_name)
         
         self.fields['gender'].choices = [

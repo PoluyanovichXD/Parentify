@@ -52,6 +52,7 @@ class FormRegister(FormBase):
         label=_('Email'),
         required=True
     )
+    avatar = FileField(label=_("Аватар"), images_type=True, required=False)
     
     password = PasswordInputField(
         label=_('Пароль'),
@@ -63,8 +64,14 @@ class FormRegister(FormBase):
         required=True
     )
 
-    def __init__(self, request):
-        super().__init__(request)
+    def __init__(self, request, user_id=None):
+        if not user_id:
+            self.user = None
+            super().__init__(request)
+        else:
+            self.user = request.orm_session.query(User).get(user_id)
+            super().__init__(request, self.user.to_dict())
+        
         self.fields['gender'].choices=[
             (None, _('Выберите пол')),
             ('male', _('Мужской')),
@@ -112,14 +119,40 @@ class FormRegister(FormBase):
 
     def cmd_register(self, request=None):
         del self.cleaned_data['confirm_password']
+        data = self.cleaned_data
+        if data.get('avatar'):
+            data['avatar'] = data['avatar'].read()
         user = User.create(
             self.request.orm_session,
-            **self.cleaned_data
+            **data
         )
         request.session['token'] = make_password(self.cleaned_data['password'], salt=User.get_salt(self.cleaned_data['email']))
         SiteEvent.create(request.orm_session, SiteEvent.Types.register, user)
         return '/'
     
+    def cmd_model_create(self, request=None):
+        del self.cleaned_data['confirm_password']
+        data = self.cleaned_data
+        if data.get('avatar'):
+            data['avatar'] = data['avatar'].read()
+        user = User.create(
+            self.request.orm_session,
+            **data
+        )
+        SiteEvent.create(request.orm_session, SiteEvent.Types.register, user)
+        return '/'
+    def cmd_model_update(self, request=None):
+        if not self.user:
+            return '/'
+        del self.cleaned_data['confirm_password']
+        data = self.cleaned_data
+        if data.get('avatar'):
+            data['avatar'] = data['avatar'].read()
+        for key, val in data.items():
+            setattr(self.user, key, val)
+        request.orm_session.commit()
+        SiteEvent.create(request.orm_session, SiteEvent.Types.register, self.user)
+        return '/'
 
 
 class FormProfile(FormBase):

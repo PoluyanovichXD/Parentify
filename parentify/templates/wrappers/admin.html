@@ -22,7 +22,7 @@
             <ul class="space-y-2">
                 {% for key, val in request.admin_menu.items %}
                 <li>
-                    <a href="/admin/{{key}}" class="
+                    <a href="{% if key %}/admin/{{key}}{% else %}/admin/{% endif %}" class="
                     flex items-center gap-3 p-3 rounded-lg transition-colors 
                     {% if request.path|startswith:val.url %}
                     flex items-center gap-3 p-3 rounded-lg bg-primary text-white

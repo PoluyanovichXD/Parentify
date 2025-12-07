@@ -1,6 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.utils.translation           import gettext as _
-from parentify.models.models import ForumTopic, ForumComment, ForumLikedComment, ForumTopicCategory
+from parentify.models.models import ForumTopic, ForumComment, ForumLikedComment, ForumTopicCategory, User
 from parentify.ui.forms import FormBase, FormModelFilter, choise_name_orm
 from parentify.ui.fields import *
 
@@ -62,23 +62,39 @@ class FormForumComment(FormBase):
     content = TextAreaInputField(label=_("Напишите ваш ответ..."), required=True)
 
     def __init__(self, request, forum_id=None):
-        self.forum_id = forum_id
-        self.comment = ForumComment()
-        super().__init__(request)
+        if request.path.startswith('/admin/'):
+            self.forum_id = forum_id
+            if self.forum_id:
+                self.comment = request.orm_session.query(ForumComment).get(self.forum_id)
+                super().__init__(request, self.comment.to_dict())
+            else:
+                self.comment = ForumComment()
+                super().__init__(request)
+            self.fields['user_id'] = SelectInputField(label=_("Пользователь"))
+            self.fields['user_id'].choices = choise_name_orm(request, User, False, ['first_name', 'last_name'])
+            self.fields['topic_id'] = SelectInputField(label=_("Статья"))
+            self.fields['topic_id'].choices = choise_name_orm(request, ForumTopic, False, 'title')
+        else:
+            self.forum_id = forum_id
+            self.comment = ForumComment()
+            super().__init__(request)
+
     
     def clean(self):
         super(FormForumComment, self).clean()
 
     def cmd_model_create(self, request):
         self.comment.content = self.cleaned_data.get('content')
-        self.comment.user_id = request.current_user.id
-        self.comment.topic_id = self.forum_id
+        self.comment.user_id = self.cleaned_data.get('user_id') if self.cleaned_data.get('user_id') else request.current_user.id
+        self.comment.topic_id = self.cleaned_data.get('topic_id') if self.cleaned_data.get('topic_id') else self.forum_id
         self.request.orm_session.add(self.comment)
         self.request.orm_session.commit()
         return f'/forum/{self.forum_id}'
 
     def cmd_model_update(self, request):
         self.comment.content = self.cleaned_data.get('content')
+        self.comment.user_id = self.cleaned_data.get('user_id') if self.cleaned_data.get('user_id') else request.current_user.id
+        self.comment.topic_id = self.cleaned_data.get('topic_id') if self.cleaned_data.get('topic_id') else self.forum_id
         self.comment.updated_at = datetime.datetime.now()
         self.request.orm_session.commit()
         return f'/forum/{self.forum_id}'

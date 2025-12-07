@@ -10,6 +10,7 @@ urlpatterns = [
     re_path(r'^map/', include('parentify.web.map.urls')),
     re_path(r'^childs/', include('parentify.web.childs.urls')),
     re_path(r'^goods/', include('parentify.web.goods.urls')),
+    re_path(r'^users/', include('parentify.web.users.urls')),
     re_path(r'^login/$', login, name='login'),
     re_path(r'^register/$', register, name='register'),
     re_path(r'^logout/$', logout, name='logout'),

@@ -1,22 +1,60 @@
 from django import forms
 from django.http import HttpResponseRedirect
-from sqlalchemy.sql import text
+from sqlalchemy.sql import text, func
+from sqlalchemy.sql.expression import literal_column
 
 
+
+
+# def choise_name_orm(request, ClassModel, all=False, name_field=None):
+#     choise = [(None, ''), ]
+#     if not name_field:
+#         name_field = ClassModel.name
+#     if all:
+#         choise.extend(request.orm_session.query(text(ClassModel.url_key_name), name_field).order_by(name_field).all())
+#     else:
+#         if hasattr(ClassModel, 'approved'):
+#             choise.extend(request.orm_session.query(text(ClassModel.url_key_name), name_field).filter(ClassModel.approved == True).order_by(name_field).all())
+#         else:
+#             choise.extend(request.orm_session.query(text(ClassModel.url_key_name), name_field).order_by(name_field).all())
+#     return choise
 
 def choise_name_orm(request, ClassModel, all=False, name_field=None):
     choise = [(None, ''), ]
+    
     if not name_field:
-        name_field = ClassModel.name
-    if all:
-        choise.extend(request.orm_session.query(text(ClassModel.url_key_name), name_field).order_by(name_field).all())
-    else:
-        if hasattr(ClassModel, 'approved'):
-            choise.extend(request.orm_session.query(text(ClassModel.url_key_name), name_field).filter(ClassModel.approved == True).order_by(name_field).all())
+        name_field = 'name'
+    
+    id_field = getattr(ClassModel, 'url_key_name', 'id')
+    
+    if isinstance(name_field, (list, tuple)):
+        if len(name_field) == 1:
+            display_expr = getattr(ClassModel, name_field[0])
         else:
-            choise.extend(request.orm_session.query(text(ClassModel.url_key_name), name_field).order_by(name_field).all())
+            concat_parts = []
+            for i, field in enumerate(name_field):
+                if i > 0:
+                    concat_parts.append(literal_column("' '"))
+                concat_parts.append(getattr(ClassModel, field))
+            
+            display_expr = func.concat(*concat_parts)
+    elif isinstance(name_field, str):
+        display_expr = getattr(ClassModel, name_field)
+    else:
+        display_expr = name_field
+    
+    query = request.orm_session.query(
+        getattr(ClassModel, id_field),
+        display_expr
+    ).order_by(display_expr)
+    
+    if not all and hasattr(ClassModel, 'approved'):
+        query = query.filter(ClassModel.approved == True)
+    
+    results = query.all()
+    choise.extend(results)
+    
     return choise
-
 
 class FormCore(forms.Form):
     _errors = None

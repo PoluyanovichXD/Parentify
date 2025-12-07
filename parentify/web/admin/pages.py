@@ -13,5 +13,6 @@ class PageAdminEditor(PageModelEditor):
 
     _default_page_size = 30
     _fields = ((_('Название'), 'name',),)
+    _fields_event = ['delete']
     toolbar = ControlButtonsBar()
     toolbar.add_button(_('Добавить'), 'add', redirect_url='0/new/')
