@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Трекер - Parentify</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #F5F5F5;
+            color: #333333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background-color: #FFFFFF;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #f59fa8;
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 25px;
+        }
+        
+        nav ul li a {
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        nav ul li a:hover {
+            color: #f59fa8;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #f59fa8;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #e88d96;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: #B5EAD7;
+            color: #333333;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #a1d8c5;
+        }
+        
+        /* Page Title */
+        .page-title {
+            text-align: center;
+            padding: 60px 0 30px;
+        }
+        
+        .page-title h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #333333;
+        }
+        
+        .page-title p {
+            color: #888888;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Tracker Controls */
+        .tracker-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .date-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .date-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .date-btn:hover {
+            background-color: #B5EAD7;
+        }
+        
+        .current-date {
+            font-weight: 600;
+            color: #333333;
+            min-width: 150px;
+            text-align: center;
+        }
+        
+        .add-tracker-btn {
+            background-color: #f59fa8;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .add-tracker-btn:hover {
+            background-color: #e88d96;
+            transform: translateY(-2px);
+        }
+        
+        /* Tracker Types */
+        .tracker-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .tracker-type {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .tracker-type:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tracker-icon {
+            width: 70px;
+            height: 70px;
+            background-color: #B5EAD7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 1.8rem;
+            color: #333333;
+        }
+        
+        .tracker-title {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #333333;
+        }
+        
+        .tracker-unit {
+            color: #888888;
+            font-size: 0.9rem;
+        }
+        
+        /* Tracker History */
+        .tracker-history {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: #333333;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #B5EAD7;
+        }
+        
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background-color: #F5F5F5;
+            border-radius: 12px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .history-item:hover {
+            background-color: #e8e8e8;
+        }
+        
+        .history-icon {
+            width: 50px;
+            height: 50px;
+            background-color: #B5EAD7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: #333333;
+            flex-shrink: 0;
+        }
+        
+        .history-content {
+            flex-grow: 1;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .history-tracker {
+            font-weight: 600;
+            color: #333333;
+        }
+        
+        .history-time {
+            color: #888888;
+            font-size: 0.9rem;
+        }
+        
+        .history-value {
+            font-weight: 600;
+            color: #f59fa8;
+            margin-bottom: 5px;
+        }
+        
+        .history-comment {
+            color: #666666;
+            font-size: 0.95rem;
+        }
+        
+        .history-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .history-action {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .history-action:hover {
+            background-color: #f59fa8;
+            color: white;
+        }
+        
+        /* Statistics */
+        .statistics {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 60px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-item {
+            background-color: #F5F5F5;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f59fa8;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666666;
+            font-size: 0.9rem;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: #333333;
+        }
+        
+        .modal-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            background-color: #f59fa8;
+            color: white;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333333;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #B5EAD7;
+            box-shadow: 0 0 0 3px rgba(181, 234, 215, 0.2);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #F5F5F5;
+            padding: 60px 0 30px;
+            margin-top: auto;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #333333;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-column ul li a:hover {
+            color: #f59fa8;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: #B5EAD7;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            background-color: #f59fa8;
+            color: white;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+            color: #888888;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                gap: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .tracker-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .date-selector {
+                justify-content: center;
+            }
+            
+            .tracker-types {
+                grid-template-columns: 1fr;
+            }
+            
+            .history-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <a href="index.html" class="logo">Parentify</a>
+            
+            <nav>
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="articles.html">Статьи</a></li>
+                    <li><a href="products.html">Товары</a></li>
+                    <li><a href="calendar.html">Календарь</a></li>
+                    <li><a href="tracker.html" style="color: #f59fa8;">Трекер</a></li>
+                </ul>
+            </nav>
+            
+            <div class="auth-buttons">
+                <a href="login.html" class="btn btn-secondary">Вход</a>
+                <a href="register.html" class="btn btn-primary">Регистрация</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Title -->
+    <section class="page-title">
+        <div class="container">
+            <h1>Трекер развития ребенка</h1>
+            <p>Отслеживайте питание, сон, активность и другие важные показатели развития вашего малыша</p>
+        </div>
+    </section>
+
+    <!-- Tracker Controls -->
+    <section class="container">
+        <div class="tracker-controls">
+            <div class="date-selector">
+                <div class="date-btn prev-date">
+                    <i class="fas fa-chevron-left"></i>
+                </div>
+                <div class="current-date">20 ноября 2023</div>
+                <div class="date-btn next-date">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+            
+            <button class="add-tracker-btn" id="openModalBtn">
+                <i class="fas fa-plus"></i> Добавить запись
+            </button>
+        </div>
+    </section>
+
+    <!-- Tracker Types -->
+    <section class="container">
+        <div class="tracker-types">
+            <div class="tracker-type" data-type="sleep">
+                <div class="tracker-icon">
+                    <i class="fas fa-moon"></i>
+                </div>
+                <h3 class="tracker-title">Сон</h3>
+                <p class="tracker-unit">часы</p>
+            </div>
+            
+            <div class="tracker-type" data-type="feeding">
+                <div class="tracker-icon">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <h3 class="tracker-title">Питание</h3>
+                <p class="tracker-unit">мл / грамм</p>
+            </div>
+            
+            <div class="tracker-type" data-type="diaper">
+                <div class="tracker-icon">
+                    <i class="fas fa-baby"></i>
+                </div>
+                <h3 class="tracker-title">Подгузники</h3>
+                <p class="tracker-unit">тип</p>
+            </div>
+            
+            <div class="tracker-type" data-type="walk">
+                <div class="tracker-icon">
+                    <i class="fas fa-walking"></i>
+                </div>
+                <h3 class="tracker-title">Прогулка</h3>
+                <p class="tracker-unit">минуты</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tracker History -->
+    <section class="container">
+        <div class="tracker-history">
+            <h2 class="section-title">История за сегодня</h2>
+            
+            <div class="history-list" id="historyList">
+                <!-- Записи будут добавляться динамически -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics -->
+    <section class="container">
+        <div class="statistics">
+            <h2 class="section-title">Статистика за ноябрь 2023</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">8.2</div>
+                    <div class="stat-label">Средний сон (часов/день)</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-value">6.5</div>
+                    <div class="stat-label">Кормлений в день</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Смен подгузников в день</div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-value">45</div>
+                    <div class="stat-label">Минут прогулки в день</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal -->
+    <div class="modal" id="trackerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Добавить запись</h3>
+                <div class="modal-close" id="closeModalBtn">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            
+            <form id="trackerForm">
+                <div class="form-group">
+                    <label for="trackerType">Тип трекера</label>
+                    <select id="trackerType" class="form-control" required>
+                        <option value="">Выберите тип</option>
+                        <option value="sleep">Сон</option>
+                        <option value="feeding">Питание</option>
+                        <option value="diaper">Подгузники</option>
+                        <option value="walk">Прогулка</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="trackerDate">Дата и время</label>
+                    <input type="datetime-local" id="trackerDate" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="trackerValue">Значение</label>
+                    <input type="text" id="trackerValue" class="form-control" placeholder="Например: 2 часа, 150 мл" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="trackerComment">Комментарий</label>
+                    <textarea id="trackerComment" class="form-control" rows="3" placeholder="Дополнительная информация..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Parentify</h3>
+                    <p>Платформа для современных родителей, заботящихся о гармоничном развитии своих детей.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Разделы</h3>
+                    <ul>
+                        <li><a href="#">Главная</a></li>
+                        <li><a href="#">Статьи</a></li>
+                        <li><a href="#">Товары</a></li>
+                        <li><a href="#">Календарь развития</a></li>
+                        <li><a href="#">Трекер</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Полезное</h3>
+                    <ul>
+                        <li><a href="#">Рекомендованные товары</a></li>
+                        <li><a href="#">Карта мест</a></li>
+                        <li><a href="#">Чек-листы</a></li>
+                        <li><a href="#">Справочные материалы</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Контакты</h3>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> info@parentify.ru</li>
+                        <li><i class="fas fa-phone"></i> +7 (800) 123-45-67</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Москва, ул. Примерная, 15</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>© 2023 Parentify. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Данные трекеров
+        const trackerTypes = {
+            sleep: {
+                title: "Сон",
+                icon: "fas fa-moon",
+                unit: "часы"
+            },
+            feeding: {
+                title: "Питание",
+                icon: "fas fa-utensils",
+                unit: "мл / грамм"
+            },
+            diaper: {
+                title: "Подгузники",
+                icon: "fas fa-baby",
+                unit: "тип"
+            },
+            walk: {
+                title: "Прогулка",
+                icon: "fas fa-walking",
+                unit: "минуты"
+            }
+        };
+
+        // Пример данных записей
+        let trackerEntries = [
+            {
+                id: 1,
+                type: "sleep",
+                datetime: "2023-11-20T22:45:00",
+                value: "2 часа",
+                comment: "Сон хороший, не просыпался",
+                createdAt: "2023-11-20T22:50:00"
+            },
+            {
+                id: 2,
+                type: "feeding",
+                datetime: "2023-11-20T20:30:00",
+                value: "150 мл",
+                comment: "Смесь NAN Optipro",
+                createdAt: "2023-11-20T20:35:00"
+            },
+            {
+                id: 3,
+                type: "diaper",
+                datetime: "2023-11-20T18:15:00",
+                value: "Мокрый",
+                comment: "Смена подгузника",
+                createdAt: "2023-11-20T18:20:00"
+            },
+            {
+                id: 4,
+                type: "walk",
+                datetime: "2023-11-20T16:00:00",
+                value: "45 минут",
+                comment: "Прогулка в парке",
+                createdAt: "2023-11-20T16:50:00"
+            },
+            {
+                id: 5,
+                type: "sleep",
+                datetime: "2023-11-20T14:20:00",
+                value: "1.5 часа",
+                comment: "Дневной сон",
+                createdAt: "2023-11-20T14:25:00"
+            }
+        ];
+
+        // Элементы DOM
+        const historyList = document.getElementById('historyList');
+        const modal = document.getElementById('trackerModal');
+        const openModalBtn = document.getElementById('openModalBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const trackerForm = document.getElementById('trackerForm');
+        const currentDateElement = document.querySelector('.current-date');
+        const prevDateBtn = document.querySelector('.prev-date');
+        const nextDateBtn = document.querySelector('.next-date');
+
+        // Текущая дата
+        let currentDate = new Date();
+        
+        // Функция форматирования даты
+        function formatDate(date) {
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            return date.toLocaleDateString('ru-RU', options);
+        }
+        
+        // Функция форматирования времени
+        function formatTime(datetime) {
+            const date = new Date(datetime);
+            return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // Функция отображения записей
+        function displayEntries() {
+            historyList.innerHTML = '';
+            
+            // Фильтруем записи по текущей дате
+            const currentDateStr = currentDate.toISOString().split('T')[0];
+            const todayEntries = trackerEntries.filter(entry => {
+                const entryDate = new Date(entry.datetime).toISOString().split('T')[0];
+                return entryDate === currentDateStr;
+            });
+            
+            // Сортируем записи по времени (новые сверху)
+            todayEntries.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+            
+            // Отображаем записи
+            if (todayEntries.length === 0) {
+                historyList.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">Записей за этот день нет</p>';
+                return;
+            }
+            
+            todayEntries.forEach(entry => {
+                const trackerType = trackerTypes[entry.type];
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div class="history-icon">
+                        <i class="${trackerType.icon}"></i>
+                    </div>
+                    <div class="history-content">
+                        <div class="history-header">
+                            <span class="history-tracker">${trackerType.title}</span>
+                            <span class="history-time">${formatTime(entry.datetime)}</span>
+                        </div>
+                        <div class="history-value">${entry.value}</div>
+                        <div class="history-comment">${entry.comment}</div>
+                    </div>
+                    <div class="history-actions">
+                        <div class="history-action delete-entry" data-id="${entry.id}">
+                            <i class="fas fa-trash"></i>
+                        </div>
+                    </div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+            
+            // Добавляем обработчики для кнопок удаления
+            document.querySelectorAll('.delete-entry').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const entryId = parseInt(this.getAttribute('data-id'));
+                    deleteEntry(entryId);
+                });
+            });
+        }
+        
+        // Функция удаления записи
+        function deleteEntry(id) {
+            if (confirm('Вы уверены, что хотите удалить эту запись?')) {
+                trackerEntries = trackerEntries.filter(entry => entry.id !== id);
+                displayEntries();
+            }
+        }
+        
+        // Функция добавления записи
+        function addEntry(entryData) {
+            const newEntry = {
+                id: Date.now(), // Простой способ генерации ID
+                ...entryData,
+                createdAt: new Date().toISOString()
+            };
+            
+            trackerEntries.push(newEntry);
+            displayEntries();
+            closeModal();
+        }
+        
+        // Функции для работы с модальным окном
+        function openModal() {
+            modal.style.display = 'flex';
+            // Устанавливаем текущую дату и время по умолчанию
+            const now = new Date();
+            const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById('trackerDate').value = localDateTime;
+        }
+        
+        function closeModal() {
+            modal.style.display = 'none';
+            trackerForm.reset();
+        }
+        
+        // Обработчики событий
+        openModalBtn.addEventListener('click', openModal);
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        
+        // Обработчик отправки формы
+        trackerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const entryData = {
+                type: document.getElementById('trackerType').value,
+                datetime: document.getElementById('trackerDate').value,
+                value: document.getElementById('trackerValue').value,
+                comment: document.getElementById('trackerComment').value
+            };
+            
+            addEntry(entryData);
+        });
+        
+        // Обработчики для навигации по датам
+        prevDateBtn.addEventListener('click', function() {
+            currentDate.setDate(currentDate.getDate() - 1);
+            updateDateDisplay();
+            displayEntries();
+        });
+        
+        nextDateBtn.addEventListener('click', function() {
+            currentDate.setDate(currentDate.getDate() + 1);
+            updateDateDisplay();
+            displayEntries();
+        });
+        
+        // Функция обновления отображения даты
+        function updateDateDisplay() {
+            currentDateElement.textContent = formatDate(currentDate);
+            
+            // Блокируем кнопку "следующий день", если это сегодня
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const current = new Date(currentDate);
+            current.setHours(0, 0, 0, 0);
+            
+            nextDateBtn.style.opacity = current.getTime() === today.getTime() ? '0.5' : '1';
+            nextDateBtn.style.cursor = current.getTime() === today.getTime() ? 'not-allowed' : 'pointer';
+        }
+        
+        // Обработчики для быстрого добавления по типу трекера
+        document.querySelectorAll('.tracker-type').forEach(type => {
+            type.addEventListener('click', function() {
+                const trackerType = this.getAttribute('data-type');
+                document.getElementById('trackerType').value = trackerType;
+                openModal();
+            });
+        });
+        
+        // Инициализация
+        updateDateDisplay();
+        displayEntries();
+    </script>
+</body>
+</html>

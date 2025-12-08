@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.session         import object_session
 from django.contrib.auth.hashers import make_password, check_password
 from datetime import datetime
+from django.utils import timezone
 from enum import Enum as PyEnum
 from typing import Optional
 from parentify.models import Base, Orm
@@ -60,6 +61,26 @@ class User(Base):
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
     
+    @property
+    def weeks_in_system(self):
+        if not self.created_at:
+            return 0
+        
+        now = timezone.now()
+        
+        if timezone.is_naive(self.created_at):
+            created_at = timezone.make_aware(self.created_at)
+        else:
+            created_at = self.created_at
+        
+        if now < created_at:
+            return 0
+        
+        delta = now - created_at
+        days = delta.days
+        
+        weeks = days // 7
+        return max(weeks, 0)
     @property
     def avatar_url(self):
         if self.avatar:

@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календарь развития - Parentify</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #F5F5F5;
+            color: #333333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background-color: #FFFFFF;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #f59fa8;
+        }
+        
+        nav ul {
+            display: flex;
+            gap: 25px;
+        }
+        
+        nav ul li a {
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        nav ul li a:hover {
+            color: #f59fa8;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #f59fa8;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #e88d96;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: #B5EAD7;
+            color: #333333;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #a1d8c5;
+        }
+        
+        /* Page Title */
+        .page-title {
+            text-align: center;
+            padding: 60px 0 30px;
+        }
+        
+        .page-title h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #333333;
+        }
+        
+        .page-title p {
+            color: #888888;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Child Info */
+        .child-info {
+            background-color: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .child-details {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .child-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: #B5EAD7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #333333;
+        }
+        
+        .child-data h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: #333333;
+        }
+        
+        .child-data p {
+            color: #888888;
+        }
+        
+        .week-navigation {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .nav-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background-color: #B5EAD7;
+        }
+        
+        .nav-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .current-week {
+            font-weight: 600;
+            color: #333333;
+            min-width: 150px;
+            text-align: center;
+        }
+        
+        /* Week Content */
+        .week-content {
+            background-color: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 60px;
+        }
+        
+        .week-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .week-number {
+            display: inline-block;
+            padding: 8px 20px;
+            background-color: #f59fa8;
+            color: white;
+            border-radius: 30px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .week-title {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #333333;
+        }
+        
+        .week-date {
+            color: #888888;
+            font-size: 1.1rem;
+        }
+        
+        .week-section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: #f59fa8;
+        }
+        
+        .week-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #444444;
+            margin-bottom: 20px;
+        }
+        
+        .skills-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .skill-item {
+            background-color: #F5F5F5;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+        
+        .skill-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #B5EAD7;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: #333333;
+        }
+        
+        .skill-content h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            color: #333333;
+        }
+        
+        .skill-content p {
+            color: #666666;
+            font-size: 0.95rem;
+        }
+        
+        .tips-list {
+            background-color: #F5F5F5;
+            border-radius: 12px;
+            padding: 30px;
+        }
+        
+        .tip-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .tip-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .tip-number {
+            width: 30px;
+            height: 30px;
+            background-color: #f59fa8;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .tip-text {
+            color: #444444;
+            line-height: 1.6;
+        }
+        
+        /* Timeline */
+        .timeline {
+            margin-bottom: 60px;
+        }
+        
+        .timeline-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            color: #333333;
+            text-align: center;
+        }
+        
+        .timeline-container {
+            display: flex;
+            overflow-x: auto;
+            padding: 20px 0;
+            gap: 15px;
+            scrollbar-width: thin;
+            scrollbar-color: #B5EAD7 #F5F5F5;
+        }
+        
+        .timeline-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .timeline-container::-webkit-scrollbar-track {
+            background: #F5F5F5;
+            border-radius: 10px;
+        }
+        
+        .timeline-container::-webkit-scrollbar-thumb {
+            background: #B5EAD7;
+            border-radius: 10px;
+        }
+        
+        .timeline-week {
+            min-width: 120px;
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .timeline-week:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .timeline-week.active {
+            background-color: #f59fa8;
+            color: white;
+        }
+        
+        .timeline-week-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-week-title {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #F5F5F5;
+            padding: 60px 0 30px;
+            margin-top: auto;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #333333;
+        }
+        
+        .footer-column ul li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-column ul li a:hover {
+            color: #f59fa8;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: #B5EAD7;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            background-color: #f59fa8;
+            color: white;
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+            color: #888888;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                gap: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .child-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .child-details {
+                flex-direction: column;
+            }
+            
+            .week-content {
+                padding: 25px;
+            }
+            
+            .skills-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline-week {
+                min-width: 100px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <a href="index.html" class="logo">Parentify</a>
+            
+            <nav>
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="articles.html">Статьи</a></li>
+                    <li><a href="products.html">Товары</a></li>
+                    <li><a href="calendar.html" style="color: #f59fa8;">Календарь</a></li>
+                    <li><a href="#">Форум</a></li>
+                </ul>
+            </nav>
+            
+            <div class="auth-buttons">
+                <a href="login.html" class="btn btn-secondary">Вход</a>
+                <a href="register.html" class="btn btn-primary">Регистрация</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Title -->
+    <section class="page-title">
+        <div class="container">
+            <h1>Календарь развития ребенка</h1>
+            <p>Отслеживайте этапы развития вашего малыша и получайте персонализированные рекомендации</p>
+        </div>
+    </section>
+
+    <!-- Child Info -->
+    <section class="container">
+        <div class="child-info">
+            <div class="child-details">
+                <div class="child-avatar">
+                    <i class="fas fa-baby"></i>
+                </div>
+                <div class="child-data">
+                    <h2>София</h2>
+                    <p>Дата рождения: 15 марта 2023 года</p>
+                </div>
+            </div>
+            
+            <div class="week-navigation">
+                <div class="nav-btn prev-week disabled">
+                    <i class="fas fa-chevron-left"></i>
+                </div>
+                <div class="current-week">16 неделя жизни</div>
+                <div class="nav-btn next-week">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Week Content -->
+    <section class="container">
+        <div class="week-content">
+            <div class="week-header">
+                <div class="week-number">16 неделя</div>
+                <h1 class="week-title">16 неделя жизни малыша</h1>
+                <p class="week-date">Неделя с 26 июня по 2 июля 2023 года</p>
+            </div>
+            
+            <div class="week-section">
+                <h2 class="section-title"><i class="fas fa-baby"></i> Развитие на этой неделе</h2>
+                <div class="week-text">
+                    <p>На 16 неделе ваш малыш становится все более активным и общительным. Это время, когда многие дети начинают демонстрировать первые признаки самостоятельности и проявлять интерес к окружающему миру.</p>
+                    <p>Физическое развитие продолжается быстрыми темпами - ребенок уже уверенно держит головку, пытается переворачиваться и активно двигает ручками и ножками. Зрение улучшается, и малыш может фокусироваться на предметах на расстоянии нескольких метров.</p>
+                </div>
+            </div>
+            
+            <div class="week-section">
+                <h2 class="section-title"><i class="fas fa-star"></i> Ключевые навыки</h2>
+                <div class="skills-list">
+                    <div class="skill-item">
+                        <div class="skill-icon">
+                            <i class="fas fa-hand-paper"></i>
+                        </div>
+                        <div class="skill-content">
+                            <h3>Держит головку</h3>
+                            <p>Уверенно удерживает голову в положении лежа на животе в течение 1-2 минут</p>
+                        </div>
+                    </div>
+                    
+                    <div class="skill-item">
+                        <div class="skill-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="skill-content">
+                            <h3>Пытается переворачиваться</h3>
+                            <p>Делает первые попытки перевернуться со спины на бок и обратно</p>
+                        </div>
+                    </div>
+                    
+                    <div class="skill-item">
+                        <div class="skill-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="skill-content">
+                            <h3>Активный лепет</h3>
+                            <p>Издает разнообразные звуки, гулит и пытается имитировать интонации</p>
+                        </div>
+                    </div>
+                    
+                    <div class="skill-item">
+                        <div class="skill-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="skill-content">
+                            <h3>Следит за движением</h3>
+                            <p>Плавно следит глазами за движущимися предметами и людьми</p>
+                        </div>
+                    </div>
+                    
+                    <div class="skill-item">
+                        <div class="skill-icon">
+                            <i class="fas fa-hands"></i>
+                        </div>
+                        <div class="skill-content">
+                            <h3>Хватает предметы</h3>
+                            <p>Пытается схватить и удерживать погремушку или другие небольшие предметы</p>
+                        </div>
+                    </div>
+                    
+                    <div class="skill-item">
+                        <div class="skill-icon">
+                            <i class="fas fa-laugh"></i>
+                        </div>
+                        <div class="skill-content">
+                            <h3>Социальная улыбка</h3>
+                            <p>Улыбается в ответ на улыбку и ласковое обращение</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="week-section">
+                <h2 class="section-title"><i class="fas fa-lightbulb"></i> Советы родителям</h2>
+                <div class="tips-list">
+                    <div class="tip-item">
+                        <div class="tip-number">1</div>
+                        <p class="tip-text">Продолжайте регулярно выкладывать ребенка на животик - это укрепляет мышцы шеи, спины и плечевого пояса.</p>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="tip-number">2</div>
+                        <p class="tip-text">Разговаривайте с малышом, повторяйте его звуки и вводите новые - это стимулирует речевое развитие.</p>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="tip-number">3</div>
+                        <p class="tip-text">Предлагайте ребенку яркие игрушки разных текстур для развития тактильных ощущений и хватательного рефлекса.</p>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="tip-number">4</div>
+                        <p class="tip-text">Следите за положением головы во время сна, регулярно меняя сторону, чтобы предотвратить развитие плагиоцефалии.</p>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="tip-number">5</div>
+                        <p class="tip-text">Установите режим дня с регулярными периодами бодрствования, кормления и сна - это помогает ребенку чувствовать себя безопасно.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline -->
+    <section class="container timeline">
+        <h2 class="timeline-title">Этапы развития</h2>
+        <div class="timeline-container">
+            <div class="timeline-week">
+                <div class="timeline-week-number">12</div>
+                <div class="timeline-week-title">неделя</div>
+            </div>
+            <div class="timeline-week">
+                <div class="timeline-week-number">13</div>
+                <div class="timeline-week-title">неделя</div>
+            </div>
+            <div class="timeline-week">
+                <div class="timeline-week-number">14</div>
+                <div class="timeline-week-title">неделя</div>
+            </div>
+            <div class="timeline-week">
+                <div class="timeline-week-number">15</div>
+                <div class="timeline-week-title">неделя</div>
+            </div>
+            <div class="timeline-week active">
+                <div class="timeline-week-number">16</div>
+                <div class="timeline-week-title">неделя</div>
+            </div>
+            <div class="timeline-week">
+                <div class="timeline-week-number">17</div>
+                <div class="timeline-week-title">неделя</div>
+            </div>
+            <div class="timeline-week">
+                <div class="timeline-week-number">18</div>
+                <div class="timeline-week-title">неделя</div>
+            </div>
+            <div class="timeline-week">
+                <div class="timeline-week-number">19</div>
+                <div class="timeline-week-title">неделя</div>
+            </div>
+            <div class="timeline-week">
+                <div class="timeline-week-number">20</div>
+                <div class="timeline-week-title">неделя</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Parentify</h3>
+                    <p>Платформа для современных родителей, заботящихся о гармоничном развитии своих детей.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-vk"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Разделы</h3>
+                    <ul>
+                        <li><a href="#">Главная</a></li>
+                        <li><a href="#">Статьи</a></li>
+                        <li><a href="#">Товары</a></li>
+                        <li><a href="#">Календарь развития</a></li>
+                        <li><a href="#">Форум</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Полезное</h3>
+                    <ul>
+                        <li><a href="#">Рекомендованные товары</a></li>
+                        <li><a href="#">Карта мест</a></li>
+                        <li><a href="#">Чек-листы</a></li>
+                        <li><a href="#">Справочные материалы</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Контакты</h3>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> info@parentify.ru</li>
+                        <li><i class="fas fa-phone"></i> +7 (800) 123-45-67</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Москва, ул. Примерная, 15</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>© 2023 Parentify. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Данные о ребенке (в реальном приложении будут загружаться из профиля)
+        const childBirthDate = new Date('2023-03-15');
+        
+        // Расчет текущей недели
+        function getCurrentWeek(birthDate) {
+            const today = new Date();
+            const diffTime = today - birthDate;
+            const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+            return diffWeeks;
+        }
+        
+        const currentWeek = getCurrentWeek(childBirthDate);
+        
+        // Обновление информации о текущей неделе
+        document.querySelector('.current-week').textContent = `${currentWeek} неделя жизни`;
+        document.querySelector('.week-number').textContent = `${currentWeek} неделя`;
+        document.querySelector('.week-title').textContent = `${currentWeek} неделя жизни малыша`;
+        
+        // Навигация по неделям
+        let selectedWeek = currentWeek;
+        
+        document.querySelector('.next-week').addEventListener('click', function() {
+            if (selectedWeek < 52) {
+                selectedWeek++;
+                updateWeekContent(selectedWeek);
+                updateNavigation();
+            }
+        });
+        
+        document.querySelector('.prev-week').addEventListener('click', function() {
+            if (selectedWeek > 1) {
+                selectedWeek--;
+                updateWeekContent(selectedWeek);
+                updateNavigation();
+            }
+        });
+        
+        // Обновление навигации
+        function updateNavigation() {
+            document.querySelector('.current-week').textContent = `${selectedWeek} неделя жизни`;
+            
+            // Обновление состояния кнопок
+            document.querySelector('.prev-week').classList.toggle('disabled', selectedWeek <= 1);
+            document.querySelector('.next-week').classList.toggle('disabled', selectedWeek >= 52);
+            
+            // Обновление таймлайна
+            document.querySelectorAll('.timeline-week').forEach(week => {
+                week.classList.remove('active');
+                if (parseInt(week.querySelector('.timeline-week-number').textContent) === selectedWeek) {
+                    week.classList.add('active');
+                }
+            });
+        }
+        
+        // Обновление контента недели
+        function updateWeekContent(week) {
+            document.querySelector('.week-number').textContent = `${week} неделя`;
+            document.querySelector('.week-title').textContent = `${week} неделя жизни малыша`;
+            
+            // Расчет дат недели
+            const weekStart = new Date(childBirthDate);
+            weekStart.setDate(childBirthDate.getDate() + (week - 1) * 7);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            document.querySelector('.week-date').textContent = 
+                `Неделя с ${weekStart.toLocaleDateString('ru-RU', options)} по ${weekEnd.toLocaleDateString('ru-RU', options)}`;
+            
+            // В реальном приложении здесь будет загрузка данных о неделе с сервера
+            console.log(`Загрузка данных для ${week} недели...`);
+        }
+        
+        // Обработка кликов на таймлайне
+        document.querySelectorAll('.timeline-week').forEach(week => {
+            week.addEventListener('click', function() {
+                const weekNumber = parseInt(this.querySelector('.timeline-week-number').textContent);
+                if (weekNumber <= currentWeek) {
+                    selectedWeek = weekNumber;
+                    updateWeekContent(selectedWeek);
+                    updateNavigation();
+                }
+            });
+        });
+        
+        // Инициализация
+        updateWeekContent(currentWeek);
+        updateNavigation();
+    </script>
+</body>
+</html>

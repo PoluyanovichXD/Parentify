@@ -36,6 +36,11 @@ def logout(request):
 @with_form('form_profile', FormProfile, 'cmd_profile_edit')
 @with_form('form_password', FormPassword, 'cmd_password_edit')
 def profile(request, form_profile, form_password):
+    if request.FILES.get('user_avatar'):
+        user = request.orm_session.query(User).get(request.current_user.id)
+        user.avatar = request.FILES.get('user_avatar').read()
+        request.orm_session.commit()
+        return HttpResponseRedirect('/profile/')
     page = PageSimple('Профиль пользователя', 'pages/profile.html')
     page.add_control('form_profile', ControlInputs(form_profile))
     page.add_control('form_password', ControlInputs(form_password))

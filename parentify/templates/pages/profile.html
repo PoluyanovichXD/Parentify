@@ -15,18 +15,20 @@
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-xl shadow-lg p-6 sticky top-6">
                     <!-- Аватар и основная информация -->
-                    <div class="text-center mb-6">
+                    <form method="POST" enctype="multipart/form-data" class="text-center mb-6">
+                        {% csrf_token %}
                         <div class="relative inline-block">
-                            <div class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto mb-4">
+                            <div class="overflow-hidden w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-3xl font-bold mx-auto mb-4">
                                 {% if request.current_user.avatar_url %}
                                     <img src="{{request.current_user.avatar_url}}" class="w-full h-full">
                                 {% else %}
                                     {{ request.current_user.first_name|first }}{{ request.current_user.last_name|first }}
                                 {% endif %}
                             </div>
-                            <button class="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-md hover:shadow-lg transition-shadow">
+                            <input type="file" accept="image/*" name="user_avatar" id="user_avatar" onchange="FormSubmit(event.target.closest('form'))" class="hidden">
+                            <label for="user_avatar" class="absolute cursor-pointer bottom-2 right-2 aspect-square bg-white p-2 rounded-full shadow-md hover:shadow-lg transition-shadow">
                                 <i class="fas fa-camera text-gray-600 text-sm"></i>
-                            </button>
+                            </label>
                         </div>
                         <h2 class="text-xl font-semibold text-gray-800">{{ request.current_user.first_name }} {{ request.current_user.last_name }}</h2>
                         <p class="text-gray-600 text-sm">{{ request.current_user.email }}</p>
@@ -35,22 +37,14 @@
                             Администратор
                         </span>
                         {% endif %}
-                    </div>
+                    </form>
 
                     <div class="border-t border-gray-200 pt-4">
                         <h3 class="font-semibold text-gray-700 mb-3">Активность</h3>
                         <div class="space-y-3">
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-600 text-sm">Статьи прочитано</span>
-                                <span class="font-semibold text-primary">24</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600 text-sm">На форуме</span>
-                                <span class="font-semibold text-primary">3 дня</span>
-                            </div>
-                            <div class="flex justify-between items-center">
                                 <span class="text-gray-600 text-sm">В системе</span>
-                                <span class="font-semibold text-primary">2 мес</span>
+                                <span class="font-semibold text-primary">{{request.current_user.weeks_in_system}} нед.</span>
                             </div>
                         </div>
                     </div>
