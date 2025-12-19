@@ -27,7 +27,7 @@
                     {% if request.current_user %}
                     <div class="relative group">
                         <button
-                            class="btn bg-primary text-white px-5 py-2.5 rounded-full font-semibold hover:bg-[#e88d96] transition-all flex items-center">
+                            class="btn bg-primary text-white px-5 py-2.5 rounded-full font-semibold hover:bg-primary transition-all flex items-center">
                             <i class="fas fa-user mr-2"></i>{{ request.current_user.first_name }}
                             <i class="fas fa-chevron-down ml-2 text-sm"></i>
                         </button>
@@ -48,9 +48,9 @@
                     </div>
                     {% else %}
                     <a href="/login"
-                        class="btn bg-secondary text-gray-800 px-5 py-2.5 rounded-full font-semibold hover:bg-[#a1d8c5] transition-all">Вход</a>
+                        class="btn bg-secondary text-gray-800 px-5 py-2.5 rounded-full font-semibold hover:bg-secondary transition-all">Вход</a>
                     <a href="/register"
-                        class="btn bg-primary text-white px-5 py-2.5 rounded-full font-semibold hover:bg-[#e88d96] hover:-translate-y-0.5 transition-all">Регистрация</a>
+                        class="btn bg-primary text-white px-5 py-2.5 rounded-full font-semibold hover:bg-primary hover:-translate-y-0.5 transition-all">Регистрация</a>
                     {% endif %}
                 </div>
             </div>
@@ -103,7 +103,7 @@
                         <li><a href="/" class="hover:text-primary transition-colors">Главная</a></li>
                         <li><a href="/article" class="hover:text-primary transition-colors">Информационный раздел</a></li>
                         <li><a href="/calendar" class="hover:text-primary transition-colors">Календарь развития</a></li>
-                        <li><a href="/treker" class="hover:text-primary transition-colors">Трекеры</a></li>
+                        <li><a href="/trecker" class="hover:text-primary transition-colors">Трекеры</a></li>
                         <li><a href="/forum" class="hover:text-primary transition-colors">Форум</a></li>
                     </ul>
                 </div>

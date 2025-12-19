@@ -33,8 +33,8 @@ class Base(Configuration):
     
     EMAIL_PORT = 587
     EMAIL_HOST = 'smtp.gmail.com'
-    EMAIL_HOST_USER = 'mishutka@gmail.com'
-    EMAIL_HOST_PASSWORD = 'wejtoerhgerg'
+    EMAIL_HOST_USER = 'parentify.official@gmail.com'
+    EMAIL_HOST_PASSWORD = 'parentify.official1111'
 
     @property
     def FROM_EMAIL(self):

@@ -81,6 +81,11 @@ class User(Base):
         
         weeks = days // 7
         return max(weeks, 0)
+    
+    @property
+    def birth_year(self):
+        current_year = datetime.now().year
+        return current_year - self.birth_date.year
     @property
     def avatar_url(self):
         if self.avatar:
@@ -318,6 +323,7 @@ class UserChild(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     user = relationship("User", back_populates="children")
+    treckers = relationship("Trecker", back_populates="children")
 
     def __str__(self):
         return self.full_name
@@ -348,6 +354,10 @@ class UserChild(Base):
         else:
             return 'Другое'
     
+    @property
+    def birth_year(self):
+        current_year = datetime.now().year
+        return current_year - self.birth_date.year
     @property
     def zodiac_sign(self) -> Optional[str]:
         if not self.birth_date:
@@ -863,6 +873,10 @@ class ChildDevelopmentWeek(Base):
 
     def __str__(self):
         return f"Week {self.week_number}: {self.title}"
+    
+    @property
+    def s_time(self):
+        return self.created_at.strftime('%d.%m.%Y %H:%M') if self.created_at else ''
 
     def to_dict(self):
         return {
@@ -915,30 +929,51 @@ class SiteEvent(Base):
         orm.commit()
         return evnt
 
-
-class ChildDevelopmentCalendar(Base):
-    __tablename__ = 'child_development_calendar'
     
+class Trecker(Base):
+    __tablename__ = 'trecker'
+
     id = Column(Integer, primary_key=True, autoincrement=True)
-    week_number = Column(Integer, nullable=False)  # Номер недели (1, 2, 3...)
-    title = Column(String(500), nullable=False)    # Заголовок совета
-    description = Column(Text, nullable=False)     # Подробное описание совета
-    category = Column(String(255), nullable=True)  # Категория развития
-    is_active = Column(Boolean, default=True)
+    date_trecker = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    value = Column(Float, nullable=False)
+    comment = Column(Text, nullable=True)
+    category_id = Column(Integer, ForeignKey('trecker_category.id'), nullable=False)
+    children_id = Column(Integer, ForeignKey('user_child.id'), nullable=False)
+    category = relationship("TreckerCategory", back_populates="treckers")
+    children = relationship("UserChild", back_populates="treckers")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "date_trecker": self.date_trecker,
+            "created_at": self.created_at,
+            "value": self.value,
+            "comment": self.comment,
+            "category_id": self.category_id,
+            "children_id": self.children_id
+        }
+    
+class TreckerCategory(Base):
+    __tablename__ = 'trecker_category'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), nullable=False)
+    unit = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    treckers = relationship("Trecker", back_populates="category")
+    
     
     def __str__(self):
-        return f"Week {self.week_number}: {self.title}"
+        return self.name
     
-    @property
-    def category_display(self):
-        categories = {
-            'PHYSICAL': 'Физическое развитие',
-            'MENTAL': 'Умственное развитие', 
-            'SOCIAL': 'Социальное развитие',
-            'EMOTIONAL': 'Эмоциональное развитие',
-            'HEALTH': 'Здоровье и уход',
-            'NUTRITION': 'Питание'
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'unit': self.unit,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
         }
-        return categories.get(self.category, 'Общее')

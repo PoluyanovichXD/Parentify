@@ -74,11 +74,22 @@ class FormCategory(FormBase):
         else:
             self.category = ArticleCategory()
             super().__init__(request)
-    
     def clean(self):
         super(FormCategory, self).clean()
-        if self.request.orm_session.query(ArticleCategory).filter(ArticleCategory.name == self.cleaned_data.get('name')).first():
-            raise ValidationError(_("Данная категория уже присутствует"))
+        
+        name = self.cleaned_data.get('name')
+        if name:
+            query = self.request.orm_session.query(ArticleCategory).filter(
+                ArticleCategory.name == name
+            )
+            
+            if self.category_id:
+                query = query.filter(ArticleCategory.id != self.category_id)
+            
+            existing_category = query.first()
+            
+            if existing_category:
+                raise ValidationError(_("Категория с таким названием уже существует"))
 
     def cmd_model_create(self, request):
         self.category.name = self.cleaned_data.get('name')

@@ -95,7 +95,7 @@
                     <div class="flex items-center space-x-4">
                         {% if not control.content.is_closed %}
                         <button onclick="toggleReplyForm()" 
-                                class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl font-semibold hover:bg-[#e88d96] transition-all duration-300 transform hover:-translate-y-0.5">
+                                class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl font-semibold hover:bg-primary transition-all duration-300 transform hover:-translate-y-0.5">
                             <i class="fas fa-reply mr-2"></i>
                             Ответить
                         </button>
@@ -138,7 +138,7 @@
                             Отмена
                         </button>
                         <button type="submit" 
-                                class="px-6 py-2 bg-primary text-white rounded-xl font-semibold hover:bg-[#e88d96] transition-all duration-300 flex items-center">
+                                class="px-6 py-2 bg-primary text-white rounded-xl font-semibold hover:bg-primary transition-all duration-300 flex items-center">
                             <span id="submitText">Отправить ответ</span>
                             <div id="submitSpinner" class="hidden ml-2">
                                 <i class="fas fa-spinner fa-spin"></i>
@@ -233,7 +233,7 @@
                             
                             {% if comment.replies_count > 0 %}
                             <button onclick="toggleReplies({{ comment.id }})" 
-                                    class="inline-flex items-center text-sm text-primary hover:text-[#e88d96] transition-colors">
+                                    class="inline-flex items-center text-sm text-primary hover:text-primary transition-colors">
                                 <i class="fas fa-comments mr-1"></i>
                                 Ответы ({{ comment.replies_count }})
                             </button>

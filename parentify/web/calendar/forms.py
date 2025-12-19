@@ -6,13 +6,11 @@ from parentify.ui.fields import *
 from datetime import datetime
 
 class FormDevelopmentCalendar(FormBase):
-    week_number = IntegerInputField(label=_("Номер недели"), required=True, min_value=1, max_value=260)
+    week_number = NumberInputField(label=_("Номер недели"), required=True, min_value=1, max_value=260)
     title = TextInputField(label=_("Заголовок"), required=True, max_length=255)
-    description = TextAreaField(label=_("Текст"), required=False)
-    parent_tips = TextAreaField(label=_("Советы родителям"), required=False, 
-                               help_text=_("Каждый совет с новой строки"))
-    key_skills = TextAreaField(label=_("Ключевые навыки"), required=False,
-                              help_text=_("Каждый навык с новой строки"))
+    parent_tips = TextAreaInputField(label=_("Советы родителям"), required=False, multiply=True)
+    key_skills = TextAreaInputField(label=_("Ключевые навыки"), required=False, multiply=True)
+    description = TextAreaInputField(label=_("Текст"), required=False)
 
     def __init__(self, request, week_id=None):
         if week_id:
@@ -38,21 +36,13 @@ class FormDevelopmentCalendar(FormBase):
         
         return self.cleaned_data
 
-    def _process_array_field(self, field_name):
-        """Обрабатывает текстовые поля в массивы"""
-        value = self.cleaned_data.get(field_name, '')
-        if value:
-            # Разделяем по переносам строк, убираем пустые элементы
-            items = [item.strip() for item in value.split('\n') if item.strip()]
-            return items
-        return []
 
     def cmd_model_create(self, request):
         self.week.week_number = self.cleaned_data.get('week_number')
         self.week.title = self.cleaned_data.get('title')
         self.week.description = self.cleaned_data.get('description')
-        self.week.parent_tips = self._process_array_field('parent_tips')
-        self.week.key_skills = self._process_array_field('key_skills')
+        self.week.parent_tips = self.cleaned_data.get('parent_tips')
+        self.week.key_skills = self.cleaned_data.get('key_skills')
         
         self.request.orm_session.add(self.week)
         self.request.orm_session.commit()
@@ -63,8 +53,8 @@ class FormDevelopmentCalendar(FormBase):
         self.week.week_number = self.cleaned_data.get('week_number')
         self.week.title = self.cleaned_data.get('title')
         self.week.description = self.cleaned_data.get('description')
-        self.week.parent_tips = self._process_array_field('parent_tips')
-        self.week.key_skills = self._process_array_field('key_skills')
+        self.week.parent_tips = self.cleaned_data.get('parent_tips')
+        self.week.key_skills = self.cleaned_data.get('key_skills')
         self.week.updated_at = datetime.now()
         
         self.request.orm_session.commit()
@@ -72,5 +62,17 @@ class FormDevelopmentCalendar(FormBase):
         return request.GET.get('url') if 'url' in request.GET else '../../'
 
 class FormFilterDevelopmentCalendar(FormModelFilter):
-    week_number = IntegerInputField(label=_("Номер недели"), required=False)
+    week_number = NumberInputField(label=_("Номер недели"), required=False)
     title = TextInputField(label=_("Заголовок"), required=False)
+
+
+    def __init__(self, request):
+        super().__init__(request, 'calendar_filter')
+
+    def filter(self, data_query):
+        if self.is_valid():
+            if self.cleaned_data.get('title'):
+                data_query = data_query.filter(ChildDevelopmentWeek.name.ilike("%" + self.cleaned_data['title'] + "%"))
+            if self.cleaned_data.get('week_number'):
+                data_query = data_query.filter(ChildDevelopmentWeek.week_number <= self.cleaned_data.get('week_number'))
+        return data_query

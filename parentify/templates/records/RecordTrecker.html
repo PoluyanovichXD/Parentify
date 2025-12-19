@@ -1,0 +1,411 @@
+{% load filter %}
+
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-5">
+        <!-- Хлебные крошки -->
+        <nav class="mb-8">
+            <ol class="flex items-center space-x-2 text-sm text-gray-600">
+                <li><a href="/" class="hover:text-primary transition-colors">Главная</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li><a href="/profile/childs/{{ control.content.children_id }}/trecker/" class="hover:text-primary transition-colors">Трекер</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li class="text-gray-900 font-medium">Запись от {{ control.content.date_trecker|date:"d.m.Y" }}</li>
+            </ol>
+        </nav>
+
+        <!-- Основной контент трекера -->
+        <article class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Заголовок и мета-информация -->
+            <header class="p-8 border-b border-gray-200">
+                <div class="flex items-center justify-between mb-6">
+                    <!-- Категория и статус -->
+                    <div class="flex items-center space-x-3">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                            {% if control.content.category_id == 1 %}bg-blue-100 text-blue-800
+                            {% elif control.content.category_id == 2 %}bg-green-100 text-green-800
+                            {% elif control.content.category_id == 3 %}bg-yellow-100 text-yellow-800
+                            {% elif control.content.category_id == 4 %}bg-purple-100 text-purple-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            <i class="fas fa-{% if control.content.category_id == 1 %}moon{% elif control.content.category_id == 2 %}utensils{% elif control.content.category_id == 3 %}baby{% elif control.content.category_id == 4 %}walking{% else %}circle{% endif %} mr-1 text-xs"></i>
+                            {{ control.content.category.name|default:"Без категории" }}
+                            {% if control.content.category.unit %}
+                                <span class="ml-1 text-xs">({{ control.content.category.unit }})</span>
+                            {% endif %}
+                        </span>
+                        
+                        {% if request.current_user and request.current_user.is_admin %}
+                        <button onclick="ClickBtn('edit/')" 
+                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition-colors cursor-pointer">
+                            <i class="fas fa-edit mr-1 text-xs"></i>
+                            Изменить
+                        </button>
+                        <button onclick="ClickBtn(window.location.pathname + '?delete=delete')" 
+                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer">
+                            <i class="fas fa-trash mr-1 text-xs"></i>
+                            Удалить
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Дата и время -->
+                    <div class="flex items-center space-x-4 text-sm text-gray-500">
+                        <span class="flex items-center">
+                            <i class="far fa-calendar mr-1"></i>
+                            {{ control.content.date_trecker|date:"d.m.Y" }}
+                        </span>
+                        <span class="flex items-center">
+                            <i class="far fa-clock mr-1"></i>
+                            {{ control.content.date_trecker|date:"H:i" }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Заголовок с информацией о ребенке -->
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="flex-shrink-0 h-12 w-12 rounded-full 
+                        {% if control.content.children.gender == 'MALE' %}bg-blue-500
+                        {% elif control.content.children.gender == 'FEMALE' %}bg-pink-500
+                        {% else %}bg-gray-500{% endif %} 
+                        flex items-center justify-center text-white font-semibold text-base">
+                        {{ control.content.children.first_name|first }}{{ control.content.children.last_name|first }}
+                    </div>
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+                            {{ control.content.children.first_name }} {{ control.content.children.last_name }}
+                        </h1>
+                        <p class="text-gray-600 mt-1">
+                            {% if control.content.children.gender == 'MALE' %}Мальчик
+                            {% elif control.content.children.gender == 'FEMALE' %}Девочка
+                            {% else %}Пол не указан
+                            {% endif %}, {{ control.content.children.birth_year }} лет
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Основное значение -->
+                <div class="mt-6 flex flex-col items-center">
+                    <div class="text-center mb-4">
+                        <div class="text-5xl md:text-6xl font-bold text-gray-900 mb-2">
+                            {{ control.content.value }}
+                            {% if control.content.category.unit %}
+                                <span class="text-2xl text-gray-600 ml-1">{{ control.content.category.unit }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-lg text-gray-600">{{ control.content.category.name }}</div>
+                    </div>
+                    
+                    <!-- Иконка категории -->
+                    <div class="w-20 h-20 rounded-full flex items-center justify-center text-3xl
+                        {% if control.content.category_id == 1 %}bg-blue-100 text-blue-600
+                        {% elif control.content.category_id == 2 %}bg-green-100 text-green-600
+                        {% elif control.content.category_id == 3 %}bg-yellow-100 text-yellow-600
+                        {% elif control.content.category_id == 4 %}bg-purple-100 text-purple-600
+                        {% else %}bg-gray-100 text-gray-600{% endif %}">
+                        <i class="fas fa-{% if control.content.category_id == 1 %}moon{% elif control.content.category_id == 2 %}utensils{% elif control.content.category_id == 3 %}baby{% elif control.content.category_id == 4 %}walking{% else %}clipboard{% endif %}"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Содержание трекера -->
+            <div class="p-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Основная информация -->
+                    <div class="lg:col-span-2">
+                        <div class="space-y-6">
+                            <!-- Комментарий -->
+                            {% if control.content.comment %}
+                            <div class="bg-gray-50 rounded-xl p-6">
+                                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <i class="fas fa-comment-dots text-gray-600"></i>
+                                    Комментарий
+                                </h2>
+                                <div class="text-gray-700 leading-relaxed">
+                                    {{ control.content.comment }}
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="bg-gray-50 rounded-xl p-6">
+                                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <i class="fas fa-comment-dots text-gray-600"></i>
+                                    Комментарий
+                                </h2>
+                                <div class="text-gray-500 italic">
+                                    Комментарий отсутствует
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Боковая панель с деталями -->
+                    <div class="space-y-6">
+                        <!-- Основные детали -->
+                        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <i class="fas fa-info-circle text-gray-600"></i>
+                                Детали записи
+                            </h3>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">ID записи:</span>
+                                    <span class="font-medium text-gray-900">{{ control.content.id }}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Дата события:</span>
+                                    <span class="font-medium text-gray-900">{{ control.content.date_trecker|date:"d.m.Y H:i" }}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Запись создана:</span>
+                                    <span class="font-medium text-gray-900">{{ control.content.created_at|date:"d.m.Y H:i" }}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Категория:</span>
+                                    <span class="font-medium 
+                                        {% if control.content.category_id == 1 %}text-blue-600
+                                        {% elif control.content.category_id == 2 %}text-green-600
+                                        {% elif control.content.category_id == 3 %}text-yellow-600
+                                        {% elif control.content.category_id == 4 %}text-purple-600
+                                        {% else %}text-gray-600{% endif %}">
+                                        {{ control.content.category.name }}
+                                        {% if control.content.category.unit %}
+                                            ({{ control.content.category.unit }})
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Значение:</span>
+                                    <span class="font-medium text-gray-900">
+                                        {{ control.content.value }}
+                                        {% if control.content.category.unit %}
+                                            {{ control.content.category.unit }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Информация о ребенке -->
+                        <div class="bg-primary/5 rounded-xl p-6 border border-primary/20">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <i class="fas fa-child text-primary"></i>
+                                Информация о ребенке
+                            </h3>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex-shrink-0 h-10 w-10 rounded-full 
+                                        {% if control.content.children.gender == 'MALE' %}bg-blue-100 text-blue-800
+                                        {% elif control.content.children.gender == 'FEMALE' %}bg-pink-100 text-pink-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %} 
+                                        flex items-center justify-center font-semibold">
+                                        {{ control.content.children.first_name|first }}{{ control.content.children.last_name|first }}
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-900">{{ control.content.children.first_name }} {{ control.content.children.last_name }}</div>
+                                        <div class="text-gray-600 text-xs">
+                                            {% if control.content.children.gender == 'MALE' %}Мальчик
+                                            {% elif control.content.children.gender == 'FEMALE' %}Девочка
+                                            {% else %}Пол не указан
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pt-3 border-t border-gray-200">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Дата рождения:</span>
+                                        <span class="font-medium text-gray-900">{{ control.content.children.birth_date|date:"d.m.Y" }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <span class="text-gray-600">Возраст:</span>
+                                        <span class="font-medium text-gray-900">{{ control.content.children.birth_year }} месяцев</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Действия с записью -->
+            <footer class="p-6 border-t border-gray-200 bg-gray-50">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex items-center space-x-4">
+                        <button onclick="shareTracker()" 
+                                class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-all duration-300 transform hover:-translate-y-0.5">
+                            <i class="fas fa-share-alt mr-2"></i>
+                            Поделиться
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2 text-sm text-gray-500">
+                        <span>Запись #{{ control.content.id }}</span>
+                    </div>
+                </div>
+            </footer>
+        </article>
+
+        <!-- Похожие записи -->
+        {% if control.similar_entries %}
+        <section class="mt-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Похожие записи</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for entry in control.similar_entries|slice:":3" %}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">
+                    <div class="h-48 
+                        {% if entry.category_id == 1 %}bg-blue-50
+                        {% elif entry.category_id == 2 %}bg-green-50
+                        {% elif entry.category_id == 3 %}bg-yellow-50
+                        {% elif entry.category_id == 4 %}bg-purple-50
+                        {% else %}bg-gray-50{% endif %} 
+                        flex items-center justify-center">
+                        <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl
+                            {% if entry.category_id == 1 %}bg-blue-100 text-blue-600
+                            {% elif entry.category_id == 2 %}bg-green-100 text-green-600
+                            {% elif entry.category_id == 3 %}bg-yellow-100 text-yellow-600
+                            {% elif entry.category_id == 4 %}bg-purple-100 text-purple-600
+                            {% else %}bg-gray-100 text-gray-600{% endif %}">
+                            <i class="fas fa-{% if entry.category_id == 1 %}moon{% elif entry.category_id == 2 %}utensils{% elif entry.category_id == 3 %}baby{% elif entry.category_id == 4 %}walking{% else %}clipboard{% endif %}"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <span class="inline-block px-2 py-1 text-xs font-medium 
+                            {% if entry.category_id == 1 %}bg-blue-100 text-blue-800
+                            {% elif entry.category_id == 2 %}bg-green-100 text-green-800
+                            {% elif entry.category_id == 3 %}bg-yellow-100 text-yellow-800
+                            {% elif entry.category_id == 4 %}bg-purple-100 text-purple-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %} 
+                            rounded mb-3">
+                            {{ entry.category.name|default:"Без категории" }}
+                        </span>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">
+                            {{ entry.value }}
+                            {% if entry.category.unit %}
+                                <span class="text-sm font-normal text-gray-600">{{ entry.category.unit }}</span>
+                            {% endif %}
+                        </h3>
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
+                            <span>{{ entry.date_trecker|date:"d.m.Y H:i" }}</span>
+                            <span>{{ entry.children.first_name }}</span>
+                        </div>
+                        {% if entry.comment %}
+                        <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ entry.comment|truncatewords:10 }}</p>
+                        {% endif %}
+                        <button onclick="ClickBtn('/profile/childs/{{ entry.children_id }}/trecker/{{ entry.id }}/')" 
+                                class="w-full mt-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors text-sm">
+                            Посмотреть
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.hover-lift {
+    transition: transform 0.2s ease-in-out;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+}
+</style>
+
+<script>
+function shareTracker() {
+    const trackerData = {
+        child: "{{ control.content.children.first_name }}",
+        date: "{{ control.content.date_trecker|date:'d.m.Y H:i' }}",
+        category: "{{ control.content.category.name }}",
+        value: "{{ control.content.value }}",
+        unit: "{{ control.content.category.unit|default:'' }}",
+        comment: "{{ control.content.comment|truncatewords:20 }}",
+        url: window.location.href
+    };
+    
+    const shareText = `Запись трекера от ${trackerData.date}\n` +
+                     `Ребенок: ${trackerData.child}\n` +
+                     `Категория: ${trackerData.category}\n` +
+                     `Значение: ${trackerData.value} ${trackerData.unit}\n` +
+                     `Комментарий: ${trackerData.comment || 'нет'}\n` +
+                     `Ссылка: ${trackerData.url}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: `Трекер - ${trackerData.child}: ${trackerData.category}`,
+            text: shareText,
+            url: trackerData.url,
+        })
+        .then(() => console.log('Успешный шаринг'))
+        .catch((error) => console.log('Ошибка шаринга', error));
+    } else {
+        copyToClipboard(shareText);
+        showNotification('Информация скопирована в буфер обмена', 'success');
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        showNotification('Скопировано в буфер обмена', 'success');
+    }).catch(function(err) {
+        console.error('Ошибка копирования: ', err);
+        showNotification('Ошибка копирования', 'error');
+    });
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium transform transition-all duration-300 ${
+        type === 'success' ? 'bg-green-500' : 
+        type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления элементов
+    const elements = document.querySelectorAll('.bg-white');
+    elements.forEach((element, index) => {
+        element.style.animationDelay = `${index * 0.1}s`;
+        element.style.animation = 'fadeInUp 0.6s ease-out forwards';
+    });
+    
+    // CSS анимации
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .bg-white {
+            opacity: 0;
+        }
+    `;
+    document.head.appendChild(style);
+});
+</script>

@@ -97,14 +97,18 @@ class FormCategory(FormBase):
     def clean(self):
         super(FormCategory, self).clean()
         
-        # Проверка на уникальность названия категории
         name = self.cleaned_data.get('name')
         if name:
-            existing_category = self.request.orm_session.query(GoodsCategory).filter(
+            query = self.request.orm_session.query(GoodsCategory).filter(
                 GoodsCategory.name == name
-            ).first()
+            )
             
-            if existing_category and (not hasattr(self, 'category_id') or existing_category.id != self.category_id):
+            if self.category_id:
+                query = query.filter(GoodsCategory.id != self.category_id)
+            
+            existing_category = query.first()
+            
+            if existing_category:
                 raise ValidationError(_("Категория с таким названием уже существует"))
 
     def cmd_model_create(self, request):

@@ -1,6 +1,6 @@
 {% if control.type == "submit" %}
     <button class="{% if not control.title and control.icon %}btn_icon{% endif %} 
-                  {% if control.is_admin %}bg-primary hover:bg-[#e88d96] border-l-4 border-yellow-400{% else %}bg-primary hover:bg-[#e88d96]{% endif %}
+                  {% if control.is_admin %}bg-primary hover:bg-secondary border-l-4 border-yellow-400{% else %}bg-primary hover:bg-primary{% endif %}
                   text-white px-6 py-3.5 rounded-xl font-semibold transition-all duration-300 
                   transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0
                   flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
@@ -27,7 +27,7 @@
     </button>
 {% elif control.type == "redirect" %}
     <button class="{% if not control.title and control.icon %}btn_icon{% endif %}
-                  {% if control.is_admin %}bg-secondary text-gray-800 hover:bg-[#a1d8c5] border-l-4 border-yellow-400{% else %}bg-secondary text-gray-800 hover:bg-[#a1d8c5]{% endif %}
+                  {% if control.is_admin %}bg-secondary text-gray-800 hover:bg-secondary border-l-4 border-yellow-400{% else %}bg-secondary text-gray-800 hover:bg-secondary{% endif %}
                   px-6 py-3.5 rounded-xl font-semibold transition-all duration-300 
                   transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0
                   flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
@@ -53,7 +53,7 @@
     </button>
 {% elif control.type == "js" %}
     <button class="{% if not control.title and control.icon %}btn_icon{% endif %}
-                  {% if control.is_admin %}bg-primary hover:bg-[#e88d96] border-l-4 border-yellow-400{% else %}bg-primary hover:bg-[#e88d96]{% endif %}
+                  {% if control.is_admin %}bg-primary hover:bg-primary border-l-4 border-yellow-400{% else %}bg-primary hover:bg-primary{% endif %}
                   text-white px-6 py-3.5 rounded-xl font-semibold transition-all duration-300 
                   transform hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0
                   flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"

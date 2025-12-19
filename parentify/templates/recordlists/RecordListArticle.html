@@ -11,12 +11,12 @@
     {% if request.current_user and request.current_user.is_admin %}
     <div class="flex flex-wrap gap-3 mb-4">
         <a onclick="ClickBtn('0/new/')" 
-           class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-purple-600 hover:bg-purple-700transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
+           class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-secondary hover:bg-secondary/90transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
             <i class="fas fa-plus mr-2 text-sm"></i>
             Добавить статью
         </a>
         <a onclick="ClickBtn('categories/')" 
-           class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-purple-600 hover:bg-purple-700transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
+           class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-secondary hover:bg-secondary/90transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
             <i class="fas fa-plus mr-2 text-sm"></i>
             Категории статей
         </a>

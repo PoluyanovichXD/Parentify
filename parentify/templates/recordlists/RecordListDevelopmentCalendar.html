@@ -1,0 +1,341 @@
+<div class="min-h-screen flex flex-col">
+    <!-- Заголовок -->
+    <div class="bg-white shadow-sm border-b border-gray-200">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Календарь развития ребенка</h1>
+                    <p class="text-gray-600 mt-2">Рекомендации по развитию вашего малыша по неделям, отобранные педиатрами и психологами</p>
+                </div>
+                
+                <!-- Действия -->
+                <div class="flex flex-wrap gap-3">
+                    {% if request.current_user and request.current_user.is_admin %}
+                    <a onclick="ClickBtn('0/new/')" class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-pink-500 hover:bg-pink-600 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
+                        <i class="fas fa-plus mr-2 text-sm"></i>
+                        Добавить совет
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="flex-1">
+
+        <!-- Сетка советов -->
+        <section class="container calendar-section">
+            <div class="calendar-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for row in control.content %}
+                <div class="calendar-card bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1" data-category="{{ row.2.category }}">
+                    <!-- Бейдж недели -->
+                    <div class="week-badge bg-gradient-to-r from-pink-500 to-pink-600 text-white px-4 py-2 font-bold text-lg">
+                        Неделя {{ row.2.week_number }}
+                    </div>
+                    
+                    <!-- Содержимое карточки -->
+                    <div class="calendar-content p-5 flex flex-col flex-grow">
+                        <!-- Заголовок -->
+                        <h3 class="calendar-title text-lg font-semibold text-gray-800 mb-2 line-clamp-2">
+                            {{ row.2.title }}
+                        </h3>
+                        
+                        <!-- Описание -->
+                        <div class="calendar-description text-gray-600 text-sm mb-4 flex-grow line-clamp-3">
+                            {{ row.2.description|default:"Описание отсутствует" }}
+                        </div>
+                        
+                        <!-- Статус и дата -->
+                        <div class="calendar-info flex justify-between items-center mt-4 pt-4 border-t border-gray-100">
+                            <div class="text-xs text-gray-500">
+                                {{ row.2.created_at }}
+                            </div>
+                        </div>
+                        
+                        <!-- Действия -->
+                        <div class="calendar-actions flex gap-2 mt-4">
+                            <a onclick="ClickBtn('{{ row.2.id }}/')" 
+                               class="calendar-btn-primary flex-1 bg-pink-500 text-white py-2 px-3 rounded-lg font-semibold hover:bg-pink-600 transition-colors text-sm text-center cursor-pointer flex items-center justify-center gap-2">
+                                <i class="fas fa-eye text-xs"></i>
+                                Подробнее
+                            </a>
+                            
+                            {% if request.current_user and request.current_user.is_admin %}
+                            <a onclick="ClickBtn('{{ row.2.id }}/edit/')" 
+                               class="calendar-btn-secondary flex-1 bg-gray-100 text-gray-700 py-2 px-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors text-sm text-center cursor-pointer flex items-center justify-center gap-2">
+                                <i class="fas fa-edit text-xs"></i>
+                                Изменить
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <!-- Состояние пустого списка -->
+                <div class="col-span-3 bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
+                    <i class="fas fa-calendar-alt text-5xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Советы не найдены</h3>
+                    <p class="text-gray-600 mb-6">Добавьте первый совет для календаря развития</p>
+                    {% if request.current_user and request.current_user.is_admin %}
+                    <button onclick="ClickBtn('0/new/')" 
+                            class="inline-flex items-center px-6 py-3 bg-pink-500 text-white rounded-xl font-semibold hover:bg-pink-600 transition-all duration-300 transform hover:-translate-y-0.5">
+                        <i class="fas fa-plus mr-2"></i>
+                        Добавить совет
+                    </button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <!-- Информация о календаре -->
+        <section class="container expert-advice mt-12 mb-8">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Как пользоваться календарем развития</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto mb-8">Наши эксперты подготовили рекомендации для гармоничного развития вашего ребенка</p>
+                
+                <div class="advice-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="advice-item bg-gray-50 rounded-xl p-5 text-left">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-baby text-pink-500"></i>
+                            Следуйте по неделям
+                        </h3>
+                        <p class="text-gray-600 text-sm">Каждая неделя жизни ребенка имеет свои особенности развития. Следуйте рекомендациям по порядку.</p>
+                    </div>
+                    
+                    <div class="advice-item bg-gray-50 rounded-xl p-5 text-left">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-user-md text-pink-500"></i>
+                            Консультация специалиста
+                        </h3>
+                        <p class="text-gray-600 text-sm">Все рекомендации подготовлены педиатрами, но не заменяют индивидуальную консультацию врача.</p>
+                    </div>
+                    
+                    <div class="advice-item bg-gray-50 rounded-xl p-5 text-left">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-heart text-pink-500"></i>
+                            Индивидуальный подход
+                        </h3>
+                        <p class="text-gray-600 text-sm">Каждый ребенок развивается в своем темпе. Используйте рекомендации как ориентир.</p>
+                    </div>
+                    
+                    <div class="advice-item bg-gray-50 rounded-xl p-5 text-left">
+                        <h3 class="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                            <i class="fas fa-star text-pink-500"></i>
+                            Регулярность занятий
+                        </h3>
+                        <p class="text-gray-600 text-sm">Регулярные занятия по рекомендациям помогут достичь лучших результатов в развитии.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<style>
+.categories .category {
+    transition: all 0.3s ease;
+}
+
+.categories .category.active {
+    background-color: #f59fa8;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 159, 168, 0.3);
+}
+
+.categories .category:not(.active):hover {
+    background-color: #f8f9fa;
+    transform: translateY(-1px);
+}
+
+.calendar-card {
+    transition: all 0.3s ease;
+}
+
+.calendar-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.week-badge {
+    text-align: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.calendar-info {
+    min-height: 40px;
+}
+
+.status-badge {
+    display: inline-block;
+}
+</style>
+
+<script>
+// Фильтрация по категориям
+document.addEventListener('DOMContentLoaded', function() {
+    const categories = document.querySelectorAll('.category');
+    const calendarCards = document.querySelectorAll('.calendar-card');
+    
+    categories.forEach(category => {
+        category.addEventListener('click', function() {
+            // Убираем активный класс у всех категорий
+            categories.forEach(cat => {
+                cat.classList.remove('active');
+            });
+            
+            // Добавляем активный класс текущей категории
+            this.classList.add('active');
+            
+            const categoryType = this.getAttribute('data-category');
+            
+            calendarCards.forEach(card => {
+                if (categoryType === 'all' || card.getAttribute('data-category') === categoryType) {
+                    card.style.display = 'block';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 10);
+                } else {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+    });
+
+    // Плавное появление карточек при загрузке
+    calendarCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    // Сортировка по неделям
+    function sortByWeeks(order = 'asc') {
+        const container = document.querySelector('.calendar-grid');
+        const cards = Array.from(container.querySelectorAll('.calendar-card'));
+        
+        cards.sort((a, b) => {
+            const weekA = parseInt(a.querySelector('.week-badge').textContent.match(/\d+/)[0]);
+            const weekB = parseInt(b.querySelector('.week-badge').textContent.match(/\d+/)[0]);
+            return order === 'asc' ? weekA - weekB : weekB - weekA;
+        });
+        
+        // Очищаем контейнер и добавляем отсортированные карточки
+        cards.forEach(card => container.appendChild(card));
+    }
+    
+});
+
+// Функция для отображения уведомлений
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium transform transition-all duration-300 ${
+        type === 'success' ? 'bg-green-500' : 
+        type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Добавляем глобальные функции
+window.sortByWeeks = function(order) {
+    const container = document.querySelector('.calendar-grid');
+    const cards = Array.from(container.querySelectorAll('.calendar-card'));
+    
+    cards.sort((a, b) => {
+        const weekA = parseInt(a.querySelector('.week-badge').textContent.match(/\d+/)[0]);
+        const weekB = parseInt(b.querySelector('.week-badge').textContent.match(/\d+/)[0]);
+        return order === 'asc' ? weekA - weekB : weekB - weekA;
+    });
+    
+    // Анимация перестановки
+    cards.forEach((card, index) => {
+        card.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+        card.style.transform = 'translateY(20px)';
+        card.style.opacity = '0';
+        
+        setTimeout(() => {
+            container.appendChild(card);
+            
+            setTimeout(() => {
+                card.style.transform = 'translateY(0)';
+                card.style.opacity = '1';
+            }, index * 50);
+        }, 300);
+    });
+};
+
+// Поиск по неделям
+function searchByWeek(weekNumber) {
+    const cards = document.querySelectorAll('.calendar-card');
+    const searchValue = parseInt(weekNumber);
+    
+    if (isNaN(searchValue) || searchValue < 1) {
+        cards.forEach(card => {
+            card.style.display = 'block';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        });
+        return;
+    }
+    
+    cards.forEach(card => {
+        const cardWeek = parseInt(card.querySelector('.week-badge').textContent.match(/\d+/)[0]);
+        
+        if (cardWeek === searchValue) {
+            card.style.display = 'block';
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 10);
+        } else {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(10px)';
+            setTimeout(() => {
+                card.style.display = 'none';
+            }, 300);
+        }
+    });
+}
+</script>
+
+{% for subcontrol in control.controls %}
+    {% include subcontrol.template with control=subcontrol %}
+{% endfor %}

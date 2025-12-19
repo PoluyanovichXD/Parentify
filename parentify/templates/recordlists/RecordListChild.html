@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gray-50 flex flex-col">
+<div class="min-h-screen flex flex-col">
     <!-- Заголовок -->
     <div class="bg-white shadow-sm border-b border-gray-200">
         <div class="container mx-auto px-4 py-6">
@@ -10,7 +10,7 @@
                 
                 <!-- Действия -->
                 <div class="flex flex-wrap gap-3">
-                    <a onclick="ClickBtn('0/new/')" class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-purple-600 hover:bg-purple-700 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
+                    <a onclick="ClickBtn('0/new/')" class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-secondary hover:bg-secondary/90 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
                         <i class="fas fa-plus mr-2 text-sm"></i>
                         Добавить ребенка
                     </a>
@@ -123,7 +123,8 @@
                         {% for row in control.content %}
                         <tr class="hover:bg-gray-50 transition-colors">
                             <!-- Имя и пол -->
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-6 py-4 whitespace-nowrap hover:bg-gray-50 cursor-pointer group" 
+                                onclick="LinkRedirect('{{ row.2.id }}/')">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-10 w-10">
                                         <div class="h-10 w-10 rounded-full bg-gradient-to-br 
@@ -135,10 +136,10 @@
                                         </div>
                                     </div>
                                     <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">
+                                        <div class="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
                                             {{ row.2.first_name }} {{ row.2.last_name }}
                                         </div>
-                                        <div class="text-sm text-gray-500">
+                                        <div class="text-sm text-gray-500 group-hover:text-gray-700 transition-colors duration-200">
                                             {% if row.2.gender == 'MALE' %}Мальчик
                                             {% elif row.2.gender == 'FEMALE' %}Девочка
                                             {% else %}Пол не указан
@@ -150,15 +151,12 @@
                             
                             <!-- Дата рождения -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ row.2.birth_date|date:"d.m.Y" }}</div>
-                                <div class="text-sm text-gray-500">{{ row.2.birth_date|date:"l" }}</div>
+                                <div class="text-sm text-gray-900">{{ row.2.birth_date }}</div>
                             </td>
                             
                             <!-- Возраст -->
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
-                                    
-                                </div>
+                                <div class="text-sm text-gray-900">{{ row.2.birth_year }} лет</div>
                             </td>
                             
                             <!-- Знак зодиака -->
@@ -184,7 +182,7 @@
                                        class="cursor-pointer text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-lg transition-colors">
                                         <i class="fas fa-edit mr-1"></i>Изменить
                                     </a>
-                                    <a onclick="ClickBtn('{{ row.2.id }}/stats/')" 
+                                    <a onclick="ClickBtn('{{ row.2.id }}/trecker/')" 
                                        class="cursor-pointer text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 px-3 py-1 rounded-lg transition-colors">
                                         <i class="fas fa-chart-line mr-1"></i>Трекер
                                     </a>
