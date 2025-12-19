@@ -60,7 +60,7 @@ class FormTrecker(FormBase):
 
 
 class FormFilterTrecker(FormModelFilter):
-    content = TextInputField(label=_('Значение трекера'), required=False)
+    comment = TextInputField(label=_('Коментарий'), required=False)
     category_id = SelectInputField(label=_("Категория"), required=False)
 
     def __init__(self, request, *args):
@@ -69,8 +69,8 @@ class FormFilterTrecker(FormModelFilter):
 
     def filter(self, data_query):
         if self.is_valid():
-            if self.cleaned_data.get('content'):
-                data_query = data_query.filter(Trecker.content.ilike("%" + self.cleaned_data['content'] + "%"))
+            if self.cleaned_data.get('comment'):
+                data_query = data_query.filter(Trecker.comment.ilike("%" + self.cleaned_data['comment'] + "%"))
             
             if self.cleaned_data.get('category_id'):
                 data_query = data_query.filter(Trecker.category_id == self.cleaned_data.get('category_id'))

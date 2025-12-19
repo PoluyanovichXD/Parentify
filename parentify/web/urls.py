@@ -20,6 +20,7 @@ urlpatterns = [
     re_path(r'^reference/$', reference, name='reference'),
 
     re_path(r'^profile/$', profile, name='profile'),
+    re_path(r'^profile/reminders/', include('parentify.web.reminders.urls')),
     re_path(r'^profile/childs/', include('parentify.web.childs.urls')),
     re_path(r'^profile/favorites/', include('parentify.web.goods.urls')),
     re_path(r'^profile/childs/(\d+)/trecker/', include('parentify.web.trecker.urls')),

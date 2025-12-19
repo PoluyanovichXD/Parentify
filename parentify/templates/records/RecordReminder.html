@@ -1,0 +1,583 @@
+{% load filter %}
+
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-5">
+        <!-- Хлебные крошки -->
+        <nav class="mb-8">
+            <ol class="flex items-center space-x-2 text-sm text-gray-600">
+                <li><a href="/" class="hover:text-primary transition-colors">Главная</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li><a href="/profile/reminders/" class="hover:text-primary transition-colors">Напоминания</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li class="text-gray-900 font-medium">Напоминание #{{ control.content.id }}</li>
+            </ol>
+        </nav>
+
+        <!-- Основной контент напоминания -->
+        <article class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Заголовок и мета-информация -->
+            <header class="p-8 border-b border-gray-200">
+                <div class="flex items-center justify-between mb-6">
+                    <!-- Статус и действия -->
+                    <div class="flex items-center space-x-3">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                            {% if control.content.is_sent %}bg-green-100 text-green-800
+                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            <i class="fas fa-{% if control.content.is_sent %}check-circle{% else %}clock{% endif %} mr-1 text-xs"></i>
+                            {% if control.content.is_sent %}Отправлено{% else %}Ожидает отправки{% endif %}
+                        </span>
+                        
+                        {% if request.current_user %}
+                        <a onclick="ClickBtn('edit/')" 
+                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition-colors cursor-pointer">
+                            <i class="fas fa-edit mr-1 text-xs"></i>
+                            Изменить
+                        </a>
+                        
+                        <button onclick="deleteReminder()" 
+                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer">
+                            <i class="fas fa-trash mr-1 text-xs"></i>
+                            Удалить
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- ID записи -->
+                    <div class="text-sm text-gray-500">
+                        ID: #{{ control.content.id }}
+                    </div>
+                </div>
+                
+                <!-- Основная информация -->
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="flex-shrink-0">
+                        <div class="h-16 w-16 rounded-full 
+                            {% if control.content.is_sent %}bg-green-100 text-green-600
+                            {% else %}bg-blue-100 text-blue-600{% endif %} 
+                            flex items-center justify-center text-2xl">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">
+                            Напоминание
+                        </h1>
+                        <p class="text-gray-600 mt-1">
+                            {% if control.content.is_sent %}
+                                Отправлено {{ control.content.scheduled_datetime|date:"d.m.Y в H:i" }}
+                            {% else %}
+                                Запланировано на {{ control.content.scheduled_datetime|date:"d.m.Y в H:i" }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Содержание напоминания -->
+            <div class="p-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Основная информация -->
+                    <div class="lg:col-span-2">
+                        <!-- Сообщение -->
+                        <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                            <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <i class="fas fa-envelope text-gray-600"></i>
+                                Сообщение
+                            </h2>
+                            <div class="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                {{ control.content.message }}
+                            </div>
+                        </div>
+                        
+                        <!-- Детали отправки -->
+                        <div class="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                            <h3 class="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                                <i class="fas fa-info-circle text-blue-600"></i>
+                                Детали отправки
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-blue-800 font-medium">Статус:</span>
+                                    <span class="font-semibold 
+                                        {% if control.content.is_sent %}text-green-600
+                                        {% else %}text-yellow-600{% endif %}">
+                                        {% if control.content.is_sent %}✓ Отправлено{% else %}⏳ Ожидает{% endif %}
+                                    </span>
+                                </div>
+                                {% if control.content.is_sent %}
+                                <div class="flex items-center justify-between">
+                                    <span class="text-blue-800 font-medium">Фактически отправлено:</span>
+                                    <span class="font-medium text-gray-900">{{ control.content.scheduled_datetime|date:"d.m.Y в H:i" }}</span>
+                                </div>
+                                {% else %}
+                                <div class="flex items-center justify-between">
+                                    <span class="text-blue-800 font-medium">Запланировано на:</span>
+                                    <span class="font-medium text-gray-900">{{ control.content.scheduled_datetime|date:"d.m.Y в H:i" }}</span>
+                                </div>
+                                {% endif %}
+                                {% if control.content.is_overdue %}
+                                <div class="flex items-center justify-between">
+                                    <span class="text-blue-800 font-medium">Статус:</span>
+                                    <span class="font-semibold text-red-600">
+                                        ⚠️ Просрочено
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Боковая панель с деталями -->
+                    <div class="space-y-6">
+                        <!-- Временная информация -->
+                        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <i class="fas fa-calendar-alt text-gray-600"></i>
+                                Временные метки
+                            </h3>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Создано:</span>
+                                    <span class="font-medium text-gray-900">{{ control.content.created_at|date:"d.m.Y" }}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Время создания:</span>
+                                    <span class="font-medium text-gray-900">{{ control.content.created_at|date:"H:i:s" }}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Запланировано на:</span>
+                                    <span class="font-medium text-gray-900">{{ control.content.scheduled_datetime|date:"d.m.Y" }}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600">Время отправки:</span>
+                                    <span class="font-medium text-gray-900">{{ control.content.scheduled_datetime|date:"H:i" }}</span>
+                                </div>
+                                {% if not control.content.is_sent %}
+                                <div class="pt-3 border-t border-gray-200 mt-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Осталось:</span>
+                                        <span class="font-medium {{ control.content.time_status_class }}">
+                                            {{ control.content.time_until_now_display }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-2 text-xs text-gray-500">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        {{ control.content.time_until_now_simple }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Информация о пользователе -->
+                        <div class="bg-primary/5 rounded-xl p-6 border border-primary/20">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <i class="fas fa-user text-primary"></i>
+                                Получатель
+                            </h3>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex items-center gap-3">
+                                    <div class="flex-shrink-0 h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-semibold">
+                                        {{ control.content.user.first_name|first }}{{ control.content.user.last_name|first }}
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-900">{{ control.content.user.first_name }} {{ control.content.user.last_name }}</div>
+                                        <div class="text-gray-600 text-xs">{{ control.content.user.email }}</div>
+                                    </div>
+                                </div>
+                                <div class="pt-3 border-t border-gray-200">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">ID пользователя:</span>
+                                        <span class="font-medium text-gray-900">{{ control.content.user_id }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <span class="text-gray-600">Телефон:</span>
+                                        <span class="font-medium text-gray-900">{{ control.content.user.phone|default:"Не указан" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Действия с напоминанием -->
+            <footer class="p-6 border-t border-gray-200 bg-gray-50">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+
+                    
+                    <div class="flex items-center space-x-2 text-sm text-gray-500">
+                        <span>Напоминание #{{ control.content.id }}</span>
+                        {% if control.content.is_sent %}
+                        <span class="text-green-600 flex items-center">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Отправлено
+                        </span>
+                        {% endif %}
+                        {% if control.content.is_overdue %}
+                        <span class="text-red-600 flex items-center">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            Просрочено
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </footer>
+        </article>
+
+        <!-- История статусов (если есть) -->
+        {% if control.status_history %}
+        <section class="mt-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">История статусов</h2>
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата и время</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Комментарий</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Изменено</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for history in control.status_history %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ history.timestamp|date:"d.m.Y H:i:s" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if history.status == 'sent' %}bg-green-100 text-green-800
+                                        {% elif history.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                        {% elif history.status == 'failed' %}bg-red-100 text-red-800
+                                        {% elif history.status == 'cancelled' %}bg-gray-100 text-gray-800
+                                        {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                        {% if history.status == 'sent' %}Отправлено
+                                        {% elif history.status == 'pending' %}Ожидает
+                                        {% elif history.status == 'failed' %}Ошибка
+                                        {% elif history.status == 'cancelled' %}Отменено
+                                        {% else %}{{ history.status }}{% endif %}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ history.comment|default:"-" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ history.changed_by|default:"Система" }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Похожие напоминания -->
+        {% if control.similar_reminders %}
+        <section class="mt-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Похожие напоминания</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for reminder in control.similar_reminders|slice:":3" %}
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">
+                    <div class="h-48 
+                        {% if reminder.is_sent %}bg-green-50
+                        {% else %}bg-blue-50{% endif %} 
+                        flex items-center justify-center">
+                        <div class="w-16 h-16 rounded-full flex items-center justify-center text-2xl
+                            {% if reminder.is_sent %}bg-green-100 text-green-600
+                            {% else %}bg-blue-100 text-blue-600{% endif %}">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium 
+                                {% if reminder.is_sent %}bg-green-100 text-green-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %} 
+                                rounded">
+                                {% if reminder.is_sent %}Отправлено{% else %}Ожидает{% endif %}
+                            </span>
+                            <span class="text-xs text-gray-500">{{ reminder.created_at|date:"d.m.Y" }}</span>
+                        </div>
+                        <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2">
+                            {{ reminder.message|truncatechars:60 }}
+                        </h3>
+                        <div class="text-sm text-gray-500 mb-2">
+                            <i class="far fa-calendar mr-1"></i>
+                            {{ reminder.scheduled_datetime|date:"d.m.Y H:i" }}
+                        </div>
+                        <div class="flex items-center text-sm text-gray-500 mb-4">
+                            <div class="flex-shrink-0 h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-semibold mr-2">
+                                {{ reminder.user.first_name|first }}{{ reminder.user.last_name|first }}
+                            </div>
+                            {{ reminder.user.first_name }}
+                        </div>
+                        <a onclick="ClickBtn('/profile/reminders/{{ reminder.id }}/')" 
+                                class="w-full mt-2 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark transition-colors text-sm text-center cursor-pointer block">
+                            Посмотреть
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.hover-lift {
+    transition: transform 0.2s ease-in-out;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+}
+
+.whitespace-pre-wrap {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(245, 159, 168, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(245, 159, 168, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(245, 159, 168, 0);
+    }
+}
+</style>
+
+<script>
+// Отправить напоминание сейчас
+function sendReminderNow() {
+    if (confirm('Вы уверены, что хотите отправить это напоминание сейчас?')) {
+        fetch('send_now/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': get_csrftoken('csrftoken'),
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                // Обновляем страницу через 1 секунду
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Ошибка при отправке напоминания', 'error');
+        });
+    }
+}
+
+// Удаление напоминания
+function deleteReminder() {
+    if (confirm('Вы уверены, что хотите удалить это напоминание?')) {
+        ClickBtn(window.location.pathname + '?delete=delete');
+    }
+}
+
+// Приостановить/возобновить напоминание
+function toggleReminder() {
+    const action = confirm('Приостановить это напоминание? Его можно будет возобновить позже.') ? 'pause' : 'resume';
+    
+    fetch('toggle/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': get_csrftoken('csrftoken'),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: action })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Ошибка при изменении статуса напоминания', 'error');
+    });
+}
+
+// Поделиться напоминанием
+function shareReminder() {
+    const reminderData = {
+        id: {{ control.content.id }},
+        message: "{{ control.content.message|truncatechars:100 }}",
+        scheduled: "{{ control.content.scheduled_datetime|date:'d.m.Y H:i' }}",
+        status: "{% if control.content.is_sent %}отправлено{% else %}запланировано{% endif %}",
+        user: "{{ control.content.user.first_name }} {{ control.content.user.last_name }}",
+        url: window.location.href
+    };
+    
+    const shareText = `Напоминание #${reminderData.id}\n` +
+                     `Сообщение: ${reminderData.message}\n` +
+                     `Время: ${reminderData.scheduled}\n` +
+                     `Статус: ${reminderData.status}\n` +
+                     `Пользователь: ${reminderData.user}\n` +
+                     `Ссылка: ${reminderData.url}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: `Напоминание #${reminderData.id}`,
+            text: shareText,
+            url: reminderData.url,
+        })
+        .then(() => console.log('Успешный шаринг'))
+        .catch((error) => console.log('Ошибка шаринга', error));
+    } else {
+        copyToClipboard(shareText);
+        showNotification('Информация скопирована в буфер обмена', 'success');
+    }
+}
+
+// Тестовая отправка
+function testReminder() {
+    if (confirm('Отправить тестовое уведомление в систему для проверки?')) {
+        fetch('test/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': get_csrftoken('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ test: true })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Тестовое уведомление отправлено успешно', 'success');
+            } else {
+                showNotification(data.message || 'Ошибка при тестовой отправке', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Ошибка при тестовой отправке', 'error');
+        });
+    }
+}
+
+// Копирование в буфер обмена
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        showNotification('Скопировано в буфер обмена', 'success');
+    }).catch(function(err) {
+        console.error('Ошибка копирования: ', err);
+        showNotification('Ошибка копирования', 'error');
+    });
+}
+
+// Показать уведомление
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium transform transition-all duration-300 ${
+        type === 'success' ? 'bg-green-500' : 
+        type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Получение CSRF токена
+function get_csrftoken(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    // Анимация появления элементов
+    const elements = document.querySelectorAll('.bg-white');
+    elements.forEach((element, index) => {
+        element.style.animationDelay = `${index * 0.1}s`;
+        element.style.animation = 'fadeInUp 0.6s ease-out forwards';
+    });
+    
+    // CSS анимации
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .bg-white {
+            opacity: 0;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Автоматическое обновление времени для ожидающих напоминаний
+    {% if not control.content.is_sent %}
+    function updateRemainingTime() {
+        // Если есть элементы с временем, можно обновлять их
+        const timeElement = document.querySelector('.time-display');
+        if (timeElement) {
+            // В реальном приложении здесь можно сделать AJAX запрос
+            // или просто обновить отображение времени
+        }
+    }
+    
+    // Обновляем каждую минуту
+    setInterval(updateRemainingTime, 60000);
+    {% endif %}
+});
+</script>

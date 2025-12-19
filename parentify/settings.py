@@ -36,6 +36,22 @@ class Base(Configuration):
     EMAIL_HOST_USER = 'parentify.official@gmail.com'
     EMAIL_HOST_PASSWORD = 'parentify.official1111'
 
+    CELERY_BROKER_URL = 'redis://localhost:6379/0'
+    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+    CELERY_ACCEPT_CONTENT = ['application/json']
+    CELERY_TASK_SERIALIZER = 'json'
+    CELERY_RESULT_SERIALIZER = 'json'
+    CELERY_TIMEZONE = 'Europe/Moscow'
+    CELERY_ENABLE_UTC = False
+    CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True  # Важно для Celery 5.3+
+
+    CELERY_BEAT_SCHEDULE = {
+        'check-reminders': {
+            'task': 'reminders.tasks.check_and_send_reminders',  # Укажите правильный путь
+            'schedule': 30.0,  # Каждые 30 секунд для теста
+        },
+    }
+
     @property
     def FROM_EMAIL(self):
         return os.getenv('EMAIL_HOST_USER',self.EMAIL_HOST_USER)

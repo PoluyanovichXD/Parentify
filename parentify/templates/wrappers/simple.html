@@ -34,6 +34,8 @@
                         <div
                             class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                             <a href="/profile" class="block px-4 py-3 hover:bg-gray-100 rounded-t-lg">Профиль</a>
+                            <a href="/profile/reminders" class="block px-4 py-3 hover:bg-gray-100 rounded-t-lg">Напоминания</a>
+                            
                             {% if request.current_user.is_admin %}
                             <a href="/admin" class="block px-4 py-3 hover:bg-gray-100">Администрирование</a>
                             {% endif %}

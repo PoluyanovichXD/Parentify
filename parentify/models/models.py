@@ -36,6 +36,7 @@ class User(Base):
     notifications = relationship('Notification', back_populates='user')
     notification_reads = relationship('NotificationRead', back_populates='user')
     favorites = relationship("UserFavorite", back_populates="user", cascade="all, delete-orphan")
+    reminders = relationship("Reminder", back_populates="user", cascade="all, delete-orphan")
 
 
     def __str__(self):
@@ -976,4 +977,162 @@ class TreckerCategory(Base):
             'unit': self.unit,
             'created_at': self.created_at,
             'updated_at': self.updated_at
+        }
+    
+class Reminder(Base):
+    __tablename__ = 'reminder'
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    message = Column(Text, nullable=False)
+    scheduled_datetime = Column(DateTime, nullable=False)
+    is_sent = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    user = relationship('User', back_populates='reminders')
+    
+    @property
+    def time_until_now(self):
+        """
+        Возвращает разницу времени до запланированной даты.
+        Возвращает объект с днями, часами и минутами.
+        """
+        from datetime import datetime
+        
+        now = datetime.now()
+        scheduled = self.scheduled_datetime
+        
+        if scheduled < now:
+            # Если время уже прошло
+            delta = now - scheduled
+            return {
+                'days': delta.days,
+                'hours': delta.seconds // 3600,
+                'minutes': (delta.seconds % 3600) // 60,
+                'seconds': delta.seconds % 60,
+                'total_seconds': delta.total_seconds(),
+                'is_past': True
+            }
+        else:
+            # Если время еще не наступило
+            delta = scheduled - now
+            return {
+                'days': delta.days,
+                'hours': delta.seconds // 3600,
+                'minutes': (delta.seconds % 3600) // 60,
+                'seconds': delta.seconds % 60,
+                'total_seconds': delta.total_seconds(),
+                'is_past': False
+            }
+    
+    @property
+    def time_until_now_display(self):
+        """
+        Возвращает отформатированную строку времени.
+        """
+        time_data = self.time_until_now
+        
+        if time_data['is_past']:
+            # Время уже прошло
+            if time_data['days'] > 0:
+                return f"{time_data['days']} дн., {time_data['hours']} ч. назад"
+            elif time_data['hours'] > 0:
+                return f"{time_data['hours']} ч., {time_data['minutes']} мин. назад"
+            elif time_data['minutes'] > 0:
+                return f"{time_data['minutes']} мин. назад"
+            else:
+                return "только что"
+        else:
+            # Время еще не наступило
+            if time_data['days'] > 0:
+                return f"{time_data['days']} дн., {time_data['hours']} ч."
+            elif time_data['hours'] > 0:
+                return f"{time_data['hours']} ч., {time_data['minutes']} мин."
+            elif time_data['minutes'] > 0:
+                return f"{time_data['minutes']} мин."
+            else:
+                return "менее минуты"
+    
+    @property
+    def time_status_color(self):
+        """
+        Возвращает цвет статуса в зависимости от времени.
+        """
+        time_data = self.time_until_now
+        
+        if time_data['is_past']:
+            return "green"  # Уже отправлено (прошло)
+        else:
+            # Время еще не наступило
+            total_seconds = time_data['total_seconds']
+            if total_seconds < 3600:  # Менее часа
+                return "red"
+            elif total_seconds < 86400:  # Менее суток
+                return "yellow"
+            else:  # Более суток
+                return "green"
+    
+    @property
+    def time_status_class(self):
+        """
+        Возвращает CSS класс для цвета статуса.
+        """
+        color = self.time_status_color
+        if color == "red":
+            return "text-red-600"
+        elif color == "yellow":
+            return "text-yellow-600"
+        else:
+            return "text-green-600"
+    
+    @property
+    def is_overdue(self):
+        """
+        Проверяет, просрочено ли напоминание.
+        """
+        time_data = self.time_until_now
+        return time_data['is_past'] and not self.is_sent
+    
+    @property
+    def time_until_now_simple(self):
+        """
+        Возвращает простое представление времени.
+        Для использования в шаблонах.
+        """
+        time_data = self.time_until_now
+        
+        if time_data['is_past']:
+            if time_data['days'] > 0:
+                return f"{time_data['days']} дн. назад"
+            elif time_data['hours'] > 0:
+                return f"{time_data['hours']} ч. назад"
+            elif time_data['minutes'] > 0:
+                return f"{time_data['minutes']} мин. назад"
+            else:
+                return "только что"
+        else:
+            if time_data['days'] > 0:
+                return f"через {time_data['days']} дн."
+            elif time_data['hours'] > 0:
+                return f"через {time_data['hours']} ч."
+            elif time_data['minutes'] > 0:
+                return f"через {time_data['minutes']} мин."
+            else:
+                return "скоро"
+    
+    def __repr__(self):
+        return f"<Reminder(id={self.id}, message='{self.message[:20]}...', scheduled={self.scheduled_datetime})>"
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "message": self.message,
+            "scheduled_datetime": self.scheduled_datetime,
+            "is_sent": self.is_sent,
+            "user_id": self.user_id,
+            "created_at": self.created_at,
+            "time_until_now": self.time_until_now,
+            "time_until_now_display": self.time_until_now_display,
+            "time_status_color": self.time_status_color,
+            "is_overdue": self.is_overdue,
+            "time_until_now_simple": self.time_until_now_simple,
         }
