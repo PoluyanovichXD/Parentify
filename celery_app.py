@@ -1,17 +1,21 @@
-# celery_app.py (полностью замените содержимое)
+# celery_app.py
 import os
 import sys
 
 # Устанавливаем переменные окружения ДО любого импорта Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'parentify.settings')
-os.environ.setdefault('DJANGO_CONFIGURATION', 'Test')  # ВАЖНО!
+os.environ.setdefault('DJANGO_CONFIGURATION', 'Test')
 
-# Добавляем текущую директорию в путь Python
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Добавляем родительскую директорию в путь Python
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
 
 # Устанавливаем django-configurations импортер
-from configurations import importer
-importer.install()
+try:
+    from configurations import importer
+    importer.install()
+except ImportError:
+    pass
 
 # Теперь импортируем Django
 import django
@@ -20,41 +24,39 @@ django.setup()
 # Теперь импортируем Celery
 from celery import Celery
 
-# Создаем экземпляр Celery
+# Создаем экземпляр Celery с именем проекта
 app = Celery('parentify')
 
 # Загружаем настройки из Django settings
 from django.conf import settings
 
-# Настройки Celery
-app.conf.update(
-    broker_url='redis://localhost:6379/0',
-    result_backend='redis://localhost:6379/0',
-    broker_connection_retry_on_startup=True,
-    timezone='Europe/Moscow',
-    enable_utc=False,
-)
+# Используем настройки из Django
+app.config_from_object('django.conf:settings', namespace='CELERY')
 
-# Загружаем расписание из настроек Django если есть
-if hasattr(settings, 'CELERY_BEAT_SCHEDULE'):
-    app.conf.beat_schedule = settings.CELERY_BEAT_SCHEDULE
-else:
-    app.conf.beat_schedule = {
-        'check-reminders': {
-            'task': 'parentify.tasks.check_and_send_reminders',
-            'schedule': 30.0,
-        },
-    }
+# УБРАТЬ этот блок - он вызывает рекурсию:
+# try:
+#     # Импортируем задачи
+#     from parentify import tasks
+#     print(f"✓ Импортированы задачи из parentify.tasks")
+#     
+#     # Регистрируем задачи вручную
+#     app.tasks.register(tasks.check_and_send_reminders)
+#     app.tasks.register(tasks.send_reminder_email)
+#     app.tasks.register(tasks.send_test_email)
+#     print(f"✓ Задачи зарегистрированы вручную")
+#     
+# except ImportError as e:
+#     print(f"✗ Ошибка импорта задач: {e}")
+#     import traceback
+#     traceback.print_exc()
 
-# Явно импортируем и регистрируем задачи
-try:
-    from parentify.tasks import check_and_send_reminders, send_reminder_email, send_test_email
-    app.tasks.register(check_and_send_reminders)
-    app.tasks.register(send_reminder_email)
-    app.tasks.register(send_test_email)
-    print("Tasks registered successfully")
-except ImportError as e:
-    print(f"Warning: Could not import tasks: {e}")
+# Вместо этого просто используйте автообнаружение
+app.autodiscover_tasks(['parentify'])
 
-# Также пробуем автообнаружение
-app.autodiscover_tasks()
+@app.task(bind=True, name='debug_task')
+def debug_task(self):
+    print(f'Request: {self.request!r}')
+    return "Debug task executed"
+
+# Экспортируем app
+__all__ = ['app']

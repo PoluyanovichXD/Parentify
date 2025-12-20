@@ -39,7 +39,7 @@ class Command(BaseCommand):
             
             self.stdout.write("Adding default data...")
             orm = Orm()
-            add_super_admin(orm, "admin@gmail.com", 'Admin', 'Admin', "adminadmin")
+            add_super_admin(orm,"parentify.official@gmail.com", 'Администратор', 'Parentify', "parentify.official1111")
             orm.close()
             
             self.stdout.write(self.style.SUCCESS("Database reset and initialized successfully!"))

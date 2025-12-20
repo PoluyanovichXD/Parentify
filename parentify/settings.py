@@ -31,13 +31,17 @@ class Base(Configuration):
 
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     
-    EMAIL_PORT = 587
     EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587  # Используйте порт 587 с TLS
+    EMAIL_USE_TLS = True  # Включить TLS
+    EMAIL_USE_SSL = False  # SSL отключить для порта 587
     EMAIL_HOST_USER = 'parentify.official@gmail.com'
-    EMAIL_HOST_PASSWORD = 'parentify.official1111'
+    EMAIL_HOST_PASSWORD = 'jthuekzdqzdgjxls'  # ПАРОЛЬ БЕЗ ПРОБЕЛОВ!
+    DEFAULT_FROM_EMAIL = 'parentify.official@gmail.com'
+    EMAIL_TIMEOUT = 10  # Таймаут в секундах
 
-    CELERY_BROKER_URL = 'redis://localhost:6379/0'
-    CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+    CELERY_BROKER_URL = 'redis://:redis@localhost:6379/0'
+    CELERY_RESULT_BACKEND = 'redis://:redis@localhost:6379/0'
     CELERY_ACCEPT_CONTENT = ['application/json']
     CELERY_TASK_SERIALIZER = 'json'
     CELERY_RESULT_SERIALIZER = 'json'
@@ -46,9 +50,9 @@ class Base(Configuration):
     CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True  # Важно для Celery 5.3+
 
     CELERY_BEAT_SCHEDULE = {
-        'check-reminders': {
-            'task': 'reminders.tasks.check_and_send_reminders',  # Укажите правильный путь
-            'schedule': 30.0,  # Каждые 30 секунд для теста
+        'check-reminders-every-30-seconds': {
+            'task': 'parentify.tasks.check_and_send_reminders',
+            'schedule': 30.0,  # Каждые 30 секунд
         },
     }
 
