@@ -325,6 +325,7 @@ class UserChild(Base):
     
     user = relationship("User", back_populates="children")
     treckers = relationship("Trecker", back_populates="children")
+    reminders = relationship("Reminder", back_populates="children")
 
     def __str__(self):
         return self.full_name
@@ -988,7 +989,9 @@ class Reminder(Base):
     is_sent = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    children_id = Column(Integer, ForeignKey('user_child.id'), nullable=True)
     user = relationship('User', back_populates='reminders')
+    children = relationship("UserChild", back_populates="reminders")
     
     @property
     def time_until_now(self):
@@ -1129,6 +1132,7 @@ class Reminder(Base):
             "scheduled_datetime": self.scheduled_datetime,
             "is_sent": self.is_sent,
             "user_id": self.user_id,
+            "children_id": self.children_id,
             "created_at": self.created_at,
             "time_until_now": self.time_until_now,
             "time_until_now_display": self.time_until_now_display,

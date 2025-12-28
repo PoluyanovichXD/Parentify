@@ -1,6 +1,6 @@
 from django.http import HttpResponseRedirect
 from django.utils.translation import gettext as _
-from parentify.models.models import Reminder
+from parentify.models.models import Reminder, UserChild
 from parentify.ui.forms import FormBase, FormModelFilter, choise_name_orm
 from parentify.ui.fields import *
 import datetime
@@ -8,6 +8,7 @@ import datetime
 
 class FormReminder(FormBase):
     scheduled_datetime = DateTimeInputField(label=_("Дата и время"),required=True)
+    children_id = SelectInputField(_label=("Ребёнок(необязательно)"), required=False)
     message = TextAreaInputField(label=_("Сообщение"),required=True)
     
     def __init__(self, request, reminder_id=None):
@@ -19,6 +20,7 @@ class FormReminder(FormBase):
         else:
             self.reminder = Reminder()
             super().__init__(request)
+        self.fields['children_id'].choices = [(None, None,)] + [(item.id,item.name) for item in request.orm_session.query(UserChild)]
 
     def clean(self):
         super(FormReminder, self).clean()
@@ -26,6 +28,7 @@ class FormReminder(FormBase):
     def cmd_model_create(self, request):
         self.reminder.message = self.cleaned_data.get('message')
         self.reminder.scheduled_datetime = self.cleaned_data.get('scheduled_datetime')
+        self.reminder.children_id = self.cleaned_data.get('children_id')
         self.reminder.user_id = request.current_user.id
         
         request.orm_session.add(self.reminder)
@@ -36,13 +39,14 @@ class FormReminder(FormBase):
         self.reminder.message = self.cleaned_data.get('message')
         self.reminder.scheduled_datetime = self.cleaned_data.get('scheduled_datetime')
         self.reminder.user_id = request.current_user.id
+        self.reminder.children_id = self.cleaned_data.get('children_id')
         
         request.orm_session.commit()
         return f'../../'
 
 
 class FormFilterReminder(FormModelFilter):
-    message = TextInputField(label=_('Значение трекера'), required=False)
+    message = TextInputField(label=_('Сообщение'), required=False)
 
     def __init__(self, request, *args):
         super().__init__(request, 'reminder_filter')
