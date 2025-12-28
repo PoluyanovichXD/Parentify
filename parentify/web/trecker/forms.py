@@ -90,8 +90,8 @@ class FormCategory(FormBase):
                 category_id = args[1]
             elif args and len(args)==1:
                 category_id = args[0]
+        self.category_id = category_id
         if category_id:
-            self.category_id = category_id
             self.category = request.orm_session.query(TreckerCategory).get(self.category_id)
             super().__init__(request, {
                 'name': self.category.name,
@@ -110,7 +110,7 @@ class FormCategory(FormBase):
                 TreckerCategory.name == name
             )
             
-            if self.category_id:
+            if hasattr(self, 'category_id') and self.category_id:
                 query = query.filter(TreckerCategory.id != self.category_id)
             
             existing_category = query.first()
