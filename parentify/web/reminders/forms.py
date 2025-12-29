@@ -9,7 +9,8 @@ import datetime
 class FormReminder(FormBase):
     scheduled_datetime = DateTimeInputField(label=_("Дата и время"),required=True)
     children_id = SelectInputField(_label=("Ребёнок(необязательно)"), required=False)
-    message = TextAreaInputField(label=_("Сообщение"),required=True)
+    name = TextAreaInputField(label=_("Название"),required=True)
+    message = TextAreaInputField(label=_("Комментарий"),required=True)
     
     def __init__(self, request, reminder_id=None):
         if reminder_id:
@@ -20,14 +21,19 @@ class FormReminder(FormBase):
         else:
             self.reminder = Reminder()
             super().__init__(request)
-        self.fields['children_id'].choices = [(None, None,)] + [(item.id,item.name) for item in request.orm_session.query(UserChild)]
+        self.fields['children_id'].choices = [(None, None,)] + [(item.id,item.full_name) for item in request.orm_session.query(UserChild).filter(UserChild.user_id==request.current_user.id)]
 
     def clean(self):
         super(FormReminder, self).clean()
 
     def cmd_model_create(self, request):
         self.reminder.message = self.cleaned_data.get('message')
-        self.reminder.scheduled_datetime = self.cleaned_data.get('scheduled_datetime')
+        self.reminder.name = self.cleaned_data.get('name')
+        
+        scheduled_datetime = self.cleaned_data.get('scheduled_datetime')
+        
+        self.reminder.scheduled_datetime = scheduled_datetime - timedelta(hours=24)
+        
         self.reminder.children_id = self.cleaned_data.get('children_id')
         self.reminder.user_id = request.current_user.id
         
@@ -37,6 +43,7 @@ class FormReminder(FormBase):
 
     def cmd_model_update(self, request):
         self.reminder.message = self.cleaned_data.get('message')
+        self.reminder.name = self.cleaned_data.get('name')
         self.reminder.scheduled_datetime = self.cleaned_data.get('scheduled_datetime')
         self.reminder.user_id = request.current_user.id
         self.reminder.children_id = self.cleaned_data.get('children_id')
@@ -46,7 +53,8 @@ class FormReminder(FormBase):
 
 
 class FormFilterReminder(FormModelFilter):
-    message = TextInputField(label=_('Сообщение'), required=False)
+    name = TextInputField(label=_('Название'), required=False)
+    message = TextInputField(label=_('Комментарий'), required=False)
 
     def __init__(self, request, *args):
         super().__init__(request, 'reminder_filter')
@@ -55,5 +63,7 @@ class FormFilterReminder(FormModelFilter):
         if self.is_valid():
             if self.cleaned_data.get('message'):
                 data_query = data_query.filter(Reminder.message.ilike("%" + self.cleaned_data['message'] + "%"))
+            if self.cleaned_data.get('name'):
+                data_query = data_query.filter(Reminder.name.ilike("%" + self.cleaned_data['name'] + "%"))
             
         return data_query

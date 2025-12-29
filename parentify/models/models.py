@@ -984,6 +984,7 @@ class Reminder(Base):
     __tablename__ = 'reminder'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(Text, nullable=False)
     message = Column(Text, nullable=False)
     scheduled_datetime = Column(DateTime, nullable=False)
     is_sent = Column(Boolean, default=False)
@@ -1128,6 +1129,7 @@ class Reminder(Base):
     def to_dict(self):
         return {
             "id": self.id,
+            'name': self.name,
             "message": self.message,
             "scheduled_datetime": self.scheduled_datetime,
             "is_sent": self.is_sent,

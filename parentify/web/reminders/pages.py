@@ -26,4 +26,5 @@ class PageReminderEditor(PageModelEditor):
         (_("time_status_color"), "time_status_color"),
         (_("is_overdue"), "is_overdue"),
         (_("time_until_now_simple"), "time_until_now_simple"),
+        (_("user"), "user"),
     )

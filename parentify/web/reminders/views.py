@@ -23,7 +23,7 @@ class reminders:
     @with_form('form_model', FormReminder, 'cmd_model_create')
     def create(request, form_model):
         modelInfo = PageModelInfo(request.session, '/reminder/', request.orm_session.query(Reminder), Reminder.id)
-        page = PageReminderEditor(modelInfo).new(request, ControlInputs(form_model, classname='[&]:md:grid-cols-1'))
+        page = PageReminderEditor(modelInfo).new(request, ControlInputs(form_model, classname='grid-cols-1'))
         return page 
 
     @common_page()
@@ -31,7 +31,7 @@ class reminders:
     def edit(request, model_id, form_model):
         modelInfo = PageModelInfo(request.session, '/reminder/', request.orm_session.query(Reminder), Reminder.id)
         page = PageReminderEditor(modelInfo)
-        return page.edit(request, model_id, ControlInputs(form_model, classname='[&]:md:grid-cols-1'))
+        return page.edit(request, model_id, ControlInputs(form_model, classname='grid-cols-1'))
 
     @common_page()
     def view(request, model_id):

@@ -1,6 +1,7 @@
 # parentify/tasks.py
 import os
 import sys
+import json
 
 # Добавьте эту проверку в самое начало файла
 if os.environ.get('CELERY_LOADING', False):
@@ -20,6 +21,7 @@ else:
     from django.core.mail import EmailMessage, EmailMultiAlternatives
 
     logger = logging.getLogger(__name__)
+
 @shared_task
 def check_and_send_reminders():
     """
@@ -34,10 +36,9 @@ def check_and_send_reminders():
         # Импортируем здесь, чтобы избежать проблем с загрузкой Django
         from sqlalchemy import create_engine
         from sqlalchemy.orm import sessionmaker
-        from parentify.models.models import Reminder, User
+        from parentify.models.models import Reminder, User, UserChild
         
         # Настройка подключения к базе данных
-        # Используем настройки из Django или локальные настройки
         database_url = getattr(settings, 'DATABASE_CONNECTION_STRING', 
                              'postgresql+psycopg2://postgres:postgres@localhost/parentify_db')
         
@@ -65,9 +66,42 @@ def check_and_send_reminders():
                 user = db.query(User).filter(User.id == reminder.user_id).first()
                 
                 if user and user.email:
-                    # Отправляем email через отдельную задачу
+                    # Получаем ребенка, если есть
+                    child = None
+                    if reminder.children_id:
+                        child = db.query(UserChild).filter_by(id=reminder.children_id).first()
+                    
+                    # Создаем словари с данными для передачи в задачу
+                    reminder_data = {
+                        'id': reminder.id,
+                        'name': reminder.name,
+                        'message': reminder.message,
+                        'scheduled_datetime': reminder.scheduled_datetime.isoformat(),
+                        'children_id': reminder.children_id
+                    }
+                    
+                    user_data = {
+                        'id': user.id,
+                        'email': user.email,
+                        'first_name': user.first_name,
+                        'last_name': user.last_name,
+                        'zodiac_sign': user.zodiac_sign
+                    }
+                    
+                    child_data = None
+                    if child:
+                        child_data = {
+                            'id': child.id,
+                            'first_name': child.first_name,
+                            'last_name': child.last_name,
+                            'birth_year': child.birth_year,
+                            'gender_name': child.gender_name,
+                            'zodiac_sign': child.zodiac_sign
+                        }
+                    
+                    # Отправляем email через отдельную задачу с данными
                     send_reminder_email.apply_async(
-                        args=[reminder.id, user.email, reminder.message],
+                        args=[reminder_data, user_data, child_data],
                         countdown=1  # Небольшая задержка
                     )
                     
@@ -76,6 +110,8 @@ def check_and_send_reminders():
                     db.commit()
                     
                     logger.info(f"Задача отправки напоминания {reminder.id} поставлена в очередь")
+                    logger.info(f"Тип: {'детское' if child else 'личное'}")
+                    
                 else:
                     logger.warning(f"У пользователя {reminder.user_id} нет email")
                     reminder.is_sent = True  # Помечаем, чтобы не проверять снова
@@ -89,67 +125,62 @@ def check_and_send_reminders():
         
     except Exception as e:
         logger.error(f"Ошибка в check_and_send_reminders: {str(e)}")
-        # Можно добавить детальную информацию об ошибке
         import traceback
         logger.error(f"Трассировка: {traceback.format_exc()}")
     
     return f"Обработано {len(reminders)} напоминаний"
+
 @shared_task(bind=True, max_retries=3)
-def send_reminder_email(self, reminder_id, user_email, message, children_id=None):
+def send_reminder_email(self, reminder_data, user_data, child_data=None):
     """
     Отправляет конкретное напоминание по email с учетом связи с ребенком.
+    Принимает данные в виде словарей, а не объекты SQLAlchemy.
     """
-    logger.info(f"Отправка email напоминания {reminder_id} на {user_email}, children_id: {children_id}")
+    logger.info("=" * 50)
+    logger.info(f"НАЧАЛО ОТПРАВКИ EMAIL НАПОМИНАНИЯ")
+    logger.info(f"Reminder ID: {reminder_data.get('id')}")
+    logger.info(f"User email: {user_data.get('email')}")
+    logger.info(f"Child data: {'присутствует' if child_data else 'отсутствует'}")
+    logger.info("=" * 50)
     
     try:
-        # Получаем информацию о пользователе и ребенке из базы данных
-        from sqlalchemy import create_engine
-        from sqlalchemy.orm import sessionmaker
+        # Извлекаем данные из словарей
+        reminder_id = reminder_data.get('id')
+        reminder_name = reminder_data.get('name', 'Напоминание')
+        message = reminder_data.get('message', '')
         
-        # Импортируем модели здесь, чтобы избежать циклических импортов
-        from parentify.models import db, User, UserChild
+        user_email = user_data.get('email')
+        user_first_name = user_data.get('first_name', 'уважаемый пользователь')
+        user_last_name = user_data.get('last_name', '')
+        user_zodiac_sign = user_data.get('zodiac_sign')
         
-        # Создаем сессию для работы с базой данных
-        engine = create_engine(settings.DATABASE_CONNECTION_STRING)
-        Session = sessionmaker(bind=engine)
-        session = Session()
-        
-        user = None
-        child = None
-        
-        try:
-            # Находим пользователя по email
-            user = session.query(User).filter_by(email=user_email).first()
-            
-            # Если напоминание связано с ребенком, находим информацию о ребенке
-            if children_id:
-                child = session.query(UserChild).filter_by(id=children_id).first()
-                
-                # Проверяем, принадлежит ли ребенок этому пользователю
-                if child and child.user_id != user.id:
-                    child = None  # Ребенок не принадлежит пользователю
-                    logger.warning(f"Ребенок с ID {children_id} не принадлежит пользователю {user_email}")
-                    
-        except Exception as db_error:
-            logger.error(f"Ошибка при получении данных из БД: {str(db_error)}")
-        finally:
-            session.close()
+        # Получаем текущую дату и время для использования в шаблоне
+        current_datetime = datetime.now()
+        current_year = current_datetime.year
+        send_date_str = current_datetime.strftime('%d.%m.%Y %H:%M')
+        log_timestamp = current_datetime.strftime('%Y-%m-%d %H:%M:%S')
         
         # Проверяем настройки email
         email_host_user = getattr(settings, 'EMAIL_HOST_USER', None)
         email_host_password = getattr(settings, 'EMAIL_HOST_PASSWORD', None)
-        
-        logger.debug(f"EMAIL_HOST_USER: {email_host_user}")
-        logger.debug(f"EMAIL_HOST_PASSWORD: {'*' * len(email_host_password) if email_host_password else 'None'}")
         
         if not email_host_user:
             logger.error("EMAIL_HOST_USER не настроен")
             return False
         
         # Формируем тему и сообщение в зависимости от типа напоминания
-        if child:
+        if child_data:
             # Напоминание связано с ребенком
-            subject = f"👶 Напоминание для {child.first_name} от Parentify"
+            child_first_name = child_data.get('first_name', '')
+            child_last_name = child_data.get('last_name', '')
+            child_birth_year = child_data.get('birth_year')
+            child_gender_name = child_data.get('gender_name', 'не указан')
+            child_zodiac_sign = child_data.get('zodiac_sign', 'не указан')
+            
+            # Рассчитываем возраст ребенка
+            child_age = current_year - child_birth_year if child_birth_year else "не указан"
+            
+            subject = f"👶 {reminder_name} - напоминание для {child_first_name}"
             
             email_message = f"""
             <html>
@@ -168,6 +199,13 @@ def send_reminder_email(self, reminder_id, user_email, message, children_id=None
                         color: white;
                         padding: 20px;
                         border-radius: 5px;
+                        text-align: center;
+                    }}
+                    .reminder-title {{
+                        color: #2c3e50;
+                        font-size: 20px;
+                        font-weight: bold;
+                        margin: 15px 0;
                         text-align: center;
                     }}
                     .child-info {{
@@ -197,25 +235,34 @@ def send_reminder_email(self, reminder_id, user_email, message, children_id=None
                         color: #4CAF50;
                         font-weight: bold;
                     }}
+                    .reminder-name {{
+                        color: #e74c3c;
+                        font-weight: bold;
+                        font-size: 18px;
+                    }}
                 </style>
             </head>
             <body>
                 <div class="header">
-                    <h2>👶 Parentify Reminder</h2>
+                    <h2>👶 Parentify уведомление</h2>
                 </div>
                 
-                <p>Здравствуйте, <strong>{user.first_name if user else 'уважаемый пользователь'}</strong>!</p>
+                <div class="reminder-title">
+                    Напоминание: <span class="reminder-name">"{reminder_name}"</span>
+                </div>
+                
+                <p>Здравствуйте, <strong>{user_first_name}</strong>!</p>
                 
                 <div class="child-info">
-                    <h3>💝 Напоминание для вашего ребенка:</h3>
-                    <p><strong>Имя:</strong> <span class="child-name">{child.first_name} {child.last_name}</span></p>
-                    <p><strong>Возраст:</strong> {child.birth_year} лет</p>
-                    <p><strong>Пол:</strong> {child.gender_name}</p>
-                    <p><strong>Знак зодиака:</strong> {child.zodiac_sign}</p>
+                    <h3>💝 Для вашего ребенка:</h3>
+                    <p><strong>Имя:</strong> <span class="child-name">{child_first_name} {child_last_name}</span></p>
+                    <p><strong>Возраст:</strong> {child_age} лет</p>
+                    <p><strong>Пол:</strong> {child_gender_name}</p>
+                    <p><strong>Знак зодиака:</strong> {child_zodiac_sign}</p>
                 </div>
                 
                 <div class="reminder-message">
-                    <h3>📝 Сообщение напоминания:</h3>
+                    <h3>📝 Сообщение:</h3>
                     <p>{message}</p>
                 </div>
                 
@@ -223,8 +270,9 @@ def send_reminder_email(self, reminder_id, user_email, message, children_id=None
                 
                 <div class="footer">
                     <p>Это автоматическое сообщение от Parentify.</p>
+                    <p>Название напоминания: {reminder_name}</p>
                     <p>ID напоминания: {reminder_id}</p>
-                    <p>Дата отправки: {datetime.now().strftime('%d.%m.%Y %H:%M')}</p>
+                    <p>Дата отправки: {send_date_str}</p>
                     <p>Пожалуйста, не отвечайте на это письмо.</p>
                 </div>
             </body>
@@ -232,7 +280,9 @@ def send_reminder_email(self, reminder_id, user_email, message, children_id=None
             """
         else:
             # Личное напоминание пользователя
-            subject = f"🔔 Личное напоминание от Parentify"
+            subject = f"🔔 {reminder_name} - ваше напоминание"
+            
+            zodiac_html = f'<p><strong>Знак зодиака:</strong> {user_zodiac_sign}</p>' if user_zodiac_sign else ''
             
             email_message = f"""
             <html>
@@ -251,6 +301,13 @@ def send_reminder_email(self, reminder_id, user_email, message, children_id=None
                         color: white;
                         padding: 20px;
                         border-radius: 5px;
+                        text-align: center;
+                    }}
+                    .reminder-title {{
+                        color: #2c3e50;
+                        font-size: 20px;
+                        font-weight: bold;
+                        margin: 15px 0;
                         text-align: center;
                     }}
                     .user-info {{
@@ -280,22 +337,31 @@ def send_reminder_email(self, reminder_id, user_email, message, children_id=None
                         color: #2196F3;
                         font-weight: bold;
                     }}
+                    .reminder-name {{
+                        color: #e74c3c;
+                        font-weight: bold;
+                        font-size: 18px;
+                    }}
                 </style>
             </head>
             <body>
                 <div class="header">
-                    <h2>🔔 Parentify Reminder</h2>
+                    <h2>🔔 Parentify уведомление</h2>
+                </div>
+                
+                <div class="reminder-title">
+                    Напоминание: <span class="reminder-name">"{reminder_name}"</span>
                 </div>
                 
                 <div class="user-info">
-                    <h3>👤 Ваше личное напоминание</h3>
-                    <p><strong>Получатель:</strong> <span class="user-name">{user.first_name if user else 'уважаемый пользователь'} {user.last_name if user else ''}</span></p>
-                    {f'<p><strong>Email:</strong> {user_email}</p>' if user else ''}
-                    {f'<p><strong>Знак зодиака:</strong> {user.zodiac_sign}</p>' if user and user.zodiac_sign else ''}
+                    <h3>👤 Для вас:</h3>
+                    <p><strong>Получатель:</strong> <span class="user-name">{user_first_name} {user_last_name}</span></p>
+                    <p><strong>Email:</strong> {user_email}</p>
+                    {zodiac_html}
                 </div>
                 
                 <div class="reminder-message">
-                    <h3>📝 Сообщение напоминания:</h3>
+                    <h3>📝 Сообщение:</h3>
                     <p>{message}</p>
                 </div>
                 
@@ -303,8 +369,9 @@ def send_reminder_email(self, reminder_id, user_email, message, children_id=None
                 
                 <div class="footer">
                     <p>Это автоматическое сообщение от Parentify.</p>
+                    <p>Название напоминания: {reminder_name}</p>
                     <p>ID напоминания: {reminder_id}</p>
-                    <p>Дата отправки: {datetime.now().strftime('%d.%m.%Y %H:%M')}</p>
+                    <p>Дата отправки: {send_date_str}</p>
                     <p>Пожалуйста, не отвечайте на это письмо.</p>
                 </div>
             </body>
@@ -313,16 +380,12 @@ def send_reminder_email(self, reminder_id, user_email, message, children_id=None
         
         # Определяем from_email
         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', email_host_user)
-        logger.debug(f"FROM_EMAIL: {from_email}")
-        
-        # Отправляем email с HTML оформлением
-        logger.debug(f"Отправка письма: subject={subject}, to={user_email}")
         
         try:
             # Создаем email сообщение с HTML
             email = EmailMultiAlternatives(
                 subject=subject,
-                body=f"Напоминание: {message}\n\nЭто автоматическое сообщение от Parentify. ID: {reminder_id}",
+                body=f"Напоминание \"{reminder_name}\": {message}\n\nЭто автоматическое сообщение от Parentify. ID: {reminder_id}",
                 from_email=from_email,
                 to=[user_email]
             )
@@ -333,32 +396,32 @@ def send_reminder_email(self, reminder_id, user_email, message, children_id=None
             # Отправляем
             email.send(fail_silently=False)
             
-            logger.info(f"Email напоминания {reminder_id} успешно отправлен на {user_email}")
+            logger.info(f"✓ Email напоминания \"{reminder_name}\" (ID: {reminder_id}) успешно отправлен на {user_email}")
             
             # Логируем тип напоминания
-            reminder_type = "детское" if child else "личное"
+            reminder_type = "детское" if child_data else "личное"
             logger.info(f"Тип напоминания: {reminder_type}")
             
         except Exception as send_error:
-            logger.error(f"Ошибка при отправке email: {str(send_error)}")
+            logger.error(f"✗ Ошибка при отправке email: {str(send_error)}")
             import traceback
             logger.error(f"Трассировка send_mail: {traceback.format_exc()}")
-            raise  # Повторно поднимаем исключение для обработки в основном блоке
+            raise
         
         # Логируем в файл с указанием типа
         try:
             log_file = os.path.join(settings.BASE_DIR, 'email_reminders.log')
             with open(log_file, 'a', encoding='utf-8') as f:
-                timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                reminder_type = "детское" if child else "личное"
-                f.write(f"[{timestamp}] {reminder_type.capitalize()} напоминание #{reminder_id} отправлено на {user_email}\n")
+                reminder_type = "детское" if child_data else "личное"
+                child_name = f" ({child_data.get('first_name', '')})" if child_data else ""
+                f.write(f"[{log_timestamp}] {reminder_type.capitalize()} напоминание \"{reminder_name}\"{child_name} (#{reminder_id}) отправлено на {user_email}\n")
         except Exception as log_error:
             logger.warning(f"Не удалось записать в лог-файл: {str(log_error)}")
         
         return True
         
     except Exception as e:
-        logger.error(f"Ошибка отправки email напоминания {reminder_id}: {str(e)}")
+        logger.error(f"✗ Ошибка отправки email напоминания: {str(e)}")
         import traceback
         logger.error(f"Полная трассировка ошибки:\n{traceback.format_exc()}")
         
@@ -367,92 +430,9 @@ def send_reminder_email(self, reminder_id, user_email, message, children_id=None
             logger.info(f"Повторная попытка отправки через 60 секунд...")
             raise self.retry(exc=e, countdown=60)
         except Exception:
-            # Если превышено количество попыток, возвращаем False
             logger.error(f"Превышено максимальное количество попыток отправки")
             return False
-# @shared_task(bind=True, max_retries=3)
-# def send_reminder_email(self, reminder_id, user_email, message):
-#     """
-#     Отправляет конкретное напоминание по email.
-#     """
-#     logger.info(f"Отправка email напоминания {reminder_id} на {user_email}")
-    
-#     try:
-#         # Проверяем настройки email
-#         email_host_user = getattr(settings, 'EMAIL_HOST_USER', None)
-#         email_host_password = getattr(settings, 'EMAIL_HOST_PASSWORD', None)
-        
-#         logger.debug(f"EMAIL_HOST_USER: {email_host_user}")
-#         logger.debug(f"EMAIL_HOST_PASSWORD: {'*' * len(email_host_password) if email_host_password else 'None'}")
-#         logger.debug(f"EMAIL_HOST: {getattr(settings, 'EMAIL_HOST', None)}")
-#         logger.debug(f"EMAIL_PORT: {getattr(settings, 'EMAIL_PORT', None)}")
-        
-#         if not email_host_user:
-#             logger.error("EMAIL_HOST_USER не настроен")
-#             return False
-        
-#         # Формируем тему и сообщение
-#         subject = f"🔔 Напоминание #{reminder_id}"
-        
-#         email_message = f"""
-#         Здравствуйте!
-        
-#         Это напоминание от Parentify:
-        
-#         {message}
-        
-#         ---
-#         Это автоматическое сообщение, пожалуйста, не отвечайте на него.
-#         """
-        
-#         # Определяем from_email
-#         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', email_host_user)
-#         logger.debug(f"FROM_EMAIL: {from_email}")
-        
-#         # Отправляем email с детальной отладкой
-#         logger.debug(f"Отправка письма: subject={subject}, to={user_email}")
-        
-#         try:
-#             send_mail(
-#                 subject=subject,
-#                 message=email_message.strip(),
-#                 from_email=from_email,
-#                 recipient_list=[user_email],
-#                 fail_silently=False,
-#             )
-#             logger.info(f"Email напоминания {reminder_id} успешно отправлен на {user_email}")
-            
-#         except Exception as send_error:
-#             logger.error(f"Ошибка при вызове send_mail: {str(send_error)}")
-#             import traceback
-#             logger.error(f"Трассировка send_mail: {traceback.format_exc()}")
-#             raise  # Повторно поднимаем исключение для обработки в основном блоке
-        
-#         # Логируем в файл
-#         try:
-#             log_file = os.path.join(settings.BASE_DIR, 'email_reminders.log')
-#             with open(log_file, 'a', encoding='utf-8') as f:
-#                 timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-#                 f.write(f"[{timestamp}] Напоминание #{reminder_id} отправлено на {user_email}\n")
-#         except Exception as log_error:
-#             logger.warning(f"Не удалось записать в лог-файл: {str(log_error)}")
-        
-#         return True
-        
-#     except Exception as e:
-#         logger.error(f"Ошибка отправки email напоминания {reminder_id}: {str(e)}")
-#         import traceback
-#         logger.error(f"Полная трассировка ошибки:\n{traceback.format_exc()}")
-        
-#         # Пытаемся повторить через 60 секунд
-#         try:
-#             logger.info(f"Повторная попытка отправки через 60 секунд...")
-#             raise self.retry(exc=e, countdown=60)
-#         except Exception:
-#             # Если превышено количество попыток, возвращаем False
-#             logger.error(f"Превышено максимальное количество попыток отправки")
-#             return False
-    
+
 @shared_task(bind=True)
 def send_test_email(self, user_email, message="Тестовое напоминание"):
     """
