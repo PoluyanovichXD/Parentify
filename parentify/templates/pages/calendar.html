@@ -511,8 +511,8 @@
             </nav>
             
             <div class="auth-buttons">
-                <a href="login.html" class="btn btn-secondary">Вход</a>
-                <a href="register.html" class="btn btn-primary">Регистрация</a>
+                <a href="/login/" class="btn btn-secondary">Вход</a>
+                <a href="/register/" class="btn btn-primary">Регистрация</a>
             </div>
         </div>
     </header>
@@ -708,53 +708,53 @@
     </section>
 
     <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
+    <footer class="bg-gray-100 pt-16 pb-8 mt-auto">
+        <div class="container mx-auto px-5 max-w-6xl">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
                 <div class="footer-column">
-                    <h3>Parentify</h3>
-                    <p>Платформа для современных родителей, заботящихся о гармоничном развитии своих детей.</p>
-                    <div class="social-links">
-                        <a href="#"><i class="fab fa-vk"></i></a>
-                        <a href="#"><i class="fab fa-telegram"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    <h3 class="text-xl font-semibold mb-5">Parentify</h3>
+                    <p class="mb-5">Платформа для современных родителей, заботящихся о гармоничном развитии своих детей.
+                    </p>
+                    <div class="social-links flex space-x-4">
+                        <a href="https://t.me/parentify"
+                            class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                            <i class="fab fa-telegram"></i>
+                        </a>
+                        <a href="#"
+                            class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                            <i class="fab fa-instagram"></i>
+                        </a>
                     </div>
                 </div>
-                
+
                 <div class="footer-column">
-                    <h3>Разделы</h3>
-                    <ul>
-                        <li><a href="#">Главная</a></li>
-                        <li><a href="#">Статьи</a></li>
-                        <li><a href="#">Товары</a></li>
-                        <li><a href="#">Календарь развития</a></li>
-                        <li><a href="#">Форум</a></li>
+                    <h3 class="text-xl font-semibold mb-5">Разделы</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="hover:text-primary transition-colors">Главная</a></li>
+                        <li><a href="/article" class="hover:text-primary transition-colors">Информационный раздел</a></li>
+                        <li><a href="/forum" class="hover:text-primary transition-colors">Форум</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-column">
-                    <h3>Полезное</h3>
-                    <ul>
-                        <li><a href="#">Рекомендованные товары</a></li>
-                        <li><a href="#">Карта мест</a></li>
-                        <li><a href="#">Чек-листы</a></li>
-                        <li><a href="#">Справочные материалы</a></li>
+                    <h3 class="text-xl font-semibold mb-5">Полезное</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/goods" class="hover:text-primary transition-colors">Рекомендованные товары</a></li>
+                        <li><a href="/map" class="hover:text-primary transition-colors">Карта мест</a></li>
+                        <li><a href="/reference" class="hover:text-primary transition-colors">Справочные материалы</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-column">
-                    <h3>Контакты</h3>
-                    <ul>
-                        <li><i class="fas fa-envelope"></i> info@parentify.ru</li>
-                        <li><i class="fas fa-phone"></i> +7 (800) 123-45-67</li>
-                        <li><i class="fas fa-map-marker-alt"></i> Москва, ул. Примерная, 15</li>
+                    <h3 class="text-xl font-semibold mb-5">Контакты</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center"><i class="fas fa-envelope mr-2"></i>parentify.official@gmail.com</li>
                     </ul>
                 </div>
             </div>
-            
-            <div class="copyright">
-                <p>© 2023 Parentify. Все права защищены.</p>
+
+            <div class="copyright text-center pt-8 border-t border-gray-300 text-gray-600">
+                <p>© 2025 Parentify. Все права защищены.</p>
             </div>
         </div>
     </footer>

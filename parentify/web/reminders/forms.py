@@ -8,7 +8,7 @@ import datetime
 
 class FormReminder(FormBase):
     scheduled_datetime = DateTimeInputField(label=_("Дата и время"),required=True)
-    children_id = SelectInputField(_label=("Ребёнок(необязательно)"), required=False)
+    children_id = SelectInputField(label=_("Ребёнок"), required=False)
     name = TextAreaInputField(label=_("Название"),required=True)
     message = TextAreaInputField(label=_("Комментарий"),required=True)
     
