@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables
+.env
+.env.local
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# Media files
+media/
+
+# Django secret key
+secrets.py
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Static files (если собираете)
+staticfiles/
