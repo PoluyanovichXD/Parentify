@@ -154,32 +154,32 @@
 
 <script>
     // Данные мест
-    const placesData = [
-        // {% for row in control.content %}
-        {
-            id: "{{row.2.id}}",
-            title: "{{row.2.title}}",
-            description: "{{row.2.description}}",
-            coordinates: [Number("{{row.2.latitude}}"), Number("{{row.2.longitude}}")],
-            rating: Number("{{row.2.rating}}".replace(',','.')),
-            distance: "",
-            type: "{{row.2.category.name}}",
-            features: [
-                // {% for item in row.2.tags %}
-                //{{row.2.tags}}
-                "{{item}}",
-                // {% endfor %}
-            ],
-            contacts: {
-                address: "{{row.2.address}}",
-                phone: "{{row.2.phone}}",
-                website: "{{row.2.website}}"
-            },
-            hours: "{{row.2.schedule}}",
-            image: "{{row.2.image_url}}"
+    const placesData = {};
+    // {% for row in control.content %}
+    placesData[{{forloop.counter0}}] = {
+        id: "{{row.2.id}}",
+        title: "{{row.2.title}}",
+        description: `{{row.2.description|escapejs}}`,
+        coordinates: [parseFloat("{{row.2.latitude}}".replace(',', '.')), parseFloat("{{row.2.longitude}}".replace(',', '.'))],
+        rating: parseFloat("{{row.2.rating}}".replace(',','.')) || 0,
+        distance: "",
+        type: "{{row.2.category.name|escapejs}}",
+        features: [
+            // {% if row.2.tags %}
+            // {% for item in row.2.tags %}
+            "{{item|escapejs}}",
+            // {% endfor %}
+            // {% endif %}
+        ],
+        contacts: {
+            address: `{{row.2.address|escapejs}}`,
+            phone: `{{row.2.phone|escapejs}}`,
+            website: `{{row.2.website|escapejs}}`
         },
-        // {% endfor %}
-    ]
+        hours: `{{row.2.schedule|escapejs}}`,
+        image: "{{row.2.image_url}}"
+    };
+    // {% endfor %}
     // const placesData = {
         // 1: {
         //     title: "Парк Горького",

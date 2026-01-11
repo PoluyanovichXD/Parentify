@@ -120,7 +120,10 @@ class ControlRecord(ControlBase):
                                                                'value': self.__queryrec.get(k)}
 
             else:
-                context_branch['content'] = self.__queryrec[0] if self.__queryrec.count() else {}
+                if hasattr(self.__queryrec, 'count'):
+                    context_branch['content'] = self.__queryrec[0] if self.__queryrec.count() else {}
+                else:
+                    context_branch['content'] = self.__queryrec[0] if len(self.__queryrec) else {}
 
 
 
