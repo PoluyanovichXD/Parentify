@@ -120,14 +120,14 @@
                                 <!-- Действия -->
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center gap-2">
-                                        <a onclick="ClickBtn('{{ row.2.id }}/')" 
+                                        <a onclick="ClickBtn('{{request.path}}{{ row.2.id }}/')" 
                                            class="cursor-pointer inline-flex items-center px-3 py-1.5 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors text-xs">
                                             <i class="fas fa-eye mr-1 text-xs"></i>
                                             Просмотр
                                         </a>
                                         
                                         {% if request.current_user and request.current_user.is_admin %}
-                                        <a onclick="ClickBtn('{{ row.2.id }}/edit/')" 
+                                        <a onclick="ClickBtn('{{request.path}}{{ row.2.id }}/edit/')" 
                                            class="cursor-pointer inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors text-xs">
                                             <i class="fas fa-edit mr-1 text-xs"></i>
                                             Изменить
