@@ -177,7 +177,8 @@ class PageModelEditor(PageSimple):
         if 'closeall' in request.GET:
             self._model_info.model_editor_close_alltabs()
             raise HttpRedirectException(request.path)
-        if not self._model_info.query.get(itemId):
+        primary_key = self._model_info.primary_key if type(self._model_info.primary_key) == str else self._model_info.primary_key
+        if not self._model_info.query.filter(primary_key == itemId).first():
             # self.clear_controls()
             return self.add_control('NotFound',ControlExeption(control_template="controls/catch/NotFound.html"))
             raise Http404()
@@ -185,7 +186,6 @@ class PageModelEditor(PageSimple):
             control = self.default_view_control(itemId)
         self.add_control('record', control)
         try:
-            primary_key = self._model_info.primary_key if type(self._model_info.primary_key) == str else self._model_info.primary_key
             if not hasattr(self._model_info.query, 'filter') and hasattr(self._model_info.query, 'filter_by'):
                 self.change_title(str(self._model_info.query.filter_by(**{primary_key: itemId})[0]))
             else:
@@ -195,6 +195,7 @@ class PageModelEditor(PageSimple):
         return self
 
     def edit(self, request, itemId, control_editor,bt_append=[],cancel_url='../../'):
+        primary_key = self._model_info.primary_key if type(self._model_info.primary_key) == str else self._model_info.primary_key
         if 'closeall' in request.GET:
             self._model_info.model_editor_close_alltabs()
             raise HttpRedirectException(request.path)
@@ -203,7 +204,7 @@ class PageModelEditor(PageSimple):
             self.change_template('wrappers/clear.html')
             return self.render(request)
         if not 'iframe_form' in request.GET and not 'iframe_close' in request.GET:
-            if not self._model_info.query.get(itemId):
+            if not self._model_info.query.filter(primary_key == itemId).first():
                 # self.clear_controls()
                 return self.add_control('NotFound',ControlExeption(control_template="controls/catch/NotFound.html"))
             
@@ -225,7 +226,6 @@ class PageModelEditor(PageSimple):
         formControl.add_control('editor', control_editor)
         self.add_control('form_edit_model', formControl)
         try:
-            primary_key = self._model_info.primary_key if type(self._model_info.primary_key) == str else self._model_info.primary_key
             if not hasattr(self._model_info.query, 'filter') and hasattr(self._model_info.query, 'filter_by'):
                 self.change_title(str(self._model_info.query.filter_by(**{primary_key: itemId})[0]))
             else:
