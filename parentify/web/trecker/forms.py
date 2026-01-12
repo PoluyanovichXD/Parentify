@@ -33,7 +33,7 @@ class FormTrecker(FormBase):
             super().__init__(request)
         self.fields['category_id'].choices = choise_name_orm(request, TreckerCategory, False)
         childrens = request.orm_session.query(UserChild).filter(UserChild.user_id==request.current_user.id)
-        self.fields['children_id'].choices = choise_name_orm(request, UserChild, False, ['first_name', 'last_name']) if request.current_user.is_admin else [(item.full_name, item.id,) for item in childrens]
+        self.fields['children_id'].choices = choise_name_orm(request, UserChild, False, ['first_name', 'last_name']) if request.current_user.is_admin else [(item.id, item.full_name,) for item in childrens]
 
     def clean(self):
         super(FormTrecker, self).clean()
