@@ -20,8 +20,8 @@ class FormTrecker(FormBase):
             trecker_id = None
             if args and len(args)==2:
                 trecker_id = args[1]
-            elif args and len(args)==1:
-                trecker_id = args[0]
+            # elif args and len(args)==1:
+            #     trecker_id = args[0]
         if trecker_id:
             self.trecker_id = trecker_id
             self.trecker = request.orm_session.query(Trecker).get(self.trecker_id)
@@ -29,6 +29,7 @@ class FormTrecker(FormBase):
             super().__init__(request, data)
         else:
             self.trecker = Trecker()
+            self.trecker_id = None
             super().__init__(request)
         self.fields['category_id'].choices = choise_name_orm(request, TreckerCategory, False)
         childrens = request.orm_session.query(UserChild).filter(UserChild.user_id==request.current_user.id)
@@ -85,13 +86,14 @@ class FormCategory(FormBase):
         if not request.path.startswith('/profile/'):
             category_id = None if not args else (args[0] if len(args)==1 else args[1])
         else:
+            print(args)
             category_id = None
             if args and len(args)==2:
                 category_id = args[1]
-            elif args and len(args)==1:
-                category_id = args[0]
-        self.category_id = category_id
+            # elif args and len(args)==1:
+            #     category_id = args[0]
         if category_id:
+            self.category_id = category_id
             self.category = request.orm_session.query(TreckerCategory).get(self.category_id)
             super().__init__(request, {
                 'name': self.category.name,
@@ -99,6 +101,7 @@ class FormCategory(FormBase):
             })
         else:
             self.category = TreckerCategory()
+            self.category_id = None
             super().__init__(request)
     
     def clean(self):
