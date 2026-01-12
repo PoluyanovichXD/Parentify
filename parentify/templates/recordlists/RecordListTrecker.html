@@ -10,12 +10,12 @@
                 
                 <!-- Действия -->
                 <div class="flex flex-wrap gap-3">
-                    <a onclick="ClickBtn('0/new/')" class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-secondary hover:bg-secondary/90 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
+                    <a onclick="ClickBtn('{{request.path}}/0/new/')" class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-secondary hover:bg-secondary/90 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
                         <i class="fas fa-plus mr-2 text-sm"></i>
                         Добавить запись
                     </a>
                     {% if request.current_user and request.current_user.is_admin %}
-                    <a onclick="ClickBtn('categories/')" class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-secondary hover:bg-secondary/90 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
+                    <a onclick="ClickBtn('{{request.path}}/categories/')" class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-secondary hover:bg-secondary/90 transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
                         <i class="fas fa-tags mr-2 text-sm"></i>
                         Категории трекера
                     </a>
