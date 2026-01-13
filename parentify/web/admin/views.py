@@ -3,7 +3,7 @@ from django.shortcuts               import render
 from parentify.models.models        import *
 from django.contrib.auth.hashers    import *
 
-from sqlalchemy import inspect
+from sqlalchemy import inspect, func
 
 from parentify.ui.controls import ControlBase, ControlHtml, ControlInputs, ControlPagerFull, ControlRecord, ControlRecordlist
 from parentify.ui.decorators import HttpRedirectException, common_page, page_has_user, with_form, with_get_int
@@ -110,6 +110,102 @@ class admin:
         dashboard = ControlBase('controls/ControlDashboard.html')
         now = datetime.now()
         week_ago = now - timedelta(days=7)
+        
+        # Получаем данные для графика за текущий месяц
+        current_month_start = datetime(now.year, now.month, 1)
+        next_month = now.month + 1 if now.month < 12 else 1
+        next_month_year = now.year if now.month < 12 else now.year + 1
+        current_month_end = datetime(next_month_year, next_month, 1) - timedelta(days=1)
+        
+        # Группируем события по дням за текущий месяц (для PostgreSQL)
+        from sqlalchemy import func, cast, Date
+        
+        # Вариант для PostgreSQL
+        event_stats = request.orm_session.query(
+            cast(SiteEvent.created_at, Date).label('date'),
+            func.count(SiteEvent.id).label('count')
+        ).filter(
+            SiteEvent.created_at >= current_month_start,
+            SiteEvent.created_at <= current_month_end
+        ).group_by(
+            cast(SiteEvent.created_at, Date)
+        ).order_by('date').all()
+        
+        # Преобразуем данные для Highcharts
+        chart_dates = []  # Список дат для категорий
+        chart_counts = []  # Список количеств для данных
+        total_events = 0
+        
+        # Создаем полный диапазон дат за месяц
+        date_range = []
+        current_date = current_month_start
+        while current_date <= current_month_end:
+            date_range.append(current_date.strftime('%Y-%m-%d'))
+            current_date += timedelta(days=1)
+        
+        # Заполняем данные для графика
+        event_dict = {}
+        for date_obj, count in event_stats:
+            # date_obj может быть datetime или date, преобразуем в строку
+            if hasattr(date_obj, 'strftime'):
+                date_str = date_obj.strftime('%Y-%m-%d')
+            else:
+                date_str = str(date_obj)
+            event_dict[date_str] = count
+            total_events += count
+            
+        for date_str in date_range:
+            chart_dates.append(date_str)
+            chart_counts.append(event_dict.get(date_str, 0))
+        
+        # Группируем события по типу для круговой диаграммы
+        event_by_type = request.orm_session.query(
+            SiteEvent.type,
+            func.count(SiteEvent.id).label('count')
+        ).filter(
+            SiteEvent.created_at >= current_month_start,
+            SiteEvent.created_at <= current_month_end
+        ).group_by(SiteEvent.type).all()
+        
+        # Словарь для перевода типов событий на русский
+        event_type_translations = {
+            'login': 'Авторизация',
+            'register': 'Регистрация',
+            'edit_profile': 'Редактирование профиля',
+            'edit_password': 'Изменение пароля',
+            'child_create': 'Создание профиля ребенка',
+            'child_edit': 'Редактирование профиля ребенка',
+            'child_delete': 'Удаление профиля ребенка',
+            'article_create': 'Создание статьи',
+            'article_edit': 'Редактирование статьи',
+            'article_delete': 'Удаление статьи',
+            'article_category_create': 'Создание категории статей',
+            'article_category_edit': 'Редактирование категории статей',
+            'article_category_delete': 'Удаление категории статей',
+            'forum_topic_create': 'Создание вопроса форума',
+            'forum_topic_edit': 'Редактирование вопроса форума',
+            'forum_topic_delete': 'Удаление вопроса форума',
+            'forum_topic_category_create': 'Создание категории форума',
+            'forum_topic_category_edit': 'Редактирование категории форума',
+            'forum_topic_category_delete': 'Удаление категории форума',
+            'forum_topic_comment_create': 'Добавление комментария',
+            'forum_topic_comment_edit': 'Редактирование комментария',
+            'forum_topic_comment_delete': 'Удаление комментария',
+            'map_place_create': 'Добавление места на карте',
+            'map_place_edit': 'Редактирование места на карте',
+            'map_place_delete': 'Удаление места на карте',
+        }
+        
+        # Преобразуем данные для круговой диаграммы
+        pie_chart_data = []
+        for event_type, count in event_by_type:
+            # Получаем русское название или оставляем оригинальное, если перевода нет
+            russian_name = event_type_translations.get(event_type, event_type)
+            pie_chart_data.append({
+                'name': russian_name,
+                'y': count
+            })
+        
         dashboard.add_context({
             'user_count': request.orm_session.query(User).count(),
             'user_child_count': request.orm_session.query(UserChild).count(),
@@ -117,7 +213,14 @@ class admin:
             'forum_topic_count': request.orm_session.query(ForumTopic).count(),
             'new_users': request.orm_session.query(User).filter(User.created_at >= week_ago),
             'new_users_count': request.orm_session.query(User).filter(User.created_at >= week_ago).count(),
+            'event_stats': event_stats,
+            'chart_dates': chart_dates,  # Отдельный список дат
+            'chart_counts': chart_counts,  # Отдельный список количеств
+            'pie_chart_data': pie_chart_data,
+            'current_month': now.strftime('%B %Y'),
+            'total_events': total_events,
         })
+        
         query = request.orm_session.query(SiteEvent)
         recordList = ControlRecordlist(query[page_number * page_size: (page_number + 1) * page_size],
         [
@@ -128,7 +231,7 @@ class admin:
         recordList.add_pager('bottom_pager', ControlPagerFull(query, page_number, page_size, query.count(), query.count()))
         page.add_control('dashboard', dashboard)
         page.add_control('html', recordList)
-        # request.stat = request.orm_session.query(SiteEvent)
+        request.stat = request.orm_session.query(SiteEvent)
         return page
     
     @page_admin()
