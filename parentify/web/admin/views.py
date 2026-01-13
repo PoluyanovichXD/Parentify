@@ -33,7 +33,7 @@ dictAdminModels = {
     "article_category": [ArticleCategory, "Категории статей", "fas fa-folder",
         [['Название','name']], FormArticleCategory,
     ],
-    "forum_topic": [ForumTopic, "Темы форума", "fas fa-comments",
+    "forum_topic": [ForumTopic, "Вопросы форума", "fas fa-comments",
         [['Название','title']], FormForum,
     ],
     "forum_comment": [ForumComment, "Коментарии форума", "fas fa-message",
@@ -128,6 +128,7 @@ class admin:
         recordList.add_pager('bottom_pager', ControlPagerFull(query, page_number, page_size, query.count(), query.count()))
         page.add_control('dashboard', dashboard)
         page.add_control('html', recordList)
+        # request.stat = request.orm_session.query(SiteEvent)
         return page
     
     @page_admin()

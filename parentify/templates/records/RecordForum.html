@@ -63,7 +63,7 @@
                         <p class="text-sm font-medium text-gray-900">
                             {{ control.content.user.first_name }} {{ control.content.user.last_name }}
                         </p>
-                        <p class="text-xs text-gray-500">Автор темы</p>
+                        <p class="text-xs text-gray-500">Автор вопроса</p>
                     </div>
                 </div>
             </header>
@@ -279,7 +279,7 @@
 
         <!-- Похожие темы -->
         <section class="mt-12">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Похожие темы</h2>
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Похожие вопросы</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {% for similar_topic in control.similar_topics|slice:":4" %}
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">

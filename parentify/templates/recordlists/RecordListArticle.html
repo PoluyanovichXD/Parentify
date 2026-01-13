@@ -34,7 +34,7 @@
                 <span
                     class="inline-block bg-secondary text-gray-800 px-3 py-1 rounded-full text-xs font-semibold mb-3">{{row.2.1}}</span>
                 <h3 class="text-xl font-semibold mb-3">{{row.2.0}}</h3>
-                <p class="text-gray-600 mb-4 line-clamp-3">{{row.2.2|safe}}</p>
+                <p class="text-gray-600 mb-4 line-clamp-3">{{row.2.2|striptags|truncatewords:20}}</p>
                 <div class="flex justify-between items-center text-sm text-gray-500">
                     <div class="flex items-center">
                         <i class="far fa-calendar mr-1"></i> {{row.2.4}}

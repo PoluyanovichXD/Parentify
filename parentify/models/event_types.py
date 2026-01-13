@@ -19,9 +19,9 @@ class EventTypes(Enum):
     article_category_edit = 'Редактирование категории статей'
     article_category_delete = 'Удаление категории статей'
 
-    forum_topic_create = 'Создание темы форума'
-    forum_topic_edit = 'Редактирование темы форума'
-    forum_topic_delete = 'Удаление темы форума'
+    forum_topic_create = 'Создание вопроса форума'
+    forum_topic_edit = 'Редактирование вопроса форума'
+    forum_topic_delete = 'Удаление вопроса форума'
 
     forum_topic_category_create = 'Создание категории форума'
     forum_topic_category_edit = 'Редактирование категории форума'

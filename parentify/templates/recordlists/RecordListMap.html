@@ -257,8 +257,8 @@
         document.getElementById('modalRating').innerHTML = `<i class="fas fa-star"></i> ${place.rating}`;
         document.getElementById('modalDistance').textContent = place.distance + '';
         document.getElementById('modalDescription').textContent = place.description;
-        document.getElementById('btnAdminMapEdit').setAttribute('onclick', `LinkRedirect("/map/${place.id}/edit")`);
-        document.getElementById('btnAdminMapDelete').setAttribute('onclick', `LinkRedirect("/map/${place.id}/edit")`);
+        document.getElementById('btnAdminMapEdit')?document.getElementById('btnAdminMapEdit').setAttribute('onclick', `LinkRedirect("/map/${place.id}/edit")`):null;
+        document.getElementById('btnAdminMapDelete')?document.getElementById('btnAdminMapDelete').setAttribute('onclick', `LinkRedirect("/map/${place.id}/edit")`):null;
         
 
 

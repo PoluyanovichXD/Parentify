@@ -13,12 +13,12 @@
         <a onclick="ClickBtn('0/new/')" 
            class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
             <i class="fas fa-plus mr-2 text-sm"></i>
-            Новая тема
+            Задать вопрос
         </a>
         {% if request.current_user.is_admin %}
         <a onclick="ClickBtn('categories/')" class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold bg-secondary hover:bg-secondary/90transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg">
             <i class="fas fa-plus mr-2 text-sm"></i>
-            Категории мест
+            Категории вопросов
         </a>
         {% endif %}
         
@@ -34,7 +34,7 @@
             </button>
             <button class="inline-flex items-center px-4 py-2 bg-white text-gray-700 rounded-xl font-semibold border border-gray-300 hover:border-primary hover:text-primary transition-all duration-300">
                 <i class="fas fa-user mr-2 text-sm"></i>
-                Мои темы
+                Мои вопросы
             </button> -->
         </div>
     </div>
@@ -131,19 +131,19 @@
         <!-- Пустое состояние -->
         <div class="col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
             <i class="fas fa-comments text-4xl text-gray-300 mb-4"></i>
-            <h3 class="text-xl font-semibold text-gray-600 mb-2">Темы не найдены</h3>
-            <p class="text-gray-500 mb-6">Станьте первым, кто создаст тему для обсуждения!</p>
+            <h3 class="text-xl font-semibold text-gray-600 mb-2">Вопросы не найдены</h3>
+            <p class="text-gray-500 mb-6">Станьте первым, кто создаст вопрос для обсуждения!</p>
             {% if request.current_user %}
             <a onclick="ClickBtn('0/new/')" 
                class="cursor-pointer inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary transition-all duration-300 transform hover:-translate-y-0.5">
                 <i class="fas fa-plus mr-2 text-sm"></i>
-                Создать первую тему
+                Создать первый вопрос
             </a>
             {% else %}
             <a href="/login" 
                class="inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl font-semibold hover:bg-primary transition-all duration-300 transform hover:-translate-y-0.5">
                 <i class="fas fa-sign-in-alt mr-2 text-sm"></i>
-                Войти для создания темы
+                Войти для создания вопроса
             </a>
             {% endif %}
         </div>
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
             message.className = 'no-topics-message col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center';
             message.innerHTML = `
                 <i class="fas fa-search text-3xl text-gray-300 mb-4"></i>
-                <h3 class="text-lg font-semibold text-gray-600 mb-2">Темы не найдены</h3>
+                <h3 class="text-lg font-semibold text-gray-600 mb-2">Вопросы не найдены</h3>
                 <p class="text-gray-500">Попробуйте изменить параметры поиска</p>
             `;
             document.querySelector('.grid').appendChild(message);
