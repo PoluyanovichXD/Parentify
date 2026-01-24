@@ -44,7 +44,7 @@ class FormForum(FormBase):
 
 class FormFilterForum(FormModelFilter):
     title = TextInputField(label=_('Заголовок'), max_length=350, required=False)
-    category_id = SelectInputField(label=_("Категория"), required=True)
+    category_id = SelectInputField(label=_("Категория"), required=False)
 
     def __init__(self, request):
         super().__init__(request, 'article_filter')

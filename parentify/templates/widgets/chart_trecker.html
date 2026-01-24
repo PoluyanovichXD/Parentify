@@ -1,0 +1,299 @@
+<div class="chart-container">
+    <div class="chart-header">
+        <h3>Статистика Трекера</h3>
+        <div class="period-selector">
+            <button onclick="event.preventDefault()" class="period-btn" data-period="week">По неделям</button>
+            <button onclick="event.preventDefault()" class="period-btn active" data-period="month">По месяцам</button>
+            <button onclick="event.preventDefault()" class="period-btn" data-period="year">По годам</button>
+        </div>
+    </div>
+    
+    <div id="treckerChart" style="height: 400px; min-width: 310px; margin: 0 auto"></div>
+    
+    <div id="treckerCountChart" style="height: 300px; min-width: 310px; margin: 20px auto 0"></div>
+</div>
+
+<style>
+.chart-container {
+    margin: 20px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.period-selector {
+    display: flex;
+    gap: 10px;
+}
+.period-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: inherit;
+    font-size: 14px;
+}
+.period-btn.active {
+    background: #2196F3;
+    color: white;
+    border-color: #2196F3;
+}
+.period-btn:hover {
+    background: #f5f5f5;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPeriod = '{{ request.statistics.period|default:"month" }}';
+    
+    // Устанавливаем активную кнопку
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        if (btn.dataset.period === currentPeriod) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Инициализируем график
+    renderChart(currentPeriod);
+    
+    // Обработчики для кнопок выбора периода
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const period = this.dataset.period;
+            
+            // Обновляем активную кнопку
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Загружаем данные для выбранного периода
+            loadChartData(period);
+        });
+    });
+    
+    function loadChartData(period) {
+        // Добавляем параметр для получения JSON
+        const url = new URL(window.location.href);
+        url.searchParams.set('period', period);
+        url.searchParams.set('json', '1');
+        
+        // Отправляем запрос на сервер для получения данных
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                renderChart(period, data);
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки данных:', error);
+            });
+    }
+    
+    function renderChart(period, data = null) {
+        // Если данные не переданы, используем данные из шаблона
+        if (!data) {
+            data = {
+                period: '{{ request.statistics.period|default:"month" }}',
+                categories: {{ request.statistics.categories|default:"[]"|safe }},
+                data: {{ request.statistics.data|default:"[]"|safe }},
+                count: {{ request.statistics.count|default:"[]"|safe }},
+                data_avg: {{ request.statistics.data_avg|default:"[]"|safe }}
+            };
+        }
+        
+        let titleText, xAxisText;
+        
+        switch(period) {
+            case 'year':
+                titleText = 'Статистика по годам';
+                xAxisText = 'Годы';
+                break;
+            case 'month':
+                titleText = 'Статистика по месяцам';
+                xAxisText = 'Месяцы';
+                break;
+            case 'week':
+                titleText = 'Статистика по неделям';
+                xAxisText = 'Недели';
+                break;
+        }
+        
+        // Основной график (значения)
+        Highcharts.chart('treckerChart', {
+            chart: {
+                type: 'line',
+                backgroundColor: 'transparent'
+            },
+            title: {
+                text: titleText,
+                style: {
+                    fontSize: '16px',
+                    fontWeight: 'bold'
+                }
+            },
+            xAxis: {
+                categories: data.categories,
+                title: {
+                    text: xAxisText,
+                    style: {
+                        fontSize: '14px'
+                    }
+                },
+                labels: {
+                    style: {
+                        fontSize: '12px'
+                    }
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Значения',
+                    style: {
+                        fontSize: '14px'
+                    }
+                },
+                labels: {
+                    style: {
+                        fontSize: '12px'
+                    }
+                }
+            },
+            series: [{
+                name: 'Сумма',
+                data: data.data,
+                color: '#2196F3',
+                tooltip: {
+                    valueDecimals: 2,
+                    valueSuffix: ' ед.'
+                },
+                marker: {
+                    enabled: true,
+                    radius: 4
+                }
+            }, {
+                name: 'Среднее значение',
+                data: data.data_avg,
+                color: '#FF9800',
+                tooltip: {
+                    valueDecimals: 2,
+                    valueSuffix: ' ед.'
+                },
+                marker: {
+                    enabled: true,
+                    radius: 4
+                }
+            }],
+            tooltip: {
+                shared: true,
+                crosshairs: true,
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderColor: '#ddd',
+                borderRadius: 5,
+                style: {
+                    fontSize: '12px'
+                }
+            },
+            legend: {
+                layout: 'horizontal',
+                align: 'center',
+                verticalAlign: 'bottom',
+                itemStyle: {
+                    fontSize: '12px'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: false
+                    },
+                    enableMouseTracking: true
+                }
+            }
+        });
+        
+        // График количества записей
+        Highcharts.chart('treckerCountChart', {
+            chart: {
+                type: 'column',
+                backgroundColor: 'transparent'
+            },
+            title: {
+                text: 'Количество записей',
+                style: {
+                    fontSize: '16px',
+                    fontWeight: 'bold'
+                }
+            },
+            xAxis: {
+                categories: data.categories,
+                title: {
+                    text: xAxisText,
+                    style: {
+                        fontSize: '14px'
+                    }
+                },
+                labels: {
+                    style: {
+                        fontSize: '12px'
+                    }
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'Количество',
+                    style: {
+                        fontSize: '14px'
+                    }
+                },
+                labels: {
+                    style: {
+                        fontSize: '12px'
+                    }
+                },
+                allowDecimals: false
+            },
+            series: [{
+                name: 'Количество записей',
+                data: data.count,
+                color: '#4CAF50'
+            }],
+            tooltip: {
+                pointFormat: 'Записей: <b>{point.y}</b>',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                borderColor: '#ddd',
+                borderRadius: 5,
+                style: {
+                    fontSize: '12px'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            plotOptions: {
+                column: {
+                    dataLabels: {
+                        enabled: true,
+                        format: '{y}',
+                        style: {
+                            fontSize: '11px',
+                            textOutline: 'none'
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>

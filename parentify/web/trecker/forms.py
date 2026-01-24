@@ -62,7 +62,7 @@ class FormTrecker(FormBase):
 
 class FormFilterTrecker(FormModelFilter):
     comment = TextInputField(label=_('Коментарий'), required=False)
-    category_id = SelectInputField(label=_("Категория"), required=True)
+    category_id = SelectInputField(label=_("Категория"), required=False)
 
     def __init__(self, request, *args):
         super().__init__(request, 'trecker_filter')

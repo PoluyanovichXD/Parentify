@@ -60,7 +60,7 @@ class FormGoods(FormBase):
 
 class FormFilterGoods(FormModelFilter):
     title = TextInputField(label=_('Название товара'), max_length=500, required=False)
-    category_id = SelectInputField(label=_("Категория"), required=True)
+    category_id = SelectInputField(label=_("Категория"), required=False)
     best_place_to_buy = TextInputField(label=_('Место покупки'), max_length=500, required=False)
 
     def __init__(self, request):
