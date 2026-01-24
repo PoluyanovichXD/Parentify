@@ -17,7 +17,7 @@ class articles:
     @with_form('form_filter', FormFilterArticle, 'cmd_filter', 'cmd_discard', 'cmd_store')
     @with_get_int('p', 0, 255)
     def all(request, p, form_filter):
-        modelInfo = PageModelInfo(request.session, '/article/', request.orm_session.query(Article), Article.id)
+        modelInfo = PageModelInfo(request.session, '/article/', request.orm_session.query(Article).order_by(Article.created_at.desc()), Article.id)
         return PageArticleEditor(modelInfo).items(request, p, form_filter, type_list='list')
 
     @common_page()
@@ -54,7 +54,7 @@ class categories:
     @with_form('form_filter', FormFilterCategory, 'cmd_filter', 'cmd_discard', 'cmd_store')
     @with_get_int('p', 0, 255)
     def all(request, p, form_filter):
-        modelInfo = PageModelInfo(request.session, '/article/categories/', request.orm_session.query(ArticleCategory), ArticleCategory.id)
+        modelInfo = PageModelInfo(request.session, '/article/categories/', request.orm_session.query(ArticleCategory).order_by(ArticleCategory.created_at.desc()), ArticleCategory.id)
         return PageCategoryEditor(modelInfo).items(request, p, form_filter, PageCategoryEditor.toolbar, no_zip=False)
 
     @common_page()

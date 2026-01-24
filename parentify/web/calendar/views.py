@@ -18,7 +18,7 @@ class calendar:
     @with_form('form_filter', FormFilterDevelopmentCalendar, 'cmd_filter', 'cmd_discard', 'cmd_store')
     @with_get_int('p', 0, 255)
     def all(request, p, form_filter):
-        modelInfo = PageModelInfo(request.session, '/calendar/', request.orm_session.query(ChildDevelopmentWeek), ChildDevelopmentWeek.id)
+        modelInfo = PageModelInfo(request.session, '/calendar/', request.orm_session.query(ChildDevelopmentWeek).order_by(ChildDevelopmentWeek.created_at.desc()), ChildDevelopmentWeek.id)
         return PageDevelopmentCalendarEditor(modelInfo).items(request, p, form_filter, type_list='dict')
 
     @common_page()

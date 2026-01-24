@@ -17,7 +17,8 @@ class forum:
     @with_form('form_filter', FormFilterForum, 'cmd_filter', 'cmd_discard', 'cmd_store')
     @with_get_int('p', 0, 255)
     def all(request, p, form_filter):
-        modelInfo = PageModelInfo(request.session, '/forum/', request.orm_session.query(ForumTopic), ForumTopic.id)
+        
+        modelInfo = PageModelInfo(request.session, '/forum/', request.orm_session.query(ForumTopic).order_by(ForumTopic.created_at.desc()), ForumTopic.id)
         return PageForumEditor(modelInfo).items(request, p, form_filter, type_list='list')
 
     @common_page()
@@ -55,7 +56,7 @@ class categories:
     @with_form('form_filter', FormFilterCategory, 'cmd_filter', 'cmd_discard', 'cmd_store')
     @with_get_int('p', 0, 255)
     def all(request, p, form_filter):
-        modelInfo = PageModelInfo(request.session, '/forum/categories/', request.orm_session.query(ForumTopicCategory), ForumTopicCategory.id)
+        modelInfo = PageModelInfo(request.session, '/forum/categories/', request.orm_session.query(ForumTopicCategory).order_by(ForumTopicCategory.created_at.desc()), ForumTopicCategory.id)
         return PageCategoryEditor(modelInfo).items(request, p, form_filter, PageCategoryEditor.toolbar, no_zip=False)
 
     @common_page()

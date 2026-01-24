@@ -29,7 +29,7 @@ class trecker:
         
         # if request.path.startswith('/profile'):
         #     query = query.filter(Goods.favorites.any(UserFavorite.user_id == request.current_user.id))
-        modelInfo = PageModelInfo(request.session, '/trecker/', query, Trecker.id)
+        modelInfo = PageModelInfo(request.session, '/trecker/', query.order_by(Trecker.created_at.desc()), Trecker.id)
         return PageTreckerEditor(modelInfo).items(request, p, form_filter, type_list='dict')
 
     @common_page()
@@ -63,7 +63,7 @@ class categories:
     @with_form('form_filter', FormFilterCategory, 'cmd_filter', 'cmd_discard', 'cmd_store')
     @with_get_int('p', 0, 255)
     def all(request, *args, **kwargs):
-        modelInfo = PageModelInfo(request.session, '/trecker/categories/', request.orm_session.query(TreckerCategory), TreckerCategory.id)
+        modelInfo = PageModelInfo(request.session, '/trecker/categories/', request.orm_session.query(TreckerCategory).order_by(TreckerCategory.created_at.desc()), TreckerCategory.id)
         return PageCategoryEditor(modelInfo).items(request, kwargs.get('p'), kwargs.get('form_filter'), PageCategoryEditor.toolbar, no_zip=False)
 
     @common_page()

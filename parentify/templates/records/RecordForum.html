@@ -223,7 +223,7 @@
                                 </form> -->
                                 
                                 {% if not control.content.is_closed %}
-                                <button onclick="showReplyToComment({{ comment.id }})" 
+                                <button onclick="showReplyToComment(`{{ comment.user.full_name }}`)" 
                                         class="inline-flex items-center text-sm text-gray-500 hover:text-primary transition-colors">
                                     <i class="fas fa-reply mr-1"></i>
                                     Ответить

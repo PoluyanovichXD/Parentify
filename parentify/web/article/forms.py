@@ -7,7 +7,7 @@ from parentify.ui.fields import *
 
 class FormArticle(FormBase):
     title = TextInputField(label=_("Заголовок"), required=True)
-    category_id = SelectInputField(label=_("Категория"), required=False)
+    category_id = SelectInputField(label=_("Категория"), required=True)
     html = HtmlEditorField(label=_("Статья"), required=True)
     image = FileField(label=_("Заголовочное изображение"), required=True, images_type=True)
 
@@ -46,7 +46,7 @@ class FormArticle(FormBase):
 
 class FormFilterArticle(FormModelFilter):
     title = TextInputField(label=_('Заголовок'), max_length=350, required=False)
-    category_id = SelectInputField(label=_("Категория"), required=False)
+    category_id = SelectInputField(label=_("Категория"), required=True)
 
     def __init__(self, request):
         super().__init__(request, 'article_filter')

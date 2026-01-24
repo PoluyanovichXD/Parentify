@@ -21,7 +21,7 @@ class place:
             request.orm_session.delete(request.orm_session.query(Place).get(request.GET.get('delete')))
             request.orm_session.commit()
             return HttpResponseRedirect('/map/')
-        modelInfo = PageModelInfo(request.session, '/map/', request.orm_session.query(Place), Place.id)
+        modelInfo = PageModelInfo(request.session, '/map/', request.orm_session.query(Place).order_by(Place.title.desc()), Place.id)
         return PagePlaceEditor(modelInfo).items(request, p, form_filter, type_list='dict')
 
     @common_page()
@@ -57,7 +57,7 @@ class categories:
     @with_form('form_filter', FormFilterCategory, 'cmd_filter', 'cmd_discard', 'cmd_store')
     @with_get_int('p', 0, 255)
     def all(request, p, form_filter):
-        modelInfo = PageModelInfo(request.session, '/map/categories/', request.orm_session.query(PlaceCategory), PlaceCategory.id)
+        modelInfo = PageModelInfo(request.session, '/map/categories/', request.orm_session.query(PlaceCategory).order_by(PlaceCategory.created_at.desc()), PlaceCategory.id)
         return PageCategoryEditor(modelInfo).items(request, p, form_filter, PageCategoryEditor.toolbar, no_zip=False)
 
     @common_page()

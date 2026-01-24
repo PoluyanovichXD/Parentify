@@ -20,7 +20,7 @@ class goods:
         query = request.orm_session.query(Goods)
         if request.path.startswith('/profile'):
             query = query.filter(Goods.favorites.any(UserFavorite.user_id == request.current_user.id))
-        modelInfo = PageModelInfo(request.session, '/goods/', query, Goods.id)
+        modelInfo = PageModelInfo(request.session, '/goods/', query.order_by(Goods.created_at.desc()), Goods.id)
         return PageGoodsEditor(modelInfo).items(request, p, form_filter, type_list='dict')
 
     @common_page()
@@ -109,7 +109,7 @@ class categories:
     @with_form('form_filter', FormFilterCategory, 'cmd_filter', 'cmd_discard', 'cmd_store')
     @with_get_int('p', 0, 255)
     def all(request, p, form_filter):
-        modelInfo = PageModelInfo(request.session, '/goods/categories/', request.orm_session.query(GoodsCategory), GoodsCategory.id)
+        modelInfo = PageModelInfo(request.session, '/goods/categories/', request.orm_session.query(GoodsCategory).order_by(GoodsCategory.created_at.desc()), GoodsCategory.id)
         return PageCategoryEditor(modelInfo).items(request, p, form_filter, PageCategoryEditor.toolbar, no_zip=False)
 
     @common_page()
