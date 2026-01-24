@@ -14,117 +14,226 @@ from parentify.web.trecker.pages import PageTreckerEditor, PageCategoryEditor
 
 def get_trecker_statistics(session, base_query, period='month'):
     """
-    Получает статистику трекеров по указанному периоду
+    Получает статистику трекеров по указанному периоду с группировкой по детям и категориям
     period: 'year', 'month', 'week'
     """
-    # Создаем копию базового запроса без сортировки
+    # Создаем копию базового запроса
     query = base_query
     
+    # Получаем все записи трекеров
+    treckers = query.all()
+    if not treckers:
+        # Возвращаем пустую структуру если нет данных
+        return {
+            'period': period,
+            'categories': [],
+            'series': [],
+            'children': [],
+            'categories_list': []
+        }
+    
+    # Получаем всех детей из запроса
+    children_ids = set([t.children_id for t in treckers])
+    children = session.query(UserChild).filter(UserChild.id.in_(children_ids)).all() if children_ids else []
+    
+    # Получаем все категории трекеров
+    category_ids = set([t.category_id for t in treckers])
+    categories = session.query(TreckerCategory).filter(TreckerCategory.id.in_(category_ids)).all() if category_ids else []
+    
+    # Если нет детей или категорий, возвращаем пустую структуру
+    if not children or not categories:
+        return {
+            'period': period,
+            'categories': [],
+            'series': [],
+            'children': [{'id': c.id, 'name': c.first_name} for c in children] if children else [],
+            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories] if categories else []
+        }
     if period == 'year':
         # Группировка по годам
         stats = session.query(
-            extract('year', Trecker.date_trecker).label('period'),
+            extract('year', Trecker.date_trecker).label('year'),
+            UserChild.id.label('child_id'),
+            UserChild.first_name.label('child_name'),
+            TreckerCategory.id.label('category_id'),
+            TreckerCategory.name.label('category_name'),
             func.sum(Trecker.value).label('total'),
             func.count().label('count')
+        ).join(
+            UserChild, UserChild.id == Trecker.children_id
+        ).join(
+            TreckerCategory, TreckerCategory.id == Trecker.category_id
         ).filter(
             Trecker.id.in_([t.id for t in query.all()])
         ).group_by(
-            extract('year', Trecker.date_trecker)
+            extract('year', Trecker.date_trecker),
+            UserChild.id,
+            UserChild.first_name,
+            TreckerCategory.id,
+            TreckerCategory.name
         ).order_by(
-            extract('year', Trecker.date_trecker)
+            extract('year', Trecker.date_trecker),
+            UserChild.first_name,
+            TreckerCategory.name
         ).all()
         
-        # Форматируем данные для Highcharts
+        # Формируем уникальные годы
+        years = sorted(set([s.year for s in stats]))
+        
+        # Формируем данные для графиков
+        series_data = []
+        
+        # Для каждого ребенка и категории создаем серию
+        for child in children:
+            for category in categories:
+                # Создаем данные для этой комбинации ребенок-категория
+                series_name = f"{child.first_name} - {category.name}"
+                data_for_series = []
+                
+                for year in years:
+                    # Ищем статистику для этого года, ребенка и категории
+                    stat = next((s for s in stats if s.year == year and 
+                                s.child_id == child.id and s.category_id == category.id), None)
+                    
+                    if stat:
+                        data_for_series.append(float(stat.total))
+                    else:
+                        data_for_series.append(0)
+                
+                # Добавляем серию только если есть хоть какие-то данные
+                if any(data_for_series):
+                    series_data.append({
+                        'name': series_name,
+                        'data': data_for_series,
+                        'color': get_color_for_child_category(child.id, category.id)
+                    })
+        
         result = {
             'period': 'year',
-            'categories': [int(s.period) for s in stats],
-            'data': [float(s.total) for s in stats],
-            'count': [int(s.count) for s in stats],
-            'data_avg': [float(s.total / s.count) if s.count > 0 else 0 for s in stats]
+            'categories': years,
+            'series': series_data,
+            'children': [{'id': c.id, 'name': c.first_name} for c in children],
+            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories]
         }
         
     elif period == 'month':
-        # Группировка по месяцам года
-        current_year = datetime.now().year
-        last_year = current_year - 1
+        # Группировка по месяцам (последние 12 месяцев)
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=365)
         
-        # Получаем данные за последние 2 года
         stats = session.query(
             extract('year', Trecker.date_trecker).label('year'),
             extract('month', Trecker.date_trecker).label('month'),
+            UserChild.id.label('child_id'),
+            UserChild.first_name.label('child_name'),
+            TreckerCategory.id.label('category_id'),
+            TreckerCategory.name.label('category_name'),
             func.sum(Trecker.value).label('total'),
             func.count().label('count')
+        ).join(
+            UserChild, UserChild.id == Trecker.children_id
+        ).join(
+            TreckerCategory, TreckerCategory.id == Trecker.category_id
         ).filter(
             Trecker.id.in_([t.id for t in query.all()]),
-            extract('year', Trecker.date_trecker).in_([current_year, last_year])
+            Trecker.date_trecker >= start_date
         ).group_by(
             extract('year', Trecker.date_trecker),
-            extract('month', Trecker.date_trecker)
+            extract('month', Trecker.date_trecker),
+            UserChild.id,
+            UserChild.first_name,
+            TreckerCategory.id,
+            TreckerCategory.name
         ).order_by(
             extract('year', Trecker.date_trecker),
-            extract('month', Trecker.date_trecker)
+            extract('month', Trecker.date_trecker),
+            UserChild.first_name,
+            TreckerCategory.name
         ).all()
         
-        # Формируем данные для всех месяцев
+        # Формируем последние 12 месяцев
         months = []
-        data = []
-        count = []
-        data_avg = []
+        month_data = {}
         
-        for year in [last_year, current_year]:
-            for month in range(1, 13):
-                month_name = f"{calendar.month_name[month][:3]} {year}"
-                months.append(month_name)
+        for i in range(12):
+            month_date = end_date - timedelta(days=30*i)
+            year = month_date.year
+            month = month_date.month
+            month_label = f"{calendar.month_name[month][:3]} {year}"
+            months.insert(0, month_label)
+            month_data[(year, month)] = len(months) - 1  # Индекс в массиве
+        
+        # Формируем данные для графиков
+        series_data = []
+        
+        # Для каждого ребенка и категории создаем серию
+        for child in children:
+            for category in categories:
+                # Создаем данные для этой комбинации ребенок-категория
+                series_name = f"{child.first_name} - {category.name}"
+                data_for_series = [0] * len(months)
                 
-                # Ищем данные для этого месяца
-                stat = next((s for s in stats if s.year == year and s.month == month), None)
-                if stat:
-                    data.append(float(stat.total))
-                    count.append(int(stat.count))
-                    data_avg.append(float(stat.total / stat.count) if stat.count > 0 else 0)
-                else:
-                    data.append(0)
-                    count.append(0)
-                    data_avg.append(0)
+                # Заполняем данные
+                for stat in stats:
+                    if stat.child_id == child.id and stat.category_id == category.id:
+                        month_index = month_data.get((stat.year, stat.month))
+                        if month_index is not None:
+                            data_for_series[month_index] = float(stat.total)
+                
+                # Добавляем серию только если есть хоть какие-то данные
+                if any(data_for_series):
+                    series_data.append({
+                        'name': series_name,
+                        'data': data_for_series,
+                        'color': get_color_for_child_category(child.id, category.id)
+                    })
         
         result = {
             'period': 'month',
             'categories': months,
-            'data': data,
-            'count': count,
-            'data_avg': data_avg
+            'series': series_data,
+            'children': [{'id': c.id, 'name': c.first_name} for c in children],
+            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories]
         }
         
     elif period == 'week':
         # Группировка по неделям (последние 12 недель)
         end_date = datetime.now()
-        start_date = end_date - timedelta(weeks=11)  # 12 недель включая текущую
+        start_date = end_date - timedelta(weeks=11)
         
-        # Используем ISO недели (год и номер недели)
         stats = session.query(
             extract('isoyear', Trecker.date_trecker).label('year'),
             extract('week', Trecker.date_trecker).label('week'),
+            UserChild.id.label('child_id'),
+            UserChild.first_name.label('child_name'),
+            TreckerCategory.id.label('category_id'),
+            TreckerCategory.name.label('category_name'),
             func.sum(Trecker.value).label('total'),
             func.count().label('count')
+        ).join(
+            UserChild, UserChild.id == Trecker.children_id
+        ).join(
+            TreckerCategory, TreckerCategory.id == Trecker.category_id
         ).filter(
             Trecker.id.in_([t.id for t in query.all()]),
             Trecker.date_trecker >= start_date
         ).group_by(
             extract('isoyear', Trecker.date_trecker),
-            extract('week', Trecker.date_trecker)
+            extract('week', Trecker.date_trecker),
+            UserChild.id,
+            UserChild.first_name,
+            TreckerCategory.id,
+            TreckerCategory.name
         ).order_by(
             extract('isoyear', Trecker.date_trecker),
-            extract('week', Trecker.date_trecker)
+            extract('week', Trecker.date_trecker),
+            UserChild.first_name,
+            TreckerCategory.name
         ).all()
         
-        # Формируем список последних 12 недель
+        # Формируем последние 12 недель
         weeks = []
-        data = []
-        count = []
-        data_avg = []
-        
-        # Создаем словарь для быстрого поиска
-        stats_dict = {(int(s.year), int(s.week)): s for s in stats}
+        week_data = {}
         
         for i in range(12):
             week_date = end_date - timedelta(weeks=i)
@@ -136,27 +245,119 @@ def get_trecker_statistics(session, base_query, period='month'):
             week_end = week_start + timedelta(days=6)
             week_label = f"{week_start.strftime('%d.%m')}-{week_end.strftime('%d.%m')}"
             weeks.insert(0, week_label)
-            
-            # Ищем данные для этой недели
-            stat = stats_dict.get((year, week_num))
-            if stat:
-                data.insert(0, float(stat.total))
-                count.insert(0, int(stat.count))
-                data_avg.insert(0, float(stat.total / stat.count) if stat.count > 0 else 0)
-            else:
-                data.insert(0, 0)
-                count.insert(0, 0)
-                data_avg.insert(0, 0)
+            week_data[(year, week_num)] = len(weeks) - 1
+        
+        # Формируем данные для графиков
+        series_data = []
+        
+        # Для каждого ребенка и категории создаем серию
+        for child in children:
+            for category in categories:
+                # Создаем данные для этой комбинации ребенок-категория
+                series_name = f"{child.first_name} - {category.name}"
+                data_for_series = [0] * len(weeks)
+                
+                # Заполняем данные
+                for stat in stats:
+                    if stat.child_id == child.id and stat.category_id == category.id:
+                        week_index = week_data.get((stat.year, stat.week))
+                        if week_index is not None:
+                            data_for_series[week_index] = float(stat.total)
+                
+                # Добавляем серию только если есть хоть какие-то данные
+                if any(data_for_series):
+                    series_data.append({
+                        'name': series_name,
+                        'data': data_for_series,
+                        'color': get_color_for_child_category(child.id, category.id)
+                    })
         
         result = {
             'period': 'week',
             'categories': weeks,
-            'data': data,
-            'count': count,
-            'data_avg': data_avg
+            'series': series_data,
+            'children': [{'id': c.id, 'name': c.first_name} for c in children],
+            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories]
         }
     
     return result
+
+
+def get_color_for_child_category(child_id, category_id):
+    """
+    Генерирует цвет для комбинации ребенок-категория
+    """
+    # Базовые цвета для детей
+    child_colors = {
+        1: '#2196F3',  # Синий
+        2: '#FF9800',  # Оранжевый
+        3: '#4CAF50',  # Зеленый
+        4: '#E91E63',  # Розовый
+        5: '#9C27B0',  # Фиолетовый
+        6: '#00BCD4',  # Бирюзовый
+        7: '#FF5722',  # Темно-оранжевый
+        8: '#795548',  # Коричневый
+    }
+    
+    # Оттенки для категорий
+    category_shades = {
+        1: 'darken',   # Темнее
+        2: 'normal',   # Нормальный
+        3: 'lighten',  # Светлее
+        4: 'lighter',  # Еще светлее
+        5: 'lightest', # Самый светлый
+    }
+    
+    # Базовый цвет для ребенка
+    base_color = child_colors.get(child_id % len(child_colors) + 1, '#2196F3')
+    
+    # Получаем оттенок для категории
+    shade_type = category_shades.get(category_id % len(category_shades) + 1, 'normal')
+    
+    # Генерируем цвет (упрощенная версия)
+    if shade_type == 'darken':
+        return base_color
+    elif shade_type == 'normal':
+        return base_color
+    elif shade_type == 'lighten':
+        # Упрощенное осветление цвета
+        return lighten_color(base_color, 0.2)
+    elif shade_type == 'lighter':
+        return lighten_color(base_color, 0.4)
+    elif shade_type == 'lightest':
+        return lighten_color(base_color, 0.6)
+    
+    return base_color
+
+
+def lighten_color(color, amount):
+    """
+    Упрощенная функция для осветления цвета
+    """
+    # Это упрощенная версия - в реальном приложении используйте библиотеку для работы с цветами
+    colors = {
+        '#2196F3': ['#1976D2', '#64B5F6', '#90CAF9', '#BBDEFB'],  # Синий
+        '#FF9800': ['#F57C00', '#FFB74D', '#FFCC80', '#FFE0B2'],  # Оранжевый
+        '#4CAF50': ['#388E3C', '#81C784', '#A5D6A7', '#C8E6C9'],  # Зеленый
+        '#E91E63': ['#C2185B', '#F06292', '#F48FB1', '#F8BBD0'],  # Розовый
+        '#9C27B0': ['#7B1FA2', '#BA68C8', '#CE93D8', '#E1BEE7'],  # Фиолетовый
+        '#00BCD4': ['#0097A7', '#4DD0E1', '#80DEEA', '#B2EBF2'],  # Бирюзовый
+    }
+    
+    # Если цвет найден, возвращаем соответствующий оттенок
+    if color in colors:
+        shades = colors[color]
+        if amount <= 0.2:
+            return shades[0] if len(shades) > 0 else color
+        elif amount <= 0.4:
+            return shades[1] if len(shades) > 1 else color
+        elif amount <= 0.6:
+            return shades[2] if len(shades) > 2 else color
+        else:
+            return shades[3] if len(shades) > 3 else color
+    
+    return color
+
 
 class trecker:
     @common_page()
@@ -177,8 +378,18 @@ class trecker:
         if request.GET.get('json') == '1':
             from django.http import JsonResponse
             period = request.GET.get('period', 'month')
-            statistics = get_trecker_statistics(request.orm_session, query, period)
-            return JsonResponse(statistics)
+            try:
+                statistics = get_trecker_statistics(request.orm_session, query, period)
+                return JsonResponse(statistics)
+            except Exception as e:
+                return JsonResponse({
+                    'error': str(e),
+                    'period': period,
+                    'categories': [],
+                    'series': [],
+                    'children': [],
+                    'categories_list': []
+                }, status=500)
         
         if request.GET.get('delete') and request.current_user:
             request.orm_session.delete(query.get(request.GET.get('delete')))
@@ -186,12 +397,23 @@ class trecker:
             return HttpResponseRedirect('/trecker/')
         
         # Получаем статистику для графика
-        period = request.GET.get('period', 'month')
-        statistics = get_trecker_statistics(request.orm_session, query, period)
+        try:
+            period = request.GET.get('period', 'month')
+            statistics = get_trecker_statistics(request.orm_session, query, period)
+        except Exception as e:
+            # В случае ошибки возвращаем пустую статистику
+            statistics = {
+                'period': 'month',
+                'categories': [],
+                'series': [],
+                'children': [],
+                'categories_list': []
+            }
+        
         request.statistics = statistics
         
         modelInfo = PageModelInfo(request.session, '/trecker/', query.order_by(Trecker.created_at.desc()), Trecker.id)
-        page = PageTreckerEditor(modelInfo).items(request, p, form_filter, type_list='dict', controls=ControlHtml({},'widgets/chart_trecker.html'))
+        page = PageTreckerEditor(modelInfo).items(request, p, form_filter, type_list='dict', btn_controls=ControlHtml({},'widgets/chart_trecker.html'))
         return page
 
     @common_page()

@@ -1,6 +1,6 @@
 <div class="chart-container">
     <div class="chart-header">
-        <h3>Статистика Трекера</h3>
+        <h3>Статистика Трекера по Детям и Категориям</h3>
         <div class="period-selector">
             <button onclick="event.preventDefault()" class="period-btn" data-period="week">По неделям</button>
             <button onclick="event.preventDefault()" class="period-btn active" data-period="month">По месяцам</button>
@@ -8,9 +8,50 @@
         </div>
     </div>
     
-    <div id="treckerChart" style="height: 400px; min-width: 310px; margin: 0 auto"></div>
+    <!-- Фильтры для графиков -->
+    {% if request.statistics.children or request.statistics.categories_list %}
+    <div class="chart-filters">
+        {% if request.statistics.children %}
+        <div class="filter-group">
+            <label>Дети:</label>
+            <div class="children-filter">
+                {% for child in request.statistics.children %}
+                <label class="filter-checkbox">
+                    <input type="checkbox" name="child_{{ child.id }}" checked 
+                           data-child-id="{{ child.id }}">
+                    {{ child.name }}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if request.statistics.categories_list %}
+        <div class="filter-group">
+            <label>Категории:</label>
+            <div class="categories-filter">
+                {% for cat in request.statistics.categories_list %}
+                <label class="filter-checkbox">
+                    <input type="checkbox" name="cat_{{ cat.id }}" checked 
+                           data-category-id="{{ cat.id }}">
+                    {{ cat.name }}
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="no-data-message">
+        Нет данных для отображения статистики
+    </div>
+    {% endif %}
     
-    <div id="treckerCountChart" style="height: 300px; min-width: 310px; margin: 20px auto 0"></div>
+    <!-- Основной график -->
+    <div id="treckerChart" style="height: 500px; min-width: 310px; margin: 20px auto 0"></div>
+    
+    <!-- Легенда -->
+    <div id="chartLegend" class="chart-legend"></div>
 </div>
 
 <style>
@@ -26,6 +67,8 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 .period-selector {
     display: flex;
@@ -49,251 +92,459 @@
 .period-btn:hover {
     background: #f5f5f5;
 }
+.chart-filters {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border: 1px solid #eee;
+}
+.filter-group {
+    margin-bottom: 15px;
+}
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+.filter-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+.children-filter,
+.categories-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+.filter-checkbox:hover {
+    border-color: #2196F3;
+}
+.filter-checkbox input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+.chart-legend {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    border: 1px solid #eee;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: white;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    font-size: 13px;
+}
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+}
+.no-data-message {
+    padding: 20px;
+    text-align: center;
+    background: #f9f9f9;
+    border-radius: 6px;
+    color: #666;
+    margin-bottom: 20px;
+}
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    let currentPeriod = '{{ request.statistics.period|default:"month" }}';
-    
-    // Устанавливаем активную кнопку
-    document.querySelectorAll('.period-btn').forEach(btn => {
-        if (btn.dataset.period === currentPeriod) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-    
-    // Инициализируем график
-    renderChart(currentPeriod);
-    
-    // Обработчики для кнопок выбора периода
-    document.querySelectorAll('.period-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const period = this.dataset.period;
-            
-            // Обновляем активную кнопку
-            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Загружаем данные для выбранного периода
-            loadChartData(period);
-        });
-    });
-    
-    function loadChartData(period) {
-        // Добавляем параметр для получения JSON
-        const url = new URL(window.location.href);
-        url.searchParams.set('period', period);
-        url.searchParams.set('json', '1');
-        
-        // Отправляем запрос на сервер для получения данных
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                renderChart(period, data);
-            })
-            .catch(error => {
-                console.error('Ошибка загрузки данных:', error);
-            });
+// Используем self-invoking function для избежания конфликтов
+(function() {
+    // Ждем полной загрузки DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initChart);
+    } else {
+        initChart();
     }
     
-    function renderChart(period, data = null) {
-        // Если данные не переданы, используем данные из шаблона
-        if (!data) {
-            data = {
+    function initChart() {
+        let currentPeriod = '{{ request.statistics.period|default:"month" }}';
+        let currentData = null;
+        
+        // Безопасно получаем данные из шаблона
+        try {
+            currentData = {
                 period: '{{ request.statistics.period|default:"month" }}',
                 categories: {{ request.statistics.categories|default:"[]"|safe }},
-                data: {{ request.statistics.data|default:"[]"|safe }},
-                count: {{ request.statistics.count|default:"[]"|safe }},
-                data_avg: {{ request.statistics.data_avg|default:"[]"|safe }}
+                series: {{ request.statistics.series|default:"[]"|safe }},
+                children: {{ request.statistics.children|default:"[]"|safe }},
+                categories_list: {{ request.statistics.categories_list|default:"[]"|safe }}
+            };
+        } catch (e) {
+            console.error('Error parsing template data:', e);
+            currentData = {
+                period: 'month',
+                categories: [],
+                series: [],
+                children: [],
+                categories_list: []
             };
         }
         
-        let titleText, xAxisText;
-        
-        switch(period) {
-            case 'year':
-                titleText = 'Статистика по годам';
-                xAxisText = 'Годы';
-                break;
-            case 'month':
-                titleText = 'Статистика по месяцам';
-                xAxisText = 'Месяцы';
-                break;
-            case 'week':
-                titleText = 'Статистика по неделям';
-                xAxisText = 'Недели';
-                break;
+        // Устанавливаем активную кнопку
+        const periodButtons = document.querySelectorAll('.period-btn');
+        if (periodButtons.length > 0) {
+            periodButtons.forEach(btn => {
+                if (btn.dataset.period === currentPeriod) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Обработчики для кнопок выбора периода
+            periodButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const period = this.dataset.period;
+                    
+                    // Обновляем активную кнопку
+                    periodButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Загружаем данные для выбранного периода
+                    loadChartData(period);
+                });
+            });
         }
         
-        // Основной график (значения)
-        Highcharts.chart('treckerChart', {
-            chart: {
-                type: 'line',
-                backgroundColor: 'transparent'
-            },
-            title: {
-                text: titleText,
-                style: {
-                    fontSize: '16px',
-                    fontWeight: 'bold'
-                }
-            },
-            xAxis: {
-                categories: data.categories,
-                title: {
-                    text: xAxisText,
-                    style: {
-                        fontSize: '14px'
+        // Обработчики для чекбоксов фильтров (только если они существуют)
+        const filterCheckboxes = document.querySelectorAll('.filter-checkbox input');
+        if (filterCheckboxes.length > 0) {
+            filterCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (currentData) {
+                        renderChart(currentPeriod, currentData);
                     }
-                },
-                labels: {
-                    style: {
-                        fontSize: '12px'
-                    }
-                }
-            },
-            yAxis: {
-                title: {
-                    text: 'Значения',
-                    style: {
-                        fontSize: '14px'
-                    }
-                },
-                labels: {
-                    style: {
-                        fontSize: '12px'
-                    }
-                }
-            },
-            series: [{
-                name: 'Сумма',
-                data: data.data,
-                color: '#2196F3',
-                tooltip: {
-                    valueDecimals: 2,
-                    valueSuffix: ' ед.'
-                },
-                marker: {
-                    enabled: true,
-                    radius: 4
-                }
-            }, {
-                name: 'Среднее значение',
-                data: data.data_avg,
-                color: '#FF9800',
-                tooltip: {
-                    valueDecimals: 2,
-                    valueSuffix: ' ед.'
-                },
-                marker: {
-                    enabled: true,
-                    radius: 4
-                }
-            }],
-            tooltip: {
-                shared: true,
-                crosshairs: true,
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                borderColor: '#ddd',
-                borderRadius: 5,
-                style: {
-                    fontSize: '12px'
-                }
-            },
-            legend: {
-                layout: 'horizontal',
-                align: 'center',
-                verticalAlign: 'bottom',
-                itemStyle: {
-                    fontSize: '12px'
-                }
-            },
-            credits: {
-                enabled: false
-            },
-            plotOptions: {
-                line: {
-                    dataLabels: {
-                        enabled: false
-                    },
-                    enableMouseTracking: true
-                }
-            }
-        });
+                });
+            });
+        }
         
-        // График количества записей
-        Highcharts.chart('treckerCountChart', {
-            chart: {
-                type: 'column',
-                backgroundColor: 'transparent'
-            },
-            title: {
-                text: 'Количество записей',
-                style: {
-                    fontSize: '16px',
-                    fontWeight: 'bold'
+        // Инициализируем график
+        renderChart(currentPeriod, currentData);
+        
+        function loadChartData(period) {
+            // Добавляем параметр для получения JSON
+            const url = new URL(window.location.href);
+            url.searchParams.set('period', period);
+            url.searchParams.set('json', '1');
+            
+            // Отправляем запрос на сервер для получения данных
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    currentData = data;
+                    renderChart(period, data);
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки данных:', error);
+                    // Показываем сообщение об ошибке
+                    const chartContainer = document.getElementById('treckerChart');
+                    if (chartContainer) {
+                        chartContainer.innerHTML = `
+                            <div style="text-align: center; padding: 40px; color: #666;">
+                                <p>Ошибка загрузки данных. Попробуйте обновить страницу.</p>
+                            </div>
+                        `;
+                    }
+                });
+        }
+        
+        function getSelectedFilters() {
+            const selectedChildren = [];
+            const selectedCategories = [];
+            
+            // Безопасно получаем выбранных детей
+            const childCheckboxes = document.querySelectorAll('.children-filter input:checked');
+            if (childCheckboxes.length > 0) {
+                childCheckboxes.forEach(cb => {
+                    if (cb.dataset.childId) {
+                        selectedChildren.push(cb.dataset.childId);
+                    }
+                });
+            }
+            
+            // Безопасно получаем выбранные категории
+            const categoryCheckboxes = document.querySelectorAll('.categories-filter input:checked');
+            if (categoryCheckboxes.length > 0) {
+                categoryCheckboxes.forEach(cb => {
+                    if (cb.dataset.categoryId) {
+                        selectedCategories.push(cb.dataset.categoryId);
+                    }
+                });
+            }
+            
+            return { selectedChildren, selectedCategories };
+        }
+        
+        function filterSeries(series, selectedChildren, selectedCategories) {
+            if (!series || !Array.isArray(series)) {
+                return [];
+            }
+            
+            // Если нет фильтров, возвращаем все серии
+            if (selectedChildren.length === 0 || selectedCategories.length === 0) {
+                return series;
+            }
+            
+            return series.filter(seriesItem => {
+                if (!seriesItem || !seriesItem.name) return false;
+                
+                // Извлекаем ID ребенка и категории из имени серии
+                // Формат имени: "Имя ребенка - Название категории"
+                const parts = seriesItem.name.split(' - ');
+                if (parts.length < 2) return true;
+                
+                const childName = parts[0];
+                const categoryName = parts[1];
+                
+                // Проверяем, что currentData существует
+                if (!currentData || !currentData.children || !currentData.categories_list) {
+                    return true;
                 }
-            },
-            xAxis: {
-                categories: data.categories,
+                
+                // Находим соответствия
+                const childMatch = selectedChildren.some(childId => {
+                    // Проверяем, что children массив
+                    if (!Array.isArray(currentData.children)) return false;
+                    
+                    return currentData.children.some(child => {
+                        if (!child || typeof child !== 'object') return false;
+                        return child.id == childId && child.name == childName;
+                    });
+                });
+                
+                const categoryMatch = selectedCategories.some(catId => {
+                    // Проверяем, что categories_list массив
+                    if (!Array.isArray(currentData.categories_list)) return false;
+                    
+                    return currentData.categories_list.some(cat => {
+                        if (!cat || typeof cat !== 'object') return false;
+                        return cat.id == catId && cat.name == categoryName;
+                    });
+                });
+                
+                return childMatch && categoryMatch;
+            });
+        }
+        
+        function renderChart(period, data = null) {
+            // Если данные не переданы, используем currentData
+            if (!data) {
+                data = currentData;
+            }
+            
+            if (!data) {
+                console.error('No data available for chart');
+                return;
+            }
+            
+            currentPeriod = period;
+            
+            // Получаем выбранные фильтры
+            const filters = getSelectedFilters();
+            
+            // Фильтруем серии
+            const filteredSeries = filterSeries(data.series, filters.selectedChildren, filters.selectedCategories);
+            
+            let titleText, xAxisText;
+            
+            switch(period) {
+                case 'year':
+                    titleText = 'Статистика по годам';
+                    xAxisText = 'Годы';
+                    break;
+                case 'month':
+                    titleText = 'Статистика по месяцам';
+                    xAxisText = 'Месяцы';
+                    break;
+                case 'week':
+                    titleText = 'Статистика по неделям';
+                    xAxisText = 'Недели';
+                    break;
+                default:
+                    titleText = 'Статистика';
+                    xAxisText = 'Период';
+            }
+            
+            const chartContainer = document.getElementById('treckerChart');
+            if (!chartContainer) {
+                console.error('Chart container not found');
+                return;
+            }
+            
+            // Если нет данных для отображения
+            if (!filteredSeries || filteredSeries.length === 0) {
+                chartContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <p>Нет данных для отображения графика</p>
+                        <p>Добавьте записи трекера для отображения статистики</p>
+                    </div>
+                `;
+                updateLegend([]);
+                return;
+            }
+            
+            // Если нет категорий для оси X
+            if (!data.categories || data.categories.length === 0) {
+                data.categories = Array.from({length: filteredSeries[0].data.length}, (_, i) => i + 1);
+            }
+            
+            // Основной график (значения)
+            Highcharts.chart('treckerChart', {
+                chart: {
+                    type: 'line',
+                    backgroundColor: 'transparent',
+                    zoomType: 'xy'
+                },
                 title: {
-                    text: xAxisText,
+                    text: titleText,
                     style: {
-                        fontSize: '14px'
+                        fontSize: '16px',
+                        fontWeight: 'bold'
                     }
                 },
-                labels: {
-                    style: {
-                        fontSize: '12px'
-                    }
-                }
-            },
-            yAxis: {
-                title: {
-                    text: 'Количество',
-                    style: {
-                        fontSize: '14px'
-                    }
-                },
-                labels: {
-                    style: {
-                        fontSize: '12px'
-                    }
-                },
-                allowDecimals: false
-            },
-            series: [{
-                name: 'Количество записей',
-                data: data.count,
-                color: '#4CAF50'
-            }],
-            tooltip: {
-                pointFormat: 'Записей: <b>{point.y}</b>',
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                borderColor: '#ddd',
-                borderRadius: 5,
-                style: {
-                    fontSize: '12px'
-                }
-            },
-            credits: {
-                enabled: false
-            },
-            plotOptions: {
-                column: {
-                    dataLabels: {
-                        enabled: true,
-                        format: '{y}',
+                xAxis: {
+                    categories: data.categories,
+                    title: {
+                        text: xAxisText,
                         style: {
-                            fontSize: '11px',
-                            textOutline: 'none'
+                            fontSize: '14px'
+                        }
+                    },
+                    labels: {
+                        style: {
+                            fontSize: '12px'
+                        },
+                        rotation: -45
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Значения',
+                        style: {
+                            fontSize: '14px'
+                        }
+                    },
+                    labels: {
+                        style: {
+                            fontSize: '12px'
                         }
                     }
+                },
+                series: filteredSeries,
+                tooltip: {
+                    shared: true,
+                    crosshairs: true,
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    borderColor: '#ddd',
+                    borderRadius: 5,
+                    style: {
+                        fontSize: '12px'
+                    }
+                },
+                legend: {
+                    layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'middle',
+                    itemStyle: {
+                        fontSize: '11px'
+                    },
+                    maxHeight: 400
+                },
+                credits: {
+                    enabled: false
+                },
+                plotOptions: {
+                    line: {
+                        marker: {
+                            enabled: true,
+                            radius: 3
+                        },
+                        lineWidth: 2
+                    },
+                    series: {
+                        cursor: 'pointer',
+                        events: {
+                            legendItemClick: function() {
+                                return false; // Запрещаем скрытие при клике на легенду
+                            }
+                        }
+                    }
+                },
+                responsive: {
+                    rules: [{
+                        condition: {
+                            maxWidth: 768
+                        },
+                        chartOptions: {
+                            legend: {
+                                layout: 'horizontal',
+                                align: 'center',
+                                verticalAlign: 'bottom'
+                            }
+                        }
+                    }]
                 }
+            });
+            
+            // Обновляем легенду
+            updateLegend(filteredSeries);
+        }
+        
+        function updateLegend(series) {
+            const legendContainer = document.getElementById('chartLegend');
+            if (!legendContainer) return;
+            
+            legendContainer.innerHTML = '';
+            
+            if (!series || series.length === 0) {
+                legendContainer.style.display = 'none';
+                return;
             }
-        });
+            
+            legendContainer.style.display = 'flex';
+            
+            series.forEach(seriesItem => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                legendItem.innerHTML = `
+                    <div class="legend-color" style="background-color: ${seriesItem.color || '#2196F3'}"></div>
+                    <span>${seriesItem.name || 'Неизвестная серия'}</span>
+                `;
+                legendContainer.appendChild(legendItem);
+            });
+        }
     }
-});
+})();
 </script>

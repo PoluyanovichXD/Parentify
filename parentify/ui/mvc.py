@@ -91,6 +91,15 @@ class PageModelEditor(PageSimple):
             else:
                 recordsForm.add_control(f"{count_control}-control",controls)
 
+        if kwargs.get('btn_controls'):
+            count_control = 0
+            if type(kwargs.get('btn_controls')) == list or type(kwargs.get('btn_controls')) == tuple:
+                for control in kwargs.get('btn_controls', []):
+                    recordsForm.add_botton_control(f"{count_control}-control-btn",control)
+                    count_control=count_control+1
+            else:
+                recordsForm.add_botton_control(f"{count_control}-control-btn",kwargs.get('btn_controls'))
+
         
         control_name = list_name if list_name else 'recordslist'
         url_primary = '{%%}'

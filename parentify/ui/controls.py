@@ -422,7 +422,12 @@ class ControlForm(ControlBase):
         self.__action = action
         self.__method = method
         self.__is_multipart = is_multipart
+        self.__btn_controls = []
         super().__init__(control_template)
+
+    def add_botton_control(self,name,control):
+        assert name not in ([c[0]] for c in self.__btn_controls), "duplicate control name"
+        self.__btn_controls.append((name, control))
 
     def publish(self, context_branch, js, css):
         super().publish(context_branch, js, css)
@@ -430,6 +435,14 @@ class ControlForm(ControlBase):
         context_branch['method'] = self.__method
 
         context_branch['is_multipart'] = self.__is_multipart
+        
+        
+        context_branch['btn_controls'] = []
+        for c in self.__btn_controls:
+            subbtncontrol = {'name': c[0]}
+            c[1].publish(subbtncontrol, js, css)
+            context_branch['btn_controls'].append(subbtncontrol)
+
 
 class ControlButtonsBar(ControlBase):
     """line of buttons like toolbar control"""
