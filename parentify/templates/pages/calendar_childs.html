@@ -1,0 +1,523 @@
+{% extends "wrappers/simple.html" %}
+{% load static %}
+{% load filter %}
+
+{% block page %}
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50 py-8">
+    <div class="container mx-auto px-4">
+        <!-- Заголовок с селектором детей -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                📅 Календарь развития детей
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
+                Отслеживайте развитие каждого ребенка по неделям с индивидуальными рекомендациями
+            </p>
+            
+            <!-- Селектор выбора ребенка -->
+            {% if controls.0.query and controls.0.query|length > 1 %}
+            <div class="w-full mx-auto bg-white rounded-2xl p-4 shadow-lg border border-gray-200 mb-6">
+                <div class="flex items-center justify-between gap-4">
+                    <span class="text-gray-700 font-medium">
+                        <i class="fas fa-child mr-2 text-secondary"></i>
+                        Выберите ребенка:
+                    </span>
+                    <select 
+                        id="childSelector"
+                        onchange="changeChild(this.value)"
+                        class="px-4 py-2 rounded-xl border border-gray-300 bg-white focus:ring-2 focus:ring-secondary focus:border-transparent transition-all duration-300"
+                    >
+                        {% for record in controls.0.query %}
+                        <option 
+                            value="{{ record.children.id }}"
+                            {% if forloop.first and not request.GET.child %}selected{% endif %}
+                            {% if request.GET.child|stringformat:"s" == record.children.id|stringformat:"s" %}selected{% endif %}
+                        >
+                            {{ record.children.full_name }} ({{ record.children.week_birth }} недель)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Контейнер для детей -->
+        <div class="space-y-12">
+            {% for record in controls.0.query %}
+            {% with child=record.children week=record.week %}
+            
+            <!-- Проверка на выбранного ребенка -->
+            {% if not request.GET.child and forloop.first or request.GET.child|stringformat:"s" == child.id|stringformat:"s" %}
+                
+                <!-- Карточка ребенка и недели -->
+                <div id="child-{{ child.id }}" class="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
+                    <!-- Карточка ребенка -->
+                    <div class="p-8 border-b border-gray-200 bg-gradient-to-r from-primary/5 to-secondary/5">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                            <!-- Информация о ребенке -->
+                            <div class="flex items-start gap-6">
+                                <!-- Аватар ребенка -->
+                                <div class="relative">
+                                    <div class="w-24 h-24 rounded-2xl {% if child.gender == 'FEMALE' %}bg-gradient-to-br from-pink-400 to-pink-600{% else %}bg-gradient-to-br from-blue-400 to-blue-600{% endif %} flex items-center justify-center text-white text-4xl shadow-lg">
+                                        {% if child.gender == 'FEMALE' %}
+                                            👧
+                                        {% else %}
+                                            👦
+                                        {% endif %}
+                                    </div>
+                                    <div class="absolute -bottom-2 -right-2 bg-white rounded-full p-2 shadow-lg border border-gray-200">
+                                        {% if child.gender == 'FEMALE' %}
+                                        <span class="text-pink-500 text-sm font-bold">♀</span>
+                                        {% else %}
+                                        <span class="text-blue-500 text-sm font-bold">♂</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Данные ребенка -->
+                                <div>
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <h2 class="text-2xl md:text-3xl font-bold text-gray-900">
+                                            {{ child.full_name }}
+                                        </h2>
+                                        <span class="px-3 py-1 {% if child.gender == 'FEMALE' %}bg-pink-100 text-pink-700{% else %}bg-blue-100 text-blue-700{% endif %} rounded-full text-sm font-semibold">
+                                            {{ child.gender_name }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="flex flex-wrap gap-4 text-gray-600">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-birthday-cake {% if child.week_birth >= 53 %}text-yellow-500{% else %}text-primary{% endif %}"></i>
+                                            <span class="font-medium">Возраст: {{ child.week_birth }} недель</span>
+                                            {% if child.week_birth >= 53 %}
+                                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">
+                                                > 1 года
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        {% if child.zodiac_sign %}
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-star text-yellow-500"></i>
+                                            <span class="font-medium">{{ child.zodiac_sign }}</span>
+                                        </div>
+                                        {% endif %}
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-calendar-alt text-blue-500"></i>
+                                            <span class="font-medium">Родился: {{ child.birth_date|date:"d.m.Y" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Индикатор текущей недели -->
+                            <div class="{% if child.week_birth >= 53 %}bg-gradient-to-r from-yellow-400 to-yellow-600{% else %}bg-gradient-to-r from-primary to-secondary{% endif %} rounded-2xl p-6 text-white shadow-lg">
+                                <div class="text-center">
+                                    <div class="text-5xl font-bold mb-1">{{ child.week_birth }}</div>
+                                    <div class="text-sm opacity-90">
+                                        {% if child.week_birth >= 53 %}
+                                            Более 1 года
+                                        {% elif week and week.week_number == child.week_birth %}
+                                            Текущая неделя
+                                        {% else %}
+                                            Неделя {{ week.week_number|default:"-" }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="mt-3 text-xs opacity-75">
+                                        {% if child.week_birth >= 53 %}
+                                            Ребенок растёт!
+                                        {% else %}
+                                            Ваш малыш растет!
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Блок недели или сообщение о недоступности -->
+                    <div class="p-8">
+                        {% if child.week_birth >= 53 %}
+                            <!-- Сообщение о недоступности календаря -->
+                            <div class="text-center py-16">
+                                <div class="w-40 h-40 mx-auto mb-6 rounded-full bg-gradient-to-r from-yellow-100 to-yellow-200 flex items-center justify-center">
+                                    <i class="fas fa-birthday-cake text-6xl text-yellow-500"></i>
+                                </div>
+                                <h3 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                                    ⚠️ Календарь недельного развития доступен только для детей до 1 года
+                                </h3>
+                                <div class="max-w-2xl mx-auto mb-8">
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 mb-6">
+                                        <div class="flex items-start gap-4">
+                                            <i class="fas fa-info-circle text-yellow-500 text-xl mt-1"></i>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-2">Календарь предназначен для детей от 1 по 52 неделю</h4>
+                                                <p class="text-gray-700">
+                                                    Вашему ребенку уже {{ child.week_birth }} недель (более 1 года). 
+                                                    Календарь недельного развития содержит рекомендации только для первого года жизни ребенка.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+                                        <div class="flex items-start gap-4">
+                                            <i class="fas fa-lightbulb text-blue-500 text-xl mt-1"></i>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-2">Что дальше?</h4>
+                                                <p class="text-gray-700 mb-3">
+                                                    Поздравляем! Ваш ребенок успешно прошел важный этап первого года жизни. 
+                                                    Основные моторные и когнитивные навыки уже сформированы.
+                                                </p>
+                                                <p class="text-gray-700">
+                                                    Для дальнейшего развития рекомендуем обращаться к нашим статьям.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif week %}
+                            <!-- Заголовок недели -->
+                            <div class="mb-8 flex items-center justify-between">
+                                <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                                    <i class="fas fa-calendar-week text-secondary"></i>
+                                    {% if week.week_number == child.week_birth %}
+                                        Текущая неделя развития
+                                    {% else %}
+                                        Неделя {{ week.week_number }} развития
+                                    {% endif %}
+                                </h3>
+                                <span class="inline-flex items-center px-4 py-2 rounded-full bg-secondary text-white font-bold">
+                                    <i class="fas fa-calendar-week mr-2"></i>
+                                    Неделя {{ week.week_number }}
+                                </span>
+                            </div>
+
+                            <!-- Основной блок недели -->
+                            <article class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                                <!-- Заголовок недели -->
+                                <header class="p-6 border-b border-gray-200">
+                                    <h1 class="text-2xl md:text-3xl font-bold text-gray-900 text-center">
+                                        {{ week.title }}
+                                    </h1>
+                                </header>
+
+                                <!-- Контент недели -->
+                                <div class="p-8 space-y-10">
+                                    <!-- О неделе -->
+                                    {% if week.description %}
+                                    <section class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                                        <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                                            <i class="fas fa-baby text-secondary"></i>
+                                            О неделе развития
+                                        </h2>
+                                        <div class="text-gray-700 leading-relaxed text-lg">
+                                            {{ week.description|linebreaks }}
+                                        </div>
+                                    </section>
+                                    {% endif %}
+
+                                    <!-- Ключевые навыки -->
+                                    {% if week.key_skills %}
+                                    <section class="bg-pink-50 rounded-xl p-6 border border-pink-200">
+                                        <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                                            <i class="fas fa-star text-pink-500"></i>
+                                            Ключевые навыки недели
+                                        </h3>
+
+                                        <div class="space-y-4">
+                                            {% for skill in week.key_skills %}
+                                            <div class="flex gap-4 p-4 bg-white rounded-lg border">
+                                                <i class="fas fa-check text-green-600 mt-1"></i>
+                                                <p class="text-gray-800">{{ skill }}</p>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </section>
+                                    {% endif %}
+
+                                    <!-- Советы родителям -->
+                                    {% if week.parent_tips %}
+                                    <section class="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                                        <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                                            <i class="fas fa-heart text-blue-600"></i>
+                                            Советы родителям
+                                        </h3>
+
+                                        <div class="space-y-4">
+                                            {% for tip in week.parent_tips %}
+                                            <div class="flex gap-4 p-4 bg-white rounded-lg border">
+                                                <i class="fas fa-lightbulb text-blue-500 mt-1"></i>
+                                                <p class="text-gray-800">{{ tip }}</p>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    </section>
+                                    {% endif %}
+                                </div>
+                            </article>
+
+                            <!-- Навигация и действия -->
+                            <div class="mt-12 space-y-8">
+                                <!-- Информация о соответствии недели возрасту -->
+                                {% if week.week_number != child.week_birth %}
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+                                    <div class="flex items-center gap-3 text-yellow-800">
+                                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                                        <div>
+                                            <h4 class="font-bold">Внимание: неделя не соответствует возрасту</h4>
+                                            <p class="text-sm mt-1">
+                                                Эта неделя ({{ week.week_number }}) не совпадает с текущим возрастом ребенка ({{ child.week_birth }} недель). 
+                                                Вы можете просмотреть рекомендации, но они могут быть не полностью актуальны.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                            </div>
+                        {% else %}
+                            <!-- Состояние без данных (для детей до года без рекомендаций) -->
+                            <div class="text-center py-16">
+                                <div class="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
+                                    <i class="fas fa-calendar-plus text-5xl text-gray-400"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-900 mb-4">Рекомендации не найдены</h3>
+                                <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                                    Для возраста {{ child.week_birth }} недель пока нет рекомендаций по развитию.
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            {% endwith %}
+            {% empty %}
+            <!-- Состояние без детей -->
+            <div class="bg-white rounded-3xl shadow-xl border border-gray-200 p-16 text-center">
+                <div class="w-40 h-40 mx-auto mb-8 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 flex items-center justify-center">
+                    <i class="fas fa-child text-6xl text-gray-400"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">У вас пока нет детей</h2>
+                <p class="text-gray-600 mb-10 max-w-lg mx-auto text-lg">
+                    Добавьте информацию о вашем ребенке, чтобы отслеживать его развитие по неделям с индивидуальными рекомендациями.
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bg-white {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+
+
+/* Стили для селектора */
+#childSelector {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+</style>
+
+<script>
+// Функция переключения между детьми
+function changeChild(childId) {
+    const url = new URL(window.location.href);
+    
+    if (childId) {
+        url.searchParams.set('child', childId);
+    } else {
+        url.searchParams.delete('child');
+    }
+    
+    // Показываем загрузку
+    showLoading();
+    
+    // Перезагружаем страницу с новым параметром
+    window.location.href = url.toString();
+}
+
+// Функция для редактирования недели
+function editWeek(weekId) {
+    window.location.href = `/calendar/week/${weekId}/edit/`;
+}
+
+function markWeekAsCompleted(weekId, childId) {
+    if (confirm('Отметить неделю как завершенную?')) {
+        fetch(`/api/calendar/complete-week/${weekId}/${childId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': get_csrftoken('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Неделя отмечена как завершенная!', 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                showNotification(data.message || 'Ошибка', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Ошибка при обновлении', 'error');
+        });
+    }
+}
+
+function addChild() {
+    window.location.href = '/profile/children/add/';
+}
+
+// Показ уведомлений
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-xl shadow-xl text-white font-medium transform transition-all duration-300 ${
+        type === 'success' ? 'bg-gradient-to-r from-green-500 to-emerald-600' : 
+        type === 'error' ? 'bg-gradient-to-r from-red-500 to-pink-600' : 
+        'bg-gradient-to-r from-blue-500 to-purple-600'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Показ индикатора загрузки
+function showLoading() {
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'fixed inset-0 bg-white/80 flex items-center justify-center z-50';
+    loadingDiv.innerHTML = `
+        <div class="text-center">
+            <div class="w-16 h-16 mx-auto mb-4 border-4 border-secondary border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-gray-700 font-medium">Загружаем данные...</p>
+        </div>
+    `;
+    document.body.appendChild(loadingDiv);
+}
+
+// Инициализация анимаций
+document.addEventListener('DOMContentLoaded', function() {
+    // Автоматическая прокрутка к выбранному ребенку
+    const childId = new URLSearchParams(window.location.search).get('child');
+    if (childId) {
+        const childElement = document.getElementById(`child-${childId}`);
+        if (childElement) {
+            setTimeout(() => {
+                childElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                childElement.classList.add('ring-2', 'ring-secondary', 'ring-opacity-50');
+                setTimeout(() => {
+                    childElement.classList.remove('ring-2', 'ring-secondary', 'ring-opacity-50');
+                }, 2000);
+            }, 300);
+        }
+    }
+});
+
+// Функция для печати календаря
+function printCalendar() {
+    const childId = new URLSearchParams(window.location.search).get('child');
+    const printUrl = childId ? `/calendar/print/?child=${childId}` : '/calendar/print/';
+    window.open(printUrl, '_blank');
+}
+
+// Функция для экспорта календаря
+function exportCalendar() {
+    const childId = new URLSearchParams(window.location.search).get('child');
+    const exportUrl = childId ? `/calendar/export/pdf/?child=${childId}` : '/calendar/export/pdf/';
+    showNotification('Подготавливаем PDF файл...', 'info');
+    window.open(exportUrl, '_blank');
+}
+
+// Добавляем кнопки управления в шапку
+document.addEventListener('DOMContentLoaded', function() {
+    const header = document.querySelector('header');
+    if (header) {
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'flex items-center gap-3';
+        controlsDiv.innerHTML = `
+            <button onclick="printCalendar()" 
+                    class="inline-flex items-center px-4 py-2 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 border border-gray-200 hover:shadow-md">
+                <i class="fas fa-print mr-2"></i>
+                Печать
+            </button>
+            <button onclick="exportCalendar()" 
+                    class="inline-flex items-center px-4 py-2 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 border border-gray-200 hover:shadow-md">
+                <i class="fas fa-download mr-2"></i>
+                Экспорт
+            </button>
+        `;
+        
+        const existingControls = header.querySelector('.flex.items-center.gap-3');
+        if (existingControls) {
+            existingControls.appendChild(controlsDiv);
+        }
+    }
+});
+
+// Функция для получения CSRF токена
+function get_csrftoken(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

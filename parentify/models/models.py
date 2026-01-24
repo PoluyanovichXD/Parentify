@@ -394,6 +394,70 @@ class UserChild(Base):
             return "Рыбы"
         else:
             return None
+    
+    @property
+    def week_birth(self):
+        if not self.birth_date:
+            return 0
+        
+        # Конвертируем дату рождения в aware datetime
+        from django.utils import timezone
+        import datetime
+        
+        birth_date = self.birth_date
+        # Если birth_date - это date, конвертируем в datetime
+        if isinstance(birth_date, datetime.date) and not isinstance(birth_date, datetime.datetime):
+            birth_date = datetime.datetime.combine(birth_date, datetime.time.min)
+        
+        # Делаем дату aware (осведомленной о временной зоне)
+        if timezone.is_naive(birth_date):
+            birth_date = timezone.make_aware(birth_date)
+        
+        now = timezone.now()
+        
+        # Проверяем, что текущая дата позже даты рождения
+        if now < birth_date:
+            return 0  # Ребенок еще не родился
+        
+        # Вычисляем разницу в днях
+        delta = now - birth_date
+        days = delta.days
+        
+        # Вычисляем количество полных недель
+        weeks = days // 7
+        return max(weeks, 0)
+    @property
+    def prev_week_birth(self):
+        return self.week_birth - 1
+    @property
+    def next_week_birth(self):
+        return self.week_birth + 1
+
+    def get_weeks_child(self, orm):
+        if not self.week_birth:
+            return []
+        
+        weeks = orm.query(ChildDevelopmentWeek).filter(
+            ChildDevelopmentWeek.week_number.in_([
+                self.week_birth - 1,
+                self.week_birth,
+                self.week_birth + 1
+            ])
+        ).order_by(ChildDevelopmentWeek.week_number).all()
+        
+        return weeks
+    
+    def get_week_child(self, orm):
+        if not self.week_birth:
+            return None
+        
+        week = orm.query(ChildDevelopmentWeek).filter(
+            ChildDevelopmentWeek.week_number.in_([
+                self.week_birth,
+            ])
+        ).order_by(ChildDevelopmentWeek.week_number).first()
+        
+        return week
 
 
 class ArticleCategory(Base):

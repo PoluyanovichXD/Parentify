@@ -56,6 +56,21 @@ def goods_favorites(request):
 
 @page_has_user()
 @common_page()
+def calendar_childs(request):
+    page = PageSimple('Календарь развития', 'pages/calendar_childs.html')
+    record = [
+        {
+            'children':item,
+            'week':item.get_week_child(request.orm_session)
+        }
+        for item in request.current_user.children
+    ]
+    page.add_control('record', ControlRecordlist(record))
+    return page
+
+
+@page_has_user()
+@common_page()
 def settings(request):
     page = PageSimple('Профиль пользователя', 'pages/settings.html')
     return page

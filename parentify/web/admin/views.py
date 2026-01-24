@@ -16,6 +16,7 @@ from parentify.web.forum.forms import FormForum, FormCategory as FormForumCatego
 from parentify.web.goods.forms import FormGoods, FormCategory as FormGoodsCategory
 from parentify.web.map.forms import FormPlace, FormCategory as FormPlaceCategory
 from parentify.web.article.forms import FormArticle, FormCategory as FormArticleCategory
+from parentify.web.calendar.forms import FormDevelopmentCalendar, ChildDevelopmentWeek
 from datetime import datetime, timedelta
 
 
@@ -53,6 +54,9 @@ dictAdminModels = {
     ],
     "goods_category": [GoodsCategory, "Категории товаров", "fas fa-box-open",
         [['Название','name']], FormGoodsCategory,
+    ],
+    "calendar": [ChildDevelopmentWeek, "Календарь развития", "fas fa-calendar",
+        [['Заголовок','title'], ['Номер недели','week_number']], FormDevelopmentCalendar,
     ],
 }
 

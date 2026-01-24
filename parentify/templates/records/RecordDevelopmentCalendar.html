@@ -2,534 +2,164 @@
 
 <div class="min-h-screen bg-gray-50 py-8">
     <div class="container mx-auto px-5">
+
         <!-- Хлебные крошки -->
-        <nav class="mb-8">
+        <nav class="mb-6">
             <ol class="flex items-center space-x-2 text-sm text-gray-600">
-                <li><a href="/" class="hover:text-primary transition-colors">Главная</a></li>
-                <li><span class="mx-2">/</span></li>
-                <li><a href="/calendar" class="hover:text-primary transition-colors">Календарь развития</a></li>
-                <li><span class="mx-2">/</span></li>
-                <li class="text-gray-900 font-medium">Неделя {{ control.content.week_number }}</li>
+                <li><a href="/" class="hover:text-primary">Главная</a></li>
+                <li>/</li>
+                <li><a href="/calendar" class="hover:text-primary">Календарь развития</a></li>
+                <li>/</li>
+                <li class="font-medium text-gray-900">
+                    Неделя {{ control.content.week_number }}
+                </li>
             </ol>
         </nav>
 
-        <!-- Основной контент недели -->
+        <!-- Выбор ребёнка -->
+        {% if control.children and control.children|length > 0 %}
+        <div class="mb-6 flex items-center gap-4">
+            <span class="text-sm font-medium text-gray-700">
+                Ребёнок:
+            </span>
+
+            <select
+                class="px-4 py-2 rounded-xl border border-gray-300 bg-white focus:ring-2 focus:ring-secondary"
+                onchange="changeChild(this.value)"
+            >
+                {% for child in control.children %}
+                <option
+                    value="{{ child.id }}"
+                    {% if child.id == control.active_child.id %}selected{% endif %}
+                >
+                    {{ child.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <!-- Основной блок недели -->
         <article class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-            <!-- Заголовок и мета-информация -->
-            <header class="p-8 border-b border-gray-200">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center space-x-3">
-                        <!-- Бейдж недели -->
-                        <span class="inline-flex items-center px-4 py-2 rounded-full text-base font-bold bg-secondary text-white">
-                            <i class="fas fa-calendar-week mr-2"></i>
-                            Неделя {{ control.content.week_number }}
-                        </span>
-                        
-                        <!-- Кнопки админа -->
-                        {% if request.current_user and request.current_user.is_admin %}
-                        <button onclick="ClickBtn('edit/')" 
-                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-600 hover:bg-indigo-200 transition-colors cursor-pointer">
-                            <i class="fas fa-edit mr-1 text-xs"></i>
-                            Изменить
-                        </button>
-                        <button onclick="ClickBtn(window.location.pathname + '?delete=delete')" 
-                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-600 hover:bg-red-200 transition-colors cursor-pointer">
-                            <i class="fas fa-trash mr-1 text-xs"></i>
-                            Удалить
-                        </button>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="flex items-center space-x-4 text-sm text-gray-500">
-                        <span class="flex items-center">
-                            <i class="far fa-calendar mr-1"></i>
-                            {{ control.content.created_at|date:"d.m.Y" }}
-                        </span>
-                        {% if control.content.updated_at %}
-                        <span class="flex items-center">
-                            <i class="fas fa-sync-alt mr-1"></i>
-                            Обновлен: {{ control.content.updated_at|date:"d.m.Y" }}
-                        </span>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-                    {{ control.content.title }}
-                </h1>
-            </header>
 
-            <!-- Содержание недели -->
-            <div class="p-8">
-                <!-- Основное описание -->
-                {% if control.content.description %}
-                <div class="prose prose-lg max-w-none mb-10">
-                    <div class="bg-gray-50 rounded-xl p-6 mb-6 border border-gray-200">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <i class="fas fa-baby text-secondary"></i>
-                            О неделе развития
-                        </h2>
-                        <div class="text-gray-700 leading-relaxed text-lg">
-                            {{ control.content.description|linebreaks }}
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
+            <!-- Заголовок -->
+            <header class="p-6 border-b border-gray-200">
+    <div class="flex items-center justify-between gap-4">
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Ключевые навыки -->
-                    <div class="lg:col-span-2 space-y-6">
-                        {% if control.content.key_skills and control.content.key_skills|length > 0 %}
-                        <div class="bg-gradient-to-r from-secondary/5 to-secondary/10 rounded-xl p-6 border border-secondary/20">
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 pb-3 border-b border-secondary/30 flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center">
-                                    <i class="fas fa-star text-secondary"></i>
-                                </div>
-                                Ключевые навыки недели
-                            </h3>
-                            <div class="space-y-4">
-                                {% for skill in control.content.key_skills %}
-                                <div class="flex items-start gap-4 p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
-                                    <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-1">
-                                        <i class="fas fa-check text-green-600 text-sm"></i>
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-gray-800 font-medium">{{ skill }}</p>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
+        <!-- Левая часть -->
+        <div class="flex items-center gap-3">
+            
 
-                        <!-- Советы родителям -->
-                        {% if control.content.parent_tips and control.content.parent_tips|length > 0 %}
-                        <div class="bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-xl p-6 border border-blue-200">
-                            <h3 class="text-xl font-bold text-gray-900 mb-6 pb-3 border-b border-blue-300 flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <i class="fas fa-heart text-blue-600"></i>
-                                </div>
-                                Советы для родителей
-                            </h3>
-                            <div class="space-y-4">
-                                {% for tip in control.content.parent_tips %}
-                                <div class="flex items-start gap-4 p-4 bg-white/80 rounded-lg border border-blue-100">
-                                    <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 mt-1">
-                                        <i class="fas fa-lightbulb text-blue-500 text-sm"></i>
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="text-gray-800">{{ tip }}</p>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Боковая панель с деталями -->
-                    <div class="space-y-6">
-                        <!-- Блок важности недели -->
-                        <div class="bg-gradient-to-br from-secondary/5 to-secondary/10 rounded-xl p-6 border border-secondary/20">
-                            <h3 class="text-lg font-semibold text-secondary mb-4 flex items-center gap-2">
-                                <i class="fas fa-exclamation-circle text-secondary"></i>
-                                Важность недели
-                            </h3>
-                            <p class="text-gray-800 mb-4">
-                                Эта неделя играет ключевую роль в развитии вашего малыша. 
-                                Следуйте рекомендациям для гармоничного роста.
-                            </p>
-                            <div class="flex items-center text-sm text-secondary/80">
-                                <i class="fas fa-clock mr-2"></i>
-                                <span>Рекомендуемое время занятий: 15-30 минут в день</span>
-                            </div>
-                        </div>
-
-                        <!-- Детальная информация -->
-                        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <i class="fas fa-info-circle text-gray-600"></i>
-                                Информация о неделе
-                            </h3>
-                            <div class="space-y-3 text-sm">
-                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span class="text-gray-600">Номер недели:</span>
-                                    <span class="font-bold text-gray-900 text-lg">{{ control.content.week_number }}</span>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span class="text-gray-600">Ключевых навыков:</span>
-                                    <span class="font-medium text-secondary">
-                                        {% if control.content.key_skills %}
-                                            {{ control.content.key_skills|length }}
-                                        {% else %}
-                                            0
-                                        {% endif %}
-                                    </span>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span class="text-gray-600">Советов для родителей:</span>
-                                    <span class="font-medium text-blue-600">
-                                        {% if control.content.parent_tips %}
-                                            {{ control.content.parent_tips|length }}
-                                        {% else %}
-                                            0
-                                        {% endif %}
-                                    </span>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span class="text-gray-600">Добавлен:</span>
-                                    <span class="font-medium text-gray-900">{{ control.content.created_at|date:"d.m.Y" }}</span>
-                                </div>
-                                <div class="flex justify-between items-center py-2">
-                                    <span class="text-gray-600">ID записи:</span>
-                                    <span class="font-mono text-gray-900">{{ control.content.id }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Действия -->
-            <footer class="p-6 border-t border-gray-200 bg-gray-50">
-                <div class="flex items-center justify-between flex-wrap gap-4">
-                    <div class="flex items-center space-x-4">
-                        <button onclick="shareWeek()" 
-                                class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-xl font-semibold hover:bg-secondary/90 transition-all duration-300 transform hover:-translate-y-0.5">
-                            <i class="fas fa-share-alt mr-2"></i>
-                            Поделиться
-                        </button>
-                    </div>
-                    
-                    <div class="flex items-center space-x-2">
-                        <!-- Навигация по неделям -->
-                        <div class="flex items-center space-x-2 text-sm">
-                            {% if control.previous_week %}
-                            <a onclick="ClickBtn('{{ control.previous_week.id }}/')" 
-                               class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">
-                                <i class="fas fa-chevron-left mr-1"></i>
-                                Неделя {{ control.previous_week.week_number }}
-                            </a>
-                            {% endif %}
-                            
-                            {% if control.next_week %}
-                            <a onclick="ClickBtn('{{ control.next_week.id }}/')" 
-                               class="inline-flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer">
-                                Неделя {{ control.next_week.week_number }}
-                                <i class="fas fa-chevron-right ml-1"></i>
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </footer>
-        </article>
-
-        <!-- Следующая и предыдущая недели -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-            {% if control.previous_week %}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700">
-                            <i class="fas fa-chevron-left mr-1"></i>
-                            Предыдущая неделя
-                        </span>
-                        <span class="text-sm text-gray-500">{{ control.previous_week.created_at|date:"d.m.Y" }}</span>
-                    </div>
-                    <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-secondary transition-colors cursor-pointer"
-                        onclick="ClickBtn('{{ control.previous_week.id }}/')">
-                        Неделя {{ control.previous_week.week_number }}: {{ control.previous_week.title }}
-                    </h3>
-                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ control.previous_week.description|default:""|truncatewords:15 }}</p>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        {% if control.previous_week.key_skills and control.previous_week.key_skills|length > 0 %}
-                        <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                            {{ control.previous_week.key_skills|length }} навыков
-                        </span>
-                        {% endif %}
-                        {% if control.previous_week.parent_tips and control.previous_week.parent_tips|length > 0 %}
-                        <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                            {{ control.previous_week.parent_tips|length }} советов
-                        </span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            {% if control.next_week %}
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700">
-                            Следующая неделя
-                            <i class="fas fa-chevron-right ml-1"></i>
-                        </span>
-                        <span class="text-sm text-gray-500">{{ control.next_week.created_at|date:"d.m.Y" }}</span>
-                    </div>
-                    <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-secondary transition-colors cursor-pointer"
-                        onclick="ClickBtn('{{ control.next_week.id }}/')">
-                        Неделя {{ control.next_week.week_number }}: {{ control.next_week.title }}
-                    </h3>
-                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ control.next_week.description|default:""|truncatewords:15 }}</p>
-                    <div class="flex items-center gap-2 flex-wrap">
-                        {% if control.next_week.key_skills and control.next_week.key_skills|length > 0 %}
-                        <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                            {{ control.next_week.key_skills|length }} навыков
-                        </span>
-                        {% endif %}
-                        {% if control.next_week.parent_tips and control.next_week.parent_tips|length > 0 %}
-                        <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                            {{ control.next_week.parent_tips|length }} советов
-                        </span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+            {% if request.current_user and request.current_user.is_admin %}
+            <button
+                onclick="ClickBtn('edit/')"
+                class="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-sm hover:bg-gray-200 transition"
+            >
+                Изменить
+            </button>
             {% endif %}
         </div>
 
-        <!-- Дополнительные материалы -->
-        {% if control.similar_weeks and control.similar_weeks|length > 0 %}
-        <section class="mt-12">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Похожие недели развития</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {% for week in control.similar_weeks|slice:":3" %}
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300">
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold bg-secondary text-white">
-                                Неделя {{ week.week_number }}
-                            </span>
-                            <span class="text-xs text-gray-500">{{ week.created_at|date:"d.m.Y" }}</span>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-secondary transition-colors cursor-pointer"
-                            onclick="ClickBtn('{{ week.id }}/')">
-                            {{ week.title }}
-                        </h3>
-                        <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ week.description|default:""|truncatewords:12 }}</p>
-                        <div class="flex items-center justify-between text-xs text-gray-500">
-                            <div class="flex items-center gap-2">
-                                {% if week.key_skills and week.key_skills|length > 0 %}
-                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                                    {{ week.key_skills|length }} навык{% if week.key_skills|length != 1 %}ов{% endif %}
-                                </span>
-                                {% endif %}
-                            </div>
-                            <button onclick="ClickBtn('{{ week.id }}/')" 
-                                    class="text-secondary hover:text-secondary/80 font-medium">
-                                Подробнее →
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </section>
-        {% endif %}
+        <!-- Заголовок по центру -->
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 text-center flex-1">
+            {{ control.content.title }}
+        </h1>
 
-        <!-- Советы по использованию -->
-        <section class="mt-12">
-            <div class="bg-gradient-to-r from-secondary/5 to-secondary/10 rounded-2xl p-8 border border-secondary/20">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Как использовать рекомендации</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="text-center">
-                        <div class="w-16 h-16 rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-clock text-secondary text-2xl"></i>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 mb-2">Регулярность</h3>
-                        <p class="text-sm text-gray-600">Занимайтесь ежедневно по 15-30 минут для лучших результатов</p>
+        <!-- Правая часть -->
+        <span class="inline-flex items-center px-4 py-2 rounded-full bg-secondary text-white font-bold">
+                <i class="fas fa-calendar-week mr-2"></i>
+                Неделя {{ control.content.week_number }}
+            </span>
+
+    </div>
+</header>
+
+
+            <!-- Контент -->
+            <div class="p-8 space-y-10">
+
+                <!-- О неделе -->
+                {% if control.content.description %}
+                <section class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+                        <i class="fas fa-baby text-secondary"></i>
+                        О неделе развития
+                    </h2>
+                    <div class="text-gray-700 leading-relaxed text-lg">
+                        {{ control.content.description|linebreaks }}
                     </div>
-                    <div class="text-center">
-                        <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-heart text-blue-600 text-2xl"></i>
+                </section>
+                {% endif %}
+
+                <!-- Ключевые навыки -->
+                {% if control.content.key_skills %}
+                <section class="bg-pink-50 rounded-xl p-6 border border-pink-200">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <i class="fas fa-star text-pink-500"></i>
+                        Ключевые навыки недели
+                    </h3>
+
+                    <div class="space-y-4">
+                        {% for skill in control.content.key_skills %}
+                        <div class="flex gap-4 p-4 bg-white rounded-lg border">
+                            <i class="fas fa-check text-green-600 mt-1"></i>
+                            <p class="text-gray-800">{{ skill }}</p>
                         </div>
-                        <h3 class="font-semibold text-gray-900 mb-2">Терпение</h3>
-                        <p class="text-sm text-gray-600">Каждый ребенок развивается в своем темпе, будьте терпеливы</p>
+                        {% endfor %}
                     </div>
-                    <div class="text-center">
-                        <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-smile text-green-600 text-2xl"></i>
+                </section>
+                {% endif %}
+
+                <!-- Советы родителям -->
+                {% if control.content.parent_tips %}
+                <section class="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <i class="fas fa-heart text-blue-600"></i>
+                        Советы родителям
+                    </h3>
+
+                    <div class="space-y-4">
+                        {% for tip in control.content.parent_tips %}
+                        <div class="flex gap-4 p-4 bg-white rounded-lg border">
+                            <i class="fas fa-lightbulb text-blue-500 mt-1"></i>
+                            <p class="text-gray-800">{{ tip }}</p>
                         </div>
-                        <h3 class="font-semibold text-gray-900 mb-2">Игровой подход</h3>
-                        <p class="text-sm text-gray-600">Используйте игру как основной метод развития</p>
+                        {% endfor %}
                     </div>
-                    <div class="text-center">
-                        <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-stethoscope text-purple-600 text-2xl"></i>
-                        </div>
-                        <h3 class="font-semibold text-gray-900 mb-2">Консультация</h3>
-                        <p class="text-sm text-gray-600">При возникновении вопросов консультируйтесь со специалистами</p>
-                    </div>
-                </div>
+                </section>
+                {% endif %}
+
             </div>
-        </section>
+        </article>
+
+        <!-- Навигация по неделям -->
+        <div class="mt-12 flex gap-6">
+            {% if control.previous_week %}
+            <button
+                onclick="ClickBtn('{{ control.previous_week.id }}/')"
+                class="flex-1 py-6 rounded-2xl bg-gray-900 text-white text-xl font-semibold hover:bg-gray-800 transition"
+            >
+                ← предыдущая неделя
+            </button>
+            {% endif %}
+
+            {% if control.next_week %}
+            <button
+                onclick="ClickBtn('{{ control.next_week.id }}/')"
+                class="flex-1 py-6 rounded-2xl bg-gray-900 text-white text-xl font-semibold hover:bg-gray-800 transition"
+            >
+                следующая неделя →
+            </button>
+            {% endif %}
+        </div>
+
     </div>
 </div>
 
-<style>
-.line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.prose {
-    max-width: none;
-}
-
-.prose p {
-    color: #374151;
-    line-height: 1.7;
-    margin-bottom: 1rem;
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.bg-white {
-    opacity: 0;
-    animation: fadeInUp 0.6s ease-out forwards;
-}
-
-.bg-white:nth-child(1) { animation-delay: 0.1s; }
-.bg-white:nth-child(2) { animation-delay: 0.2s; }
-.bg-white:nth-child(3) { animation-delay: 0.3s; }
-
-.hover-lift {
-    transition: transform 0.2s ease-in-out;
-}
-
-.hover-lift:hover {
-    transform: translateY(-2px);
-}
-</style>
-
 <script>
-function shareWeek() {
-    const shareData = {
-        title: 'Неделя {{ control.content.week_number }}: {{ control.content.title }}',
-        text: '{{ control.content.description|default:""|truncatewords:20 }}',
-        url: window.location.href,
-    };
-    
-    if (navigator.share) {
-        navigator.share(shareData)
-            .then(() => console.log('Успешный шаринг'))
-            .catch((error) => {
-                console.log('Ошибка шаринга', error);
-                copyToClipboard(window.location.href);
-            });
-    } else {
-        copyToClipboard(window.location.href);
-    }
+function changeChild(childId) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('child', childId);
+    window.location.href = url.toString();
 }
-
-function printWeek() {
-    window.print();
-}
-
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(function() {
-        showNotification('Ссылка скопирована в буфер обмена', 'success');
-    }).catch(function(err) {
-        console.error('Ошибка копирования: ', err);
-        showNotification('Ошибка копирования', 'error');
-    });
-}
-
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium transform transition-all duration-300 ${
-        type === 'success' ? 'bg-green-500' : 
-        type === 'error' ? 'bg-red-500' : 'bg-blue-500'
-    }`;
-    notification.textContent = message;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            if (document.body.contains(notification)) {
-                document.body.removeChild(notification);
-            }
-        }, 300);
-    }, 3000);
-}
-
-// Инициализация при загрузке
-document.addEventListener('DOMContentLoaded', function() {
-    // Подсветка активных элементов
-    const skillsItems = document.querySelectorAll('.bg-white.rounded-lg.border');
-    skillsItems.forEach((item, index) => {
-        item.style.animationDelay = `${index * 0.05}s`;
-        item.style.opacity = '0';
-        item.style.animation = 'fadeInUp 0.4s ease-out forwards';
-    });
-
-    // Добавляем плавную прокрутку для якорей
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('href');
-            if (targetId.startsWith('#')) {
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            }
-        });
-    });
-});
-
-// Функция для добавления в избранное
-function toggleWeekFavorite(weekId, button) {
-    // Здесь можно добавить логику для избранного
-    showNotification('Функция "Избранное" скоро будет доступна', 'info');
-}
-
-// Подсветка текста при поиске (если будет поиск на странице)
-function highlightText(text, searchTerm) {
-    if (!searchTerm) return text;
-    const regex = new RegExp(`(${searchTerm})`, 'gi');
-    return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
-}
-
-// Анимация прогресс-баров
-function animateProgressBars() {
-    const progressBars = document.querySelectorAll('.bg-green-600');
-    progressBars.forEach(bar => {
-        const width = bar.style.width;
-        bar.style.width = '0%';
-        setTimeout(() => {
-            bar.style.transition = 'width 1.5s ease-in-out';
-            bar.style.width = width;
-        }, 100);
-    });
-}
-
-// Запуск анимаций при загрузке
-window.addEventListener('load', function() {
-    animateProgressBars();
-});
-
-// Функция для скачивания PDF (если будет реализовано)
-function downloadWeekPDF() {
-    showNotification('Функция скачивания в PDF скоро будет доступна', 'info');
-}
-
 </script>

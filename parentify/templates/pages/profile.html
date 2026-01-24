@@ -239,7 +239,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {% for child in request.current_user.children %}
                         <div class="border border-gray-200 rounded-lg p-4 hover:border-primary transition-colors">
-                            <div class="flex items-center gap-3 mb-3">
+                            <div onclick="LinkRedirect(`childs/{{child.id}}/`)" class="cursor-pointer flex items-center gap-3 mb-3">
                                 <div class="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white font-semibold">
                                     {{ child.first_name|first }}{{ child.last_name|first }}
                                 </div>
