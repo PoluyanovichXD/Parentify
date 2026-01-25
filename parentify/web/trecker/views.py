@@ -29,7 +29,8 @@ def get_trecker_statistics(session, base_query, period='month'):
             'categories': [],
             'series': [],
             'children': [],
-            'categories_list': []
+            'categories_list': [],
+            'weekly_stats': []
         }
     
     # Получаем всех детей из запроса
@@ -47,8 +48,13 @@ def get_trecker_statistics(session, base_query, period='month'):
             'categories': [],
             'series': [],
             'children': [{'id': c.id, 'name': c.first_name} for c in children] if children else [],
-            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories] if categories else []
+            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories] if categories else [],
+            'weekly_stats': []
         }
+    
+    # Получаем недельную статистику (последние 7 дней)
+    weekly_stats = get_weekly_child_statistics(session, query)
+    
     if period == 'year':
         # Группировка по годам
         stats = session.query(
@@ -64,7 +70,7 @@ def get_trecker_statistics(session, base_query, period='month'):
         ).join(
             TreckerCategory, TreckerCategory.id == Trecker.category_id
         ).filter(
-            Trecker.id.in_([t.id for t in query.all()])
+            Trecker.id.in_([t.id for t in treckers])
         ).group_by(
             extract('year', Trecker.date_trecker),
             UserChild.id,
@@ -78,7 +84,7 @@ def get_trecker_statistics(session, base_query, period='month'):
         ).all()
         
         # Формируем уникальные годы
-        years = sorted(set([s.year for s in stats]))
+        years = sorted(set([int(s.year) for s in stats if s.year]))
         
         # Формируем данные для графиков
         series_data = []
@@ -113,7 +119,8 @@ def get_trecker_statistics(session, base_query, period='month'):
             'categories': years,
             'series': series_data,
             'children': [{'id': c.id, 'name': c.first_name} for c in children],
-            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories]
+            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories],
+            'weekly_stats': weekly_stats
         }
         
     elif period == 'month':
@@ -135,7 +142,7 @@ def get_trecker_statistics(session, base_query, period='month'):
         ).join(
             TreckerCategory, TreckerCategory.id == Trecker.category_id
         ).filter(
-            Trecker.id.in_([t.id for t in query.all()]),
+            Trecker.id.in_([t.id for t in treckers]),
             Trecker.date_trecker >= start_date
         ).group_by(
             extract('year', Trecker.date_trecker),
@@ -193,7 +200,8 @@ def get_trecker_statistics(session, base_query, period='month'):
             'categories': months,
             'series': series_data,
             'children': [{'id': c.id, 'name': c.first_name} for c in children],
-            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories]
+            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories],
+            'weekly_stats': weekly_stats
         }
         
     elif period == 'week':
@@ -215,7 +223,7 @@ def get_trecker_statistics(session, base_query, period='month'):
         ).join(
             TreckerCategory, TreckerCategory.id == Trecker.category_id
         ).filter(
-            Trecker.id.in_([t.id for t in query.all()]),
+            Trecker.id.in_([t.id for t in treckers]),
             Trecker.date_trecker >= start_date
         ).group_by(
             extract('isoyear', Trecker.date_trecker),
@@ -277,10 +285,116 @@ def get_trecker_statistics(session, base_query, period='month'):
             'categories': weeks,
             'series': series_data,
             'children': [{'id': c.id, 'name': c.first_name} for c in children],
-            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories]
+            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories],
+            'weekly_stats': weekly_stats
+        }
+    else:
+        # По умолчанию возвращаем месячную статистику
+        result = {
+            'period': 'month',
+            'categories': [],
+            'series': [],
+            'children': [{'id': c.id, 'name': c.first_name} for c in children],
+            'categories_list': [{'id': cat.id, 'name': cat.name} for cat in categories],
+            'weekly_stats': weekly_stats
         }
     
     return result
+
+
+def get_weekly_child_statistics(session, base_query):
+    """
+    Получает подробную статистику по каждому ребенку за последние 7 дней
+    Возвращает данные в формате:
+    [
+        {
+            'child_id': 1,
+            'child_name': 'Имя ребенка',
+            'stats': [
+                {
+                    'category_id': 1,
+                    'category_name': 'Название категории',
+                    'total_week': 42,  # всего за неделю
+                    'daily_avg': 6.0,  # в среднем в день
+                    'unit': 'раз'
+                },
+                ...
+            ]
+        },
+        ...
+    ]
+    """
+    # Определяем даты за последние 7 дней
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=7)
+    
+    # Получаем ID всех трекеров из базового запроса
+    trecker_ids = [t.id for t in base_query.all()]
+    if not trecker_ids:
+        return []
+    
+    # Получаем все записи за последние 7 дней
+    try:
+        weekly_stats = session.query(
+            Trecker.children_id,
+            UserChild.first_name.label('child_name'),
+            TreckerCategory.id.label('category_id'),
+            TreckerCategory.name.label('category_name'),
+            TreckerCategory.unit.label('category_unit'),
+            func.sum(Trecker.value).label('total_value'),
+            func.count().label('total_count')
+        ).join(
+            UserChild, UserChild.id == Trecker.children_id
+        ).join(
+            TreckerCategory, TreckerCategory.id == Trecker.category_id
+        ).filter(
+            Trecker.id.in_(trecker_ids),
+            Trecker.date_trecker >= start_date,
+            Trecker.date_trecker <= end_date
+        ).group_by(
+            Trecker.children_id,
+            UserChild.first_name,
+            TreckerCategory.id,
+            TreckerCategory.name,
+            TreckerCategory.unit
+        ).order_by(
+            Trecker.children_id,
+            TreckerCategory.name
+        ).all()
+    except Exception as e:
+        print(f"Error in get_weekly_child_statistics: {e}")
+        return []
+    
+    # Создаем структуру для хранения данных
+    child_stats_dict = {}
+    
+    for stat in weekly_stats:
+        child_id = stat.children_id
+        
+        if child_id not in child_stats_dict:
+            child_stats_dict[child_id] = {
+                'child_id': child_id,
+                'child_name': stat.child_name,
+                'stats': []
+            }
+        
+        # Рассчитываем среднее в день
+        daily_avg = float(stat.total_value) / 7.0 if stat.total_value else 0
+        
+        # Форматируем единицы измерения
+        unit = stat.category_unit or 'раз'
+        
+        child_stats_dict[child_id]['stats'].append({
+            'category_id': stat.category_id,
+            'category_name': stat.category_name,
+            'total_week': float(stat.total_value) if stat.total_value else 0,
+            'daily_avg': round(daily_avg, 1),
+            'count': int(stat.total_count) if stat.total_count else 0,
+            'unit': unit
+        })
+    
+    # Преобразуем словарь в список
+    return list(child_stats_dict.values())
 
 
 def get_color_for_child_category(child_id, category_id):
@@ -359,6 +473,65 @@ def lighten_color(color, amount):
     return color
 
 
+def get_category_icon(category_name):
+    """
+    Возвращает иконку для категории трекера
+    """
+    # Простой маппинг для иконок
+    icon_map = {
+        'кормление': '🍼',
+        'кормление грудью': '🤱',
+        'бутылочка': '🍶',
+        'подгузник': '🩲',
+        'сон': '😴',
+        'сны': '😴',
+        'сон дневной': '🌞😴',
+        'сон ночной': '🌙😴',
+        'температура': '🌡️',
+        'вес': '⚖️',
+        'рост': '📏',
+        'прогулка': '🚶',
+        'купание': '🛁',
+        'активность': '🏃',
+        'игра': '🧸',
+        'настроение': '😊',
+        'здоровье': '❤️',
+        'лекарство': '💊',
+        'витамины': '💊',
+        'прививка': '💉',
+        'плач': '😢',
+        'смех': '😂',
+        'зубы': '🦷',
+        'пища': '🍎',
+        'вода': '💧',
+        'молоко': '🥛',
+        'каша': '🥣',
+        'овощи': '🥕',
+        'фрукты': '🍌',
+        'мясо': '🍗',
+        'рыба': '🐟',
+        'яйца': '🥚',
+        'сыр': '🧀',
+        'йогурт': '🥄',
+        'творог': '🥄'
+    }
+    
+    # Ищем точное совпадение или частичное
+    category_lower = category_name.lower()
+    
+    # Проверяем точное совпадение
+    if category_lower in icon_map:
+        return icon_map[category_lower]
+    
+    # Проверяем частичные совпадения
+    for key, icon in icon_map.items():
+        if key in category_lower:
+            return icon
+    
+    # Если ничего не найдено, возвращаем стандартную иконку
+    return '📊'
+
+
 class trecker:
     @common_page()
     @with_form('form_filter', FormFilterTrecker, 'cmd_filter', 'cmd_discard', 'cmd_store')
@@ -388,7 +561,8 @@ class trecker:
                     'categories': [],
                     'series': [],
                     'children': [],
-                    'categories_list': []
+                    'categories_list': [],
+                    'weekly_stats': []
                 }, status=500)
         
         if request.GET.get('delete') and request.current_user:
@@ -396,7 +570,7 @@ class trecker:
             request.orm_session.commit()
             return HttpResponseRedirect('/trecker/')
         
-        # Получаем статистику для графика
+        # Получаем всю статистику
         try:
             period = request.GET.get('period', 'month')
             statistics = get_trecker_statistics(request.orm_session, query, period)
@@ -407,10 +581,17 @@ class trecker:
                 'categories': [],
                 'series': [],
                 'children': [],
-                'categories_list': []
+                'categories_list': [],
+                'weekly_stats': []
             }
         
         request.statistics = statistics
+        
+        # Добавим отладочный вывод
+        print(f"Statistics debug: weekly_stats exists = {'weekly_stats' in statistics}")
+        if 'weekly_stats' in statistics:
+            print(f"weekly_stats length = {len(statistics['weekly_stats'])}")
+            print(f"weekly_stats content = {statistics['weekly_stats']}")
         
         modelInfo = PageModelInfo(request.session, '/trecker/', query.order_by(Trecker.created_at.desc()), Trecker.id)
         page = PageTreckerEditor(modelInfo).items(request, p, form_filter, type_list='dict', btn_controls=ControlHtml({},'widgets/chart_trecker.html'))
