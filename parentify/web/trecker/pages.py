@@ -24,6 +24,7 @@ class PageTreckerEditor(PageModelEditor):
         (_("children_id"), "children_id"),
         (_("category"), "category"),
         (_("children"), "children"),
+        (_("value"), "value"),
     )
 
 class PageCategoryEditor(PageModelEditor):

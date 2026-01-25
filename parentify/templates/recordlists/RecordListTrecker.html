@@ -48,6 +48,7 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата и время</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Категория</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Значение</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ед. изм.</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Комментарий</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ребенок</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
@@ -81,11 +82,16 @@
                                         {% endif %}
                                     </span>
                                 </td>
-                                
-                                <!-- Значение -->
+                                 <!-- Значение -->
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-lg font-bold text-gray-900">
                                         {{ row.2.value }}
+                                    </div>
+                                </td>
+                                <!-- ед изм -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-lg font-bold text-gray-900">
+                                        <!-- {{ row.2.value }} -->
                                         {% if row.2.category and row.2.category.unit %}
                                             <span class="text-sm font-normal text-gray-500 ml-1">{{ row.2.category.unit }}</span>
                                         {% endif %}
