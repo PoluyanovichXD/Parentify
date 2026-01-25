@@ -44,10 +44,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Сообщение</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата и время</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Создано</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Пользователь</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ребёнок</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
                             </tr>
                         </thead>
@@ -68,23 +65,21 @@
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-gray-900 max-w-md">
-                                                {{ row.2.message|truncatechars:100 }}
+                                                {{ row.2.name }}
                                             </div>
-                                            {% if row.2.message|length > 100 %}
-                                            <button onclick="toggleFullMessage({{ row.2.id }})" 
+                                            <button onclick="event.preventDefault(),  toggleFullMessage({{ row.2.id }})" 
                                                     class="text-xs text-primary hover:text-primary-dark mt-1">
                                                 Показать полностью
                                             </button>
                                             <div id="fullMessage{{ row.2.id }}" class="hidden mt-2 text-sm text-gray-600">
                                                 {{ row.2.message }}
                                             </div>
-                                            {% endif %}
                                         </div>
                                     </div>
                                 </td>
                                 
                                 <!-- Дата и время -->
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <!-- <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">
                                         {{ reminder.scheduled_datetime }}
                                     </div>
@@ -94,42 +89,48 @@
                                     <div class="text-xs {{ reminder.time_status_class }} mt-1">
                                         {{ reminder.time_until_now_simple }}
                                     </div>
-                                </td>
+                                </td> -->
                                 
                                 <!-- Статус -->
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <!-- <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
                                         {% if row.2.is_sent %}bg-green-100 text-green-800
                                         {% else %}bg-yellow-100 text-yellow-800{% endif %}">
                                         <i class="fas fa-{% if row.2.is_sent %}check-circle{% else %}clock{% endif %} mr-1 text-xs"></i>
                                         {% if row.2.is_sent %}Отправлено{% else %}Ожидает{% endif %}
                                     </span>
-                                </td>
+                                </td> -->
                                 
                                 <!-- Создано -->
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <!-- <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ row.2.created_at|date:"d.m.Y" }}
                                     </div>
                                     <div class="text-sm text-gray-500">
                                         {{ row.2.created_at|date:"H:i" }}
                                     </div>
-                                </td>
+                                </td> -->
                                 
                                 <!-- Пользователь -->
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
+                                        {% if row.2.children %}
                                         <div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-semibold text-xs">
-                                            {{ row.2.user.first_name|first }}{{ row.2.user.last_name|first }}
+                                            {{ row.2.children.first_name|first }}{{ row.2.children.last_name|first }}
                                         </div>
                                         <div class="ml-3">
                                             <div class="text-sm font-medium text-gray-900">
-                                                {{ row.2.user.first_name }} {{ row.2.user.last_name }}
+                                                {{ row.2.children.first_name }} {{ row.2.children.last_name }}
                                             </div>
                                             <div class="text-xs text-gray-500">
-                                                {{ row.2.user.email|truncatechars:20 }}
+                                                {{ row.2.children.email|truncatechars:20 }}
                                             </div>
                                         </div>
+                                        {% else %}
+                                        <div class="ml-3">
+                                            Не указан
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </td>
                                 
@@ -226,7 +227,7 @@
         </section>
 
         <!-- Статистика -->
-        <section class="container mt-8 mb-8">
+        <!-- <section class="container mt-8 mb-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                     <div class="flex items-center justify-between">
@@ -276,7 +277,7 @@
                     </div>
                 </div>
             </div>
-        </section>
+        </section> -->
     </div>
 </div>
 

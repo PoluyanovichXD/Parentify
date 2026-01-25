@@ -16,6 +16,7 @@ class PageReminderEditor(PageModelEditor):
     _default_page_size = 30
     _fields = (   
         (_("id"), "id"),
+        (_("name"), "name"),
         (_("message"), "message"),
         (_("scheduled_datetime"), "scheduled_datetime"),
         (_("is_sent"), "is_sent"),
@@ -27,4 +28,5 @@ class PageReminderEditor(PageModelEditor):
         (_("is_overdue"), "is_overdue"),
         (_("time_until_now_simple"), "time_until_now_simple"),
         (_("user"), "user"),
+        (_("children"), "children"),
     )
